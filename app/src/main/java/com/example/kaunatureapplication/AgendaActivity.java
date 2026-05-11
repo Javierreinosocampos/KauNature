@@ -1,0 +1,1463 @@
+package com.example.kaunatureapplication;
+
+import android.content.Intent;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.view.Gravity;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
+
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
+public class AgendaActivity extends AppCompatActivity {
+
+    interface KauCallback { void call(String value); }
+
+    // ── Modelo local Cita ────────────────────────────────────────────
+    static class Cita {
+        String id;           // UUID de Supabase (null si aún no guardada)
+        String cliente;
+        String servicio;
+        String fecha;        // dd/MM/yyyy  (display)
+        String fechaBD;      // yyyy-MM-dd  (Supabase)
+        String hora;         // HH:mm
+        String precio;
+        String notas;
+        String estado;
+
+        // Campos calculados para las vistas
+        int diaSemana;
+        int diaMes;
+        int mes;
+        int anio;
+
+        Cita(CitaModel m) {
+            this.id       = m.id;
+            this.cliente  = m.clienteNombre  != null ? m.clienteNombre  : "";
+            this.servicio = m.servicioNombre != null ? m.servicioNombre : "";
+            this.fechaBD  = m.fecha    != null ? m.fecha    : "";
+            this.hora     = m.horaDisplay();
+            this.notas    = m.notas    != null ? m.notas    : "";
+            this.estado   = m.estado   != null ? m.estado   : "pendiente";
+            this.precio   = m.precioDisplay();
+
+            // Parsear fecha para campos de UI
+            if (fechaBD.length() >= 10) {
+                this.anio     = Integer.parseInt(fechaBD.substring(0, 4));
+                this.mes      = Integer.parseInt(fechaBD.substring(5, 7));
+                this.diaMes   = Integer.parseInt(fechaBD.substring(8, 10));
+                this.fecha    = String.format("%02d/%02d/%04d", diaMes, mes, anio);
+                Calendar cal  = Calendar.getInstance();
+                cal.set(anio, mes - 1, diaMes);
+                int dow = cal.get(Calendar.DAY_OF_WEEK);
+                this.diaSemana = (dow == Calendar.SUNDAY) ? 7 : dow - 1;
+            }
+        }
+
+        // Constructor para citas nuevas (antes de guardar en BD)
+        Cita(String cliente, String servicio, String fecha, String hora,
+             String precio, String notas, String estado,
+             int diaSemana, int diaMes, int mes, int anio) {
+            this.id        = null;
+            this.cliente   = cliente;
+            this.servicio  = servicio;
+            this.fecha     = fecha;
+            this.fechaBD   = String.format("%04d-%02d-%02d", anio, mes, diaMes);
+            this.hora      = hora;
+            this.precio    = precio;
+            this.notas     = notas;
+            this.estado    = estado;
+            this.diaSemana = diaSemana;
+            this.diaMes    = diaMes;
+            this.mes       = mes;
+            this.anio      = anio;
+        }
+
+        String inicial() {
+            return cliente != null && !cliente.isEmpty()
+                    ? String.valueOf(cliente.charAt(0)).toUpperCase() : "?";
+        }
+    }
+
+    // ── Servicios ────────────────────────────────────────────────────
+    private final String[] SERVICIOS = {
+            "Masaje Relajante", "Masaje Deportivo", "Masaje Terapéutico",
+            "Gimnasio", "Pilates", "Otro"
+    };
+
+    // ── Estado ───────────────────────────────────────────────────────
+    private final List<Cita> todasLasCitas = new ArrayList<>();
+    private String   vistaActual    = "diaria";
+    private String   filtroServicio = "Todos";
+    private Calendar fechaSeleccionada;
+    private boolean  cargando       = false;
+
+    // ── Views ────────────────────────────────────────────────────────
+    private FrameLayout contenedor;
+    private TextView    tabDiaria, tabSemanal, tabMensual;
+    private TextView    tvSubtitle;
+
+    // ════════════════════════════════════════════════════════════════
+    //  onCreate
+    // ════════════════════════════════════════════════════════════════
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_agenda);
+
+        fechaSeleccionada = Calendar.getInstance();
+        bindViews();
+        setupTabs();
+        setupBotones();
+        setupBottomNav();
+        cargarCitas(); // carga desde Supabase
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    //  BIND
+    // ════════════════════════════════════════════════════════════════
+    private void bindViews() {
+        contenedor = findViewById(R.id.contenedorVista);
+        tabDiaria  = findViewById(R.id.tabDiaria);
+        tabSemanal = findViewById(R.id.tabSemanal);
+        tabMensual = findViewById(R.id.tabMensual);
+        tvSubtitle = findViewById(R.id.tvAgendaSubtitle);
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    //  CARGA DESDE SUPABASE
+    // ════════════════════════════════════════════════════════════════
+
+    /** Carga todas las citas del mes visible (±1 mes para semanas que cruzan mes) */
+    private void cargarCitas() {
+        if (cargando) return;
+        cargando = true;
+
+        // Rango: primer día del mes anterior → último del mes siguiente
+        Calendar desde = (Calendar) fechaSeleccionada.clone();
+        desde.set(Calendar.DAY_OF_MONTH, 1);
+        desde.add(Calendar.MONTH, -1);
+
+        Calendar hasta = (Calendar) fechaSeleccionada.clone();
+        hasta.set(Calendar.DAY_OF_MONTH, 1);
+        hasta.add(Calendar.MONTH, 2);
+        hasta.add(Calendar.DAY_OF_MONTH, -1);
+
+        String desdeStr = fmt(desde);
+        String hastaStr = fmt(hasta);
+
+        SupabaseRepository.get().getCitasRango(desdeStr, hastaStr,
+                new SupabaseRepository.Callback<List<CitaModel>>() {
+                    @Override public void onSuccess(List<CitaModel> data) {
+                        runOnUiThread(() -> {
+                            cargando = false;
+                            todasLasCitas.clear();
+                            for (CitaModel m : data) todasLasCitas.add(new Cita(m));
+                            renderVista();
+                        });
+                    }
+                    @Override public void onError(String e) {
+                        runOnUiThread(() -> {
+                            cargando = false;
+                            Toast.makeText(AgendaActivity.this,
+                                    "Error al cargar citas: " + e, Toast.LENGTH_LONG).show();
+                            renderVista(); // muestra vacío
+                        });
+                    }
+                });
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    //  TABS
+    // ════════════════════════════════════════════════════════════════
+    private void setupTabs() {
+        tabDiaria.setOnClickListener(v  -> setVista("diaria",  tabDiaria));
+        tabSemanal.setOnClickListener(v -> setVista("semanal", tabSemanal));
+        tabMensual.setOnClickListener(v -> setVista("mensual", tabMensual));
+    }
+
+    private void setVista(String vista, TextView tab) {
+        vistaActual = vista;
+        for (TextView t : new TextView[]{tabDiaria, tabSemanal, tabMensual}) {
+            t.setBackground(getDrawable(R.drawable.shape_tab_inactive));
+            t.setTextColor(Color.parseColor("#6B7FA3"));
+        }
+        tab.setBackground(getDrawable(R.drawable.shape_tab_active));
+        tab.setTextColor(Color.WHITE);
+        renderVista();
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    //  RENDER
+    // ════════════════════════════════════════════════════════════════
+    private void renderVista() {
+        contenedor.removeAllViews();
+        switch (vistaActual) {
+            case "diaria":  renderDiaria();  break;
+            case "semanal": renderSemanal(); break;
+            case "mensual": renderMensual(); break;
+        }
+    }
+
+    // ── Vista diaria ─────────────────────────────────────────────────
+    private void renderDiaria() {
+        String fechaStr   = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                .format(fechaSeleccionada.getTime());
+        String fechaLabel = new SimpleDateFormat("EEEE dd/MM/yyyy", new Locale("es","ES"))
+                .format(fechaSeleccionada.getTime());
+        fechaLabel = Character.toUpperCase(fechaLabel.charAt(0)) + fechaLabel.substring(1);
+        tvSubtitle.setText(fechaLabel);
+
+        ScrollView scroll = new ScrollView(this);
+        scroll.setLayoutParams(new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(dpToPx(16), 0, dpToPx(16), dpToPx(16));
+        scroll.addView(layout);
+        layout.addView(buildNavFecha());
+
+        List<Cita> citasDelDia = new ArrayList<>();
+        for (Cita c : todasLasCitas) {
+            if (c.fecha.equals(fechaStr) &&
+                    (filtroServicio.equals("Todos") || c.servicio.equals(filtroServicio)))
+                citasDelDia.add(c);
+        }
+
+        if (cargando) {
+            layout.addView(buildVacioView("Cargando citas...", ""));
+        } else if (citasDelDia.isEmpty()) {
+            layout.addView(buildVacioView("Sin citas este día", "Pulsa ＋ para añadir una cita"));
+        } else {
+            for (Cita c : citasDelDia) layout.addView(buildCitaCard(c, false));
+        }
+        contenedor.addView(scroll);
+    }
+
+    // ── Vista semanal ────────────────────────────────────────────────
+    private void renderSemanal() {
+        Calendar inicioSemana = (Calendar) fechaSeleccionada.clone();
+        int dow  = inicioSemana.get(Calendar.DAY_OF_WEEK);
+        int diff = (dow == Calendar.SUNDAY) ? -6 : (Calendar.MONDAY - dow);
+        inicioSemana.add(Calendar.DAY_OF_MONTH, diff);
+
+        Calendar finSemana = (Calendar) inicioSemana.clone();
+        finSemana.add(Calendar.DAY_OF_MONTH, 6);
+
+        String label = new SimpleDateFormat("dd/MM", Locale.getDefault()).format(inicioSemana.getTime())
+                + " – " + new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(finSemana.getTime());
+        tvSubtitle.setText("Semana: " + label);
+
+        ScrollView scroll = new ScrollView(this);
+        scroll.setLayoutParams(new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(dpToPx(16), 0, dpToPx(16), dpToPx(16));
+        scroll.addView(layout);
+        layout.addView(buildNavFecha());
+
+        String[] diasNombre = {"Lun","Mar","Mié","Jue","Vie","Sáb","Dom"};
+        Calendar dia = (Calendar) inicioSemana.clone();
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+
+        for (int i = 0; i < 7; i++) {
+            String fechaDia  = sdf.format(dia.getTime());
+            String nombreDia = diasNombre[i] + " " +
+                    new SimpleDateFormat("dd/MM", Locale.getDefault()).format(dia.getTime());
+
+            List<Cita> citasDia = new ArrayList<>();
+            for (Cita c : todasLasCitas) {
+                if (c.fecha.equals(fechaDia) &&
+                        (filtroServicio.equals("Todos") || c.servicio.equals(filtroServicio)))
+                    citasDia.add(c);
+            }
+
+            layout.addView(buildDiaHeader(nombreDia, citasDia.size(),
+                    fechaDia.equals(sdf.format(Calendar.getInstance().getTime()))));
+
+            if (citasDia.isEmpty()) {
+                TextView tvVacio = new TextView(this);
+                tvVacio.setText("Sin citas");
+                tvVacio.setTextSize(11f);
+                tvVacio.setTextColor(Color.parseColor("#6B7FA3"));
+                tvVacio.setTypeface(getResources().getFont(R.font.outfit_regular));
+                LinearLayout.LayoutParams vp = new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                vp.setMargins(dpToPx(8), dpToPx(4), 0, dpToPx(10));
+                tvVacio.setLayoutParams(vp);
+                layout.addView(tvVacio);
+            } else {
+                for (Cita c : citasDia) layout.addView(buildCitaCard(c, true));
+            }
+            dia.add(Calendar.DAY_OF_MONTH, 1);
+        }
+        contenedor.addView(scroll);
+    }
+
+    // ── Vista mensual ────────────────────────────────────────────────
+    private void renderMensual() {
+        int mes  = fechaSeleccionada.get(Calendar.MONTH);
+        int anio = fechaSeleccionada.get(Calendar.YEAR);
+        String mesLabel = new SimpleDateFormat("MMMM yyyy", new Locale("es","ES"))
+                .format(fechaSeleccionada.getTime());
+        mesLabel = Character.toUpperCase(mesLabel.charAt(0)) + mesLabel.substring(1);
+        tvSubtitle.setText(mesLabel);
+
+        ScrollView scroll = new ScrollView(this);
+        scroll.setLayoutParams(new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(dpToPx(16), 0, dpToPx(16), dpToPx(16));
+        scroll.addView(layout);
+        layout.addView(buildNavFecha());
+
+        // Cabecera L M X J V S D
+        String[] diasHdr = {"L","M","X","J","V","S","D"};
+        LinearLayout hdrRow = new LinearLayout(this);
+        hdrRow.setOrientation(LinearLayout.HORIZONTAL);
+        hdrRow.setWeightSum(7);
+        LinearLayout.LayoutParams hdrP = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        hdrP.bottomMargin = dpToPx(4);
+        hdrRow.setLayoutParams(hdrP);
+        for (String d : diasHdr) {
+            TextView tv = new TextView(this);
+            tv.setText(d);
+            tv.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+            tv.setTextSize(11f);
+            tv.setTextColor(Color.parseColor("#6B7FA3"));
+            tv.setTypeface(getResources().getFont(R.font.outfit_bold));
+            tv.setGravity(Gravity.CENTER);
+            tv.setPadding(0, dpToPx(4), 0, dpToPx(4));
+            hdrRow.addView(tv);
+        }
+        layout.addView(hdrRow);
+
+        // Grid
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.YEAR, anio);
+        cal.set(Calendar.MONTH, mes);
+        cal.set(Calendar.DAY_OF_MONTH, 1);
+        int primerDia  = cal.get(Calendar.DAY_OF_WEEK);
+        int offset     = (primerDia == Calendar.SUNDAY) ? 6 : primerDia - 2;
+        int diasEnMes  = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+        Calendar hoy = Calendar.getInstance();
+
+        int celda = 0;
+        LinearLayout fila = null;
+        for (int i = 0; i < offset + diasEnMes; i++) {
+            if (celda % 7 == 0) {
+                fila = new LinearLayout(this);
+                fila.setOrientation(LinearLayout.HORIZONTAL);
+                fila.setWeightSum(7);
+                LinearLayout.LayoutParams fp = new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT, dpToPx(52));
+                fp.bottomMargin = dpToPx(4);
+                fila.setLayoutParams(fp);
+                layout.addView(fila);
+            }
+            if (i < offset) {
+                View sp = new View(this);
+                sp.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1f));
+                fila.addView(sp);
+            } else {
+                int numDia = i - offset + 1;
+                cal.set(Calendar.DAY_OF_MONTH, numDia);
+                String fechaDia = sdf.format(cal.getTime());
+                boolean esHoy = (numDia == hoy.get(Calendar.DAY_OF_MONTH)
+                        && mes == hoy.get(Calendar.MONTH) && anio == hoy.get(Calendar.YEAR));
+                boolean esSel = (numDia == fechaSeleccionada.get(Calendar.DAY_OF_MONTH)
+                        && mes == fechaSeleccionada.get(Calendar.MONTH)
+                        && anio == fechaSeleccionada.get(Calendar.YEAR));
+                int count = 0;
+                for (Cita c : todasLasCitas) if (c.fecha.equals(fechaDia)) count++;
+
+                FrameLayout celdaView = buildCeldaMes(numDia, count, esHoy, esSel);
+                celdaView.setLayoutParams(new LinearLayout.LayoutParams(
+                        0, LinearLayout.LayoutParams.MATCH_PARENT, 1f));
+                final int diaF = numDia;
+                celdaView.setOnClickListener(v -> {
+                    fechaSeleccionada.set(anio, mes, diaF);
+                    setVista("diaria", tabDiaria);
+                });
+                fila.addView(celdaView);
+            }
+            celda++;
+        }
+        if (fila != null && celda % 7 != 0) {
+            int rest = 7 - (celda % 7);
+            for (int i = 0; i < rest; i++) {
+                View sp = new View(this);
+                sp.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1f));
+                fila.addView(sp);
+            }
+        }
+
+        // Lista citas del mes
+        TextView tvTitulo = new TextView(this);
+        tvTitulo.setText("Citas este mes");
+        tvTitulo.setTextSize(13f);
+        tvTitulo.setTextColor(Color.parseColor("#0D1B3E"));
+        tvTitulo.setTypeface(getResources().getFont(R.font.outfit_bold));
+        LinearLayout.LayoutParams ltP = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        ltP.topMargin = dpToPx(16);
+        ltP.bottomMargin = dpToPx(8);
+        tvTitulo.setLayoutParams(ltP);
+        layout.addView(tvTitulo);
+
+        List<Cita> citasMes = new ArrayList<>();
+        for (Cita c : todasLasCitas) {
+            if (c.mes == mes + 1 && c.anio == anio &&
+                    (filtroServicio.equals("Todos") || c.servicio.equals(filtroServicio)))
+                citasMes.add(c);
+        }
+
+        if (citasMes.isEmpty()) layout.addView(buildVacioView("Sin citas este mes", ""));
+        else for (Cita c : citasMes) layout.addView(buildCitaCard(c, false));
+
+        contenedor.addView(scroll);
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    //  BUILDERS UI
+    // ════════════════════════════════════════════════════════════════
+    private View buildNavFecha() {
+        CardView nav = new CardView(this);
+        LinearLayout.LayoutParams np = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        np.bottomMargin = dpToPx(12);
+        nav.setLayoutParams(np);
+        nav.setRadius(dpToPx(16));
+        nav.setCardElevation(dpToPx(2));
+        nav.setCardBackgroundColor(Color.WHITE);
+
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setGravity(Gravity.CENTER_VERTICAL);
+        row.setPadding(dpToPx(8), dpToPx(8), dpToPx(8), dpToPx(8));
+        nav.addView(row);
+
+        TextView btnPrev = buildNavBtn("‹");
+        btnPrev.setOnClickListener(v -> { avanzarFecha(-1); cargarCitas(); });
+        row.addView(btnPrev);
+
+        TextView tvFecha = new TextView(this);
+        tvFecha.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+        tvFecha.setGravity(Gravity.CENTER);
+        tvFecha.setTextSize(13f);
+        tvFecha.setTextColor(Color.parseColor("#0D1B3E"));
+        tvFecha.setTypeface(getResources().getFont(R.font.outfit_bold));
+        SimpleDateFormat fmt;
+        switch (vistaActual) {
+            case "semanal": fmt = new SimpleDateFormat("'Semana del' dd/MM", new Locale("es","ES")); break;
+            case "mensual": fmt = new SimpleDateFormat("MMMM yyyy", new Locale("es","ES")); break;
+            default:        fmt = new SimpleDateFormat("EEE dd/MM/yyyy", new Locale("es","ES")); break;
+        }
+        String label = fmt.format(fechaSeleccionada.getTime());
+        label = Character.toUpperCase(label.charAt(0)) + label.substring(1);
+        tvFecha.setText(label);
+        tvFecha.setOnClickListener(v -> mostrarDatePicker());
+        row.addView(tvFecha);
+
+        TextView btnNext = buildNavBtn("›");
+        btnNext.setOnClickListener(v -> { avanzarFecha(1); cargarCitas(); });
+        row.addView(btnNext);
+
+        TextView btnHoy = new TextView(this);
+        btnHoy.setText("Hoy");
+        btnHoy.setTextSize(11f);
+        btnHoy.setTextColor(Color.parseColor("#0A66FF"));
+        btnHoy.setTypeface(getResources().getFont(R.font.outfit_bold));
+        btnHoy.setPadding(dpToPx(10), dpToPx(6), dpToPx(10), dpToPx(6));
+        btnHoy.setBackground(getDrawable(R.drawable.shape_filter_inactive));
+        LinearLayout.LayoutParams hp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        hp.setMarginStart(dpToPx(6));
+        btnHoy.setLayoutParams(hp);
+        btnHoy.setOnClickListener(v -> {
+            fechaSeleccionada = Calendar.getInstance();
+            cargarCitas();
+        });
+        row.addView(btnHoy);
+        return nav;
+    }
+
+    private TextView buildNavBtn(String texto) {
+        TextView btn = new TextView(this);
+        btn.setText(texto);
+        btn.setTextSize(22f);
+        btn.setTextColor(Color.parseColor("#0A66FF"));
+        btn.setTypeface(getResources().getFont(R.font.outfit_bold));
+        btn.setPadding(dpToPx(12), dpToPx(4), dpToPx(12), dpToPx(4));
+        btn.setGravity(Gravity.CENTER);
+        return btn;
+    }
+
+    private void avanzarFecha(int cantidad) {
+        switch (vistaActual) {
+            case "diaria":  fechaSeleccionada.add(Calendar.DAY_OF_MONTH, cantidad); break;
+            case "semanal": fechaSeleccionada.add(Calendar.WEEK_OF_YEAR, cantidad); break;
+            case "mensual": fechaSeleccionada.add(Calendar.MONTH, cantidad); break;
+        }
+    }
+
+    private View buildDiaHeader(String nombreDia, int numCitas, boolean esHoy) {
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setGravity(Gravity.CENTER_VERTICAL);
+        LinearLayout.LayoutParams rp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        rp.topMargin = dpToPx(8);
+        rp.bottomMargin = dpToPx(4);
+        row.setLayoutParams(rp);
+
+        TextView tvDia = new TextView(this);
+        tvDia.setText(nombreDia);
+        tvDia.setTextSize(12f);
+        tvDia.setTextColor(esHoy ? Color.parseColor("#0A66FF") : Color.parseColor("#0D1B3E"));
+        tvDia.setTypeface(getResources().getFont(R.font.outfit_bold));
+        row.addView(tvDia);
+
+        if (numCitas > 0) {
+            TextView badge = new TextView(this);
+            badge.setText(numCitas + " cita" + (numCitas > 1 ? "s" : ""));
+            badge.setTextSize(10f);
+            badge.setTextColor(Color.WHITE);
+            badge.setTypeface(getResources().getFont(R.font.outfit_bold));
+            badge.setPadding(dpToPx(8), dpToPx(3), dpToPx(8), dpToPx(3));
+            badge.setBackground(getDrawable(R.drawable.shape_chip_blue));
+            LinearLayout.LayoutParams bp = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            bp.setMarginStart(dpToPx(8));
+            badge.setLayoutParams(bp);
+            row.addView(badge);
+        }
+
+        View linea = new View(this);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, dpToPx(1), 1f);
+        lp.setMarginStart(dpToPx(10));
+        linea.setLayoutParams(lp);
+        linea.setBackgroundColor(Color.parseColor("#DDE6FF"));
+        row.addView(linea);
+        return row;
+    }
+
+    private FrameLayout buildCeldaMes(int dia, int numCitas, boolean esHoy, boolean esSel) {
+        FrameLayout frame = new FrameLayout(this);
+        frame.setPadding(dpToPx(2), dpToPx(2), dpToPx(2), dpToPx(2));
+
+        CardView card = new CardView(this);
+        card.setLayoutParams(new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        card.setRadius(dpToPx(10));
+        card.setCardElevation(esHoy || esSel ? dpToPx(3) : dpToPx(1));
+        card.setCardBackgroundColor(esSel ? Color.parseColor("#0A66FF")
+                : esHoy ? Color.parseColor("#E8F0FF") : Color.WHITE);
+
+        LinearLayout inner = new LinearLayout(this);
+        inner.setOrientation(LinearLayout.VERTICAL);
+        inner.setGravity(Gravity.CENTER);
+        inner.setLayoutParams(new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        card.addView(inner);
+
+        TextView tvDia = new TextView(this);
+        tvDia.setText(String.valueOf(dia));
+        tvDia.setTextSize(13f);
+        tvDia.setTextColor(esSel ? Color.WHITE
+                : esHoy ? Color.parseColor("#0A66FF") : Color.parseColor("#0D1B3E"));
+        tvDia.setTypeface(getResources().getFont(
+                (esHoy || esSel) ? R.font.outfit_bold : R.font.outfit_regular));
+        tvDia.setGravity(Gravity.CENTER);
+        inner.addView(tvDia);
+
+        if (numCitas > 0) {
+            View dot = new View(this);
+            LinearLayout.LayoutParams dp2 = new LinearLayout.LayoutParams(dpToPx(5), dpToPx(5));
+            dp2.gravity = Gravity.CENTER_HORIZONTAL;
+            dp2.topMargin = dpToPx(2);
+            dot.setLayoutParams(dp2);
+            dot.setBackground(getDrawable(R.drawable.shape_dot));
+            dot.getBackground().setTint(esSel ? Color.WHITE : Color.parseColor("#0A66FF"));
+            inner.addView(dot);
+        }
+        frame.addView(card);
+        return frame;
+    }
+
+    private View buildCitaCard(Cita cita, boolean compacto) {
+        CardView card = new CardView(this);
+        LinearLayout.LayoutParams cp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        cp.bottomMargin = dpToPx(compacto ? 6 : 10);
+        card.setLayoutParams(cp);
+        card.setRadius(dpToPx(16));
+        card.setCardElevation(dpToPx(2));
+        card.setCardBackgroundColor(
+                "cancelada".equals(cita.estado) ? Color.parseColor("#FFF5F5") : Color.WHITE);
+
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setGravity(Gravity.CENTER_VERTICAL);
+        row.setPadding(dpToPx(12), dpToPx(12), dpToPx(12), dpToPx(12));
+        card.addView(row);
+
+        // Barra estado
+        View barra = new View(this);
+        LinearLayout.LayoutParams bp = new LinearLayout.LayoutParams(dpToPx(4), LinearLayout.LayoutParams.MATCH_PARENT);
+        bp.setMarginEnd(dpToPx(12));
+        barra.setLayoutParams(bp);
+        barra.setMinimumHeight(dpToPx(40));
+        barra.post(() -> {
+            android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
+            bg.setColor(getEstadoColor(cita.estado));
+            bg.setCornerRadius(dpToPx(4));
+            barra.setBackground(bg);
+        });
+        row.addView(barra);
+
+        // Avatar
+        if (!compacto) {
+            CardView avatar = new CardView(this);
+            LinearLayout.LayoutParams ap = new LinearLayout.LayoutParams(dpToPx(42), dpToPx(42));
+            ap.setMarginEnd(dpToPx(10));
+            avatar.setLayoutParams(ap);
+            avatar.setRadius(dpToPx(13));
+            avatar.setCardElevation(dpToPx(2));
+            avatar.setCardBackgroundColor(Color.parseColor("#0A66FF"));
+            TextView tvI = new TextView(this);
+            tvI.setLayoutParams(new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
+            tvI.setText(cita.inicial());
+            tvI.setTextSize(16f);
+            tvI.setTextColor(Color.WHITE);
+            tvI.setTypeface(getResources().getFont(R.font.outfit_bold));
+            tvI.setGravity(Gravity.CENTER);
+            avatar.addView(tvI);
+            row.addView(avatar);
+        }
+
+        // Texto
+        LinearLayout textBlock = new LinearLayout(this);
+        textBlock.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout.LayoutParams tbp = new LinearLayout.LayoutParams(
+                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+        tbp.setMarginEnd(dpToPx(4));
+        textBlock.setLayoutParams(tbp);
+
+        TextView tvNombre = new TextView(this);
+        tvNombre.setText(cita.cliente);
+        tvNombre.setTextSize(compacto ? 11.5f : 13f);
+        tvNombre.setTextColor(Color.parseColor("#0D1B3E"));
+        tvNombre.setTypeface(getResources().getFont(R.font.outfit_bold));
+        tvNombre.setMaxLines(1);
+        tvNombre.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        textBlock.addView(tvNombre);
+
+        TextView tvServicio = new TextView(this);
+        tvServicio.setText(cita.servicio + (compacto ? "" : " · " + cita.hora));
+        tvServicio.setTextSize(10f);
+        tvServicio.setTextColor(Color.parseColor("#6B7FA3"));
+        tvServicio.setTypeface(getResources().getFont(R.font.outfit_regular));
+        LinearLayout.LayoutParams sp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        sp.topMargin = dpToPx(2);
+        tvServicio.setLayoutParams(sp);
+        textBlock.addView(tvServicio);
+        row.addView(textBlock);
+
+        // Hora + precio
+        LinearLayout rightCol = new LinearLayout(this);
+        rightCol.setOrientation(LinearLayout.VERTICAL);
+        rightCol.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
+        LinearLayout.LayoutParams rcp = new LinearLayout.LayoutParams(dpToPx(52), LinearLayout.LayoutParams.WRAP_CONTENT);
+        rcp.setMarginStart(dpToPx(8));
+        rightCol.setLayoutParams(rcp);
+
+        TextView tvHora = new TextView(this);
+        tvHora.setText(cita.hora);
+        tvHora.setTextSize(13f);
+        tvHora.setTextColor(Color.parseColor("#0A66FF"));
+        tvHora.setTypeface(getResources().getFont(R.font.outfit_bold));
+        tvHora.setGravity(Gravity.END);
+        tvHora.setSingleLine(true);
+        rightCol.addView(tvHora);
+
+        TextView tvPrecio = new TextView(this);
+        tvPrecio.setText(cita.precio);
+        tvPrecio.setTextSize(10f);
+        tvPrecio.setTextColor(Color.parseColor("#6B7FA3"));
+        tvPrecio.setTypeface(getResources().getFont(R.font.outfit_regular));
+        tvPrecio.setGravity(Gravity.END);
+        LinearLayout.LayoutParams pp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        pp.topMargin = dpToPx(2);
+        tvPrecio.setLayoutParams(pp);
+        rightCol.addView(tvPrecio);
+        row.addView(rightCol);
+
+        card.setClickable(true);
+        card.setForeground(getDrawable(android.R.drawable.list_selector_background));
+        card.setOnClickListener(v -> showDetalleCita(cita));
+        return card;
+    }
+
+    private View buildVacioView(String titulo, String subtitulo) {
+        LinearLayout v = new LinearLayout(this);
+        v.setOrientation(LinearLayout.VERTICAL);
+        v.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams vp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        vp.topMargin = dpToPx(40);
+        vp.bottomMargin = dpToPx(40);
+        v.setLayoutParams(vp);
+
+        TextView emoji = new TextView(this);
+        emoji.setText("📅");
+        emoji.setTextSize(42f);
+        emoji.setGravity(Gravity.CENTER);
+        v.addView(emoji);
+
+        TextView tvT = new TextView(this);
+        tvT.setText(titulo);
+        tvT.setTextSize(15f);
+        tvT.setTextColor(Color.parseColor("#0D1B3E"));
+        tvT.setTypeface(getResources().getFont(R.font.outfit_bold));
+        tvT.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams tp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        tp.topMargin = dpToPx(10);
+        tvT.setLayoutParams(tp);
+        v.addView(tvT);
+
+        if (!subtitulo.isEmpty()) {
+            TextView tvS = new TextView(this);
+            tvS.setText(subtitulo);
+            tvS.setTextSize(11f);
+            tvS.setTextColor(Color.parseColor("#6B7FA3"));
+            tvS.setTypeface(getResources().getFont(R.font.outfit_regular));
+            tvS.setGravity(Gravity.CENTER);
+            LinearLayout.LayoutParams spp = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            spp.topMargin = dpToPx(4);
+            tvS.setLayoutParams(spp);
+            v.addView(tvS);
+        }
+        return v;
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    //  SHEET: DETALLE CITA
+    // ════════════════════════════════════════════════════════════════
+    private void showDetalleCita(Cita cita) {
+        BottomSheetDialog sheet = new BottomSheetDialog(
+                this, com.google.android.material.R.style.Theme_Material3_Light_BottomSheetDialog);
+        View view = getLayoutInflater().inflate(R.layout.sheet_detalle_cita, null);
+        sheet.setContentView(view);
+
+        ((TextView) view.findViewById(R.id.tvCitaInicial)).setText(cita.inicial());
+        ((TextView) view.findViewById(R.id.tvCitaCliente)).setText(cita.cliente);
+        ((TextView) view.findViewById(R.id.tvCitaServicio)).setText(cita.servicio);
+        ((TextView) view.findViewById(R.id.tvCitaFechaHora)).setText("📅 " + cita.fecha + " · " + cita.hora + "h");
+        ((TextView) view.findViewById(R.id.tvCitaPrecio)).setText("💰 " + cita.precio);
+        ((TextView) view.findViewById(R.id.tvCitaNotas)).setText(
+                "📝 " + (cita.notas.isEmpty() ? "Sin notas" : cita.notas));
+
+        TextView tvBadge = view.findViewById(R.id.tvCitaEstadoBadge);
+        tvBadge.setText(cita.estado.substring(0, 1).toUpperCase() + cita.estado.substring(1));
+        tvBadge.getBackground().setTint(getEstadoColor(cita.estado));
+
+        view.findViewById(R.id.btnCitaConfirmar).setOnClickListener(v ->
+                cambiarEstado(cita, "confirmada", sheet, "✅ Cita confirmada"));
+
+        view.findViewById(R.id.btnCitaEditar).setOnClickListener(v -> {
+            sheet.dismiss();
+            showNuevaCitaSheet(cita);
+        });
+
+        view.findViewById(R.id.btnCitaCobrar).setOnClickListener(v ->
+                cambiarEstado(cita, "cobrada", sheet, "💰 Cobrado: " + cita.precio));
+
+        view.findViewById(R.id.btnCitaCancelar).setOnClickListener(v ->
+                cambiarEstado(cita, "cancelada", sheet, "❌ Cita cancelada"));
+
+        sheet.show();
+    }
+
+    /** Cambia el estado de una cita en Supabase y actualiza la UI */
+    private void cambiarEstado(Cita cita, String nuevoEstado,
+                               BottomSheetDialog sheet, String msgOk) {
+        if (cita.id == null) {
+            // Cita local (no guardada aún) — solo actualiza en memoria
+            cita.estado = nuevoEstado;
+            sheet.dismiss();
+            renderVista();
+            Toast.makeText(this, msgOk, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        SupabaseRepository.get().cambiarEstadoCita(cita.id, nuevoEstado,
+                new SupabaseRepository.Callback<Void>() {
+                    @Override public void onSuccess(Void data) {
+                        runOnUiThread(() -> {
+                            cita.estado = nuevoEstado;
+                            sheet.dismiss();
+                            renderVista();
+                            Toast.makeText(AgendaActivity.this, msgOk, Toast.LENGTH_SHORT).show();
+                        });
+                    }
+                    @Override public void onError(String e) {
+                        runOnUiThread(() ->
+                                Toast.makeText(AgendaActivity.this,
+                                        "Error: " + e, Toast.LENGTH_SHORT).show());
+                    }
+                });
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    //  SHEET: NUEVA / EDITAR CITA
+    // ════════════════════════════════════════════════════════════════
+    private void showNuevaCitaSheet(Cita citaEditar) {
+        BottomSheetDialog sheet = new BottomSheetDialog(
+                this, com.google.android.material.R.style.Theme_Material3_Light_BottomSheetDialog);
+        View view = getLayoutInflater().inflate(R.layout.sheet_nueva_cita, null);
+        sheet.setContentView(view);
+
+        EditText etCliente = view.findViewById(R.id.etCitaCliente);
+        EditText etPrecio  = view.findViewById(R.id.etCitaPrecio);
+        EditText etNotas   = view.findViewById(R.id.etCitaNotas);
+        TextView tvFecha   = view.findViewById(R.id.tvCitaFecha);
+        TextView tvHora    = view.findViewById(R.id.tvCitaHora);
+        TextView tvTitulo  = view.findViewById(R.id.tvNuevaCitaTitulo);
+        TextView btnGuardar = view.findViewById(R.id.btnGuardarCita);
+
+        final String[] servicioSel = {SERVICIOS[0]};
+        final String[] fechaSelStr = {new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                .format(fechaSeleccionada.getTime())};
+        final String[] horaSelStr  = {"10:00"};
+
+        if (citaEditar != null) {
+            tvTitulo.setText("Editar cita");
+            etCliente.setText(citaEditar.cliente);
+            etPrecio.setText(citaEditar.precio.replace("€", "").trim());
+            etNotas.setText(citaEditar.notas);
+            tvFecha.setText("📅 " + citaEditar.fecha);
+            tvHora.setText("🕐 " + citaEditar.hora);
+            servicioSel[0]  = citaEditar.servicio;
+            fechaSelStr[0]  = citaEditar.fecha;
+            horaSelStr[0]   = citaEditar.hora;
+        } else {
+            tvFecha.setText("📅 " + fechaSelStr[0]);
+            tvHora.setText("🕐 " + horaSelStr[0]);
+        }
+
+        // Chips servicio
+        LinearLayout layoutServicios = view.findViewById(R.id.layoutServicios);
+        for (String serv : SERVICIOS) {
+            TextView chip = new TextView(this);
+            chip.setText(serv);
+            chip.setTextSize(11f);
+            chip.setTypeface(getResources().getFont(R.font.outfit_bold));
+            chip.setPadding(dpToPx(14), dpToPx(8), dpToPx(14), dpToPx(8));
+            LinearLayout.LayoutParams chp = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            chp.setMarginEnd(dpToPx(6));
+            chip.setLayoutParams(chp);
+            boolean activo = serv.equals(servicioSel[0]);
+            chip.setBackground(getDrawable(activo
+                    ? R.drawable.shape_filter_active : R.drawable.shape_filter_inactive));
+            chip.setTextColor(activo ? Color.WHITE : Color.parseColor("#6B7FA3"));
+            chip.setOnClickListener(v -> {
+                servicioSel[0] = serv;
+                for (int i = 0; i < layoutServicios.getChildCount(); i++) {
+                    TextView c = (TextView) layoutServicios.getChildAt(i);
+                    boolean sel = c.getText().toString().equals(serv);
+                    c.setBackground(getDrawable(sel
+                            ? R.drawable.shape_filter_active : R.drawable.shape_filter_inactive));
+                    c.setTextColor(sel ? Color.WHITE : Color.parseColor("#6B7FA3"));
+                }
+            });
+            layoutServicios.addView(chip);
+        }
+
+        view.findViewById(R.id.cardFecha).setOnClickListener(v ->
+                showCustomDatePicker(tvFecha.getText().toString(), result -> {
+                    fechaSelStr[0] = result;
+                    tvFecha.setText("📅 " + result);
+                }));
+
+        view.findViewById(R.id.cardHora).setOnClickListener(v ->
+                showCustomTimePicker(tvHora.getText().toString(), result -> {
+                    horaSelStr[0] = result;
+                    tvHora.setText("🕐 " + result);
+                }));
+
+        btnGuardar.setOnClickListener(v -> {
+            String nombre = etCliente.getText().toString().trim();
+            if (nombre.isEmpty()) { etCliente.setError("Campo obligatorio"); return; }
+
+            String precioStr = etPrecio.getText().toString().trim();
+            double precioNum = 0;
+            try { precioNum = Double.parseDouble(precioStr.replace("€", "").replace(",", ".")); }
+            catch (Exception ignored) {}
+
+            String[] partes = fechaSelStr[0].split("/");
+            int dia  = Integer.parseInt(partes[0]);
+            int mes  = Integer.parseInt(partes[1]);
+            int anio = Integer.parseInt(partes[2]);
+            String fechaBD = String.format("%04d-%02d-%02d", anio, mes, dia);
+
+            btnGuardar.setEnabled(false);
+            btnGuardar.setText("Guardando...");
+
+            if (citaEditar != null && citaEditar.id != null) {
+                // ── EDITAR en Supabase ────────────────────────────────
+                Map<String, Object> body = new HashMap<>();
+                body.put("cliente_nombre",  nombre);
+                body.put("servicio_nombre", servicioSel[0]);
+                body.put("fecha",           fechaBD);
+                body.put("hora",            horaSelStr[0]);
+                body.put("precio",          precioNum);
+                body.put("notas",           etNotas.getText().toString().trim());
+
+                SupabaseRepository.get().actualizarCita(citaEditar.id, body,
+                        new SupabaseRepository.Callback<Void>() {
+                            @Override public void onSuccess(Void data) {
+                                runOnUiThread(() -> {
+                                    citaEditar.cliente   = nombre;
+                                    citaEditar.servicio  = servicioSel[0];
+                                    citaEditar.fecha     = fechaSelStr[0];
+                                    citaEditar.fechaBD   = fechaBD;
+                                    citaEditar.hora      = horaSelStr[0];
+                                    citaEditar.precio    = precioStr.isEmpty() ? "0€" : precioStr + "€";
+                                    citaEditar.notas     = etNotas.getText().toString().trim();
+                                    citaEditar.diaMes    = dia;
+                                    citaEditar.mes       = mes;
+                                    citaEditar.anio      = anio;
+                                    sheet.dismiss();
+                                    ocultarTeclado();
+                                    renderVista();
+                                    Toast.makeText(AgendaActivity.this,
+                                            "✅ Cita actualizada", Toast.LENGTH_SHORT).show();
+                                });
+                            }
+                            @Override public void onError(String e) {
+                                runOnUiThread(() -> {
+                                    btnGuardar.setEnabled(true);
+                                    btnGuardar.setText("Guardar");
+                                    Toast.makeText(AgendaActivity.this,
+                                            "Error: " + e, Toast.LENGTH_SHORT).show();
+                                });
+                            }
+                        });
+            } else {
+                // ── CREAR en Supabase ─────────────────────────────────
+                final double precioFinal = precioNum;
+                SupabaseRepository.get().crearCita(
+                        null, nombre, null, servicioSel[0],
+                        fechaBD, horaSelStr[0], precioFinal,
+                        etNotas.getText().toString().trim(),
+                        new SupabaseRepository.Callback<CitaModel>() {
+                            @Override public void onSuccess(CitaModel model) {
+                                runOnUiThread(() -> {
+                                    todasLasCitas.add(new Cita(model));
+                                    sheet.dismiss();
+                                    ocultarTeclado();
+                                    renderVista();
+                                    Toast.makeText(AgendaActivity.this,
+                                            "✅ Cita añadida", Toast.LENGTH_SHORT).show();
+                                });
+                            }
+                            @Override public void onError(String e) {
+                                runOnUiThread(() -> {
+                                    btnGuardar.setEnabled(true);
+                                    btnGuardar.setText("Guardar");
+                                    Toast.makeText(AgendaActivity.this,
+                                            "Error: " + e, Toast.LENGTH_SHORT).show();
+                                });
+                            }
+                        });
+            }
+        });
+        sheet.show();
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    //  FILTRO SERVICIO
+    // ════════════════════════════════════════════════════════════════
+    private void showFiltroServicio() {
+        BottomSheetDialog sheet = new BottomSheetDialog(
+                this, com.google.android.material.R.style.Theme_Material3_Light_BottomSheetDialog);
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setBackground(getDrawable(R.drawable.shape_sheet_bg));
+        layout.setPadding(dpToPx(16), dpToPx(20), dpToPx(16), dpToPx(30));
+
+        TextView titulo = new TextView(this);
+        titulo.setText("Filtrar por servicio");
+        titulo.setTextSize(16f);
+        titulo.setTextColor(Color.parseColor("#0D1B3E"));
+        titulo.setTypeface(getResources().getFont(R.font.outfit_bold));
+        titulo.setPadding(dpToPx(4), 0, 0, dpToPx(16));
+        layout.addView(titulo);
+
+        List<String> opciones = new ArrayList<>();
+        opciones.add("Todos");
+        opciones.addAll(Arrays.asList(SERVICIOS));
+
+        for (String op : opciones) {
+            TextView item = new TextView(this);
+            item.setText((op.equals(filtroServicio) ? "✓  " : "     ") + op);
+            item.setTextSize(13f);
+            item.setTextColor(op.equals(filtroServicio)
+                    ? Color.parseColor("#0A66FF") : Color.parseColor("#0D1B3E"));
+            item.setTypeface(getResources().getFont(
+                    op.equals(filtroServicio) ? R.font.outfit_bold : R.font.outfit_regular));
+            item.setPadding(dpToPx(8), dpToPx(14), dpToPx(8), dpToPx(14));
+            item.setOnClickListener(v -> {
+                filtroServicio = op;
+                sheet.dismiss();
+                renderVista();
+            });
+            layout.addView(item);
+        }
+        sheet.setContentView(layout);
+        sheet.show();
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    //  PICKERS (sin cambios respecto al original)
+    // ════════════════════════════════════════════════════════════════
+    private void mostrarDatePicker() {
+        String fechaActual = String.format("%02d/%02d/%04d",
+                fechaSeleccionada.get(Calendar.DAY_OF_MONTH),
+                fechaSeleccionada.get(Calendar.MONTH) + 1,
+                fechaSeleccionada.get(Calendar.YEAR));
+        showCustomDatePicker(fechaActual, result -> {
+            try {
+                String[] p = result.split("/");
+                fechaSeleccionada.set(Integer.parseInt(p[2]),
+                        Integer.parseInt(p[1]) - 1, Integer.parseInt(p[0]));
+                cargarCitas();
+            } catch (Exception ignored) {}
+        });
+    }
+
+    private void showCustomTimePicker(String horaActual, KauCallback onResult) {
+        int initH = 10, initM = 0;
+        try {
+            StringBuilder sb = new StringBuilder();
+            for (char ch : horaActual.toCharArray())
+                if ((ch >= '0' && ch <= '9') || ch == ':') sb.append(ch);
+            String[] p = sb.toString().split(":");
+            if (p.length >= 2) {
+                initH = Math.max(0, Math.min(23, Integer.parseInt(p[0])));
+                initM = Math.max(0, Math.min(59, Integer.parseInt(p[1])));
+            }
+        } catch (Exception ignored) {}
+
+        BottomSheetDialog sheet = new BottomSheetDialog(
+                this, com.google.android.material.R.style.Theme_Material3_Light_BottomSheetDialog);
+        LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setBackgroundColor(Color.WHITE);
+        root.setPadding(dpToPx(24), dpToPx(16), dpToPx(24), dpToPx(36));
+
+        // Handle
+        LinearLayout hw = new LinearLayout(this);
+        hw.setGravity(Gravity.CENTER_HORIZONTAL);
+        LinearLayout.LayoutParams hwP = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        hwP.bottomMargin = dpToPx(20);
+        hw.setLayoutParams(hwP);
+        View handle = new View(this);
+        android.graphics.drawable.GradientDrawable hbg = new android.graphics.drawable.GradientDrawable();
+        hbg.setColor(Color.parseColor("#DDE6FF"));
+        hbg.setCornerRadius(dpToPx(4));
+        handle.setBackground(hbg);
+        handle.setLayoutParams(new LinearLayout.LayoutParams(dpToPx(40), dpToPx(4)));
+        hw.addView(handle);
+        root.addView(hw);
+
+        TextView tvTitle = new TextView(this);
+        tvTitle.setText("Seleccionar hora");
+        tvTitle.setTextSize(18f);
+        tvTitle.setTextColor(Color.parseColor("#0D1B3E"));
+        tvTitle.setTypeface(getResources().getFont(R.font.outfit_bold));
+        tvTitle.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams titleP = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        titleP.bottomMargin = dpToPx(24);
+        tvTitle.setLayoutParams(titleP);
+        root.addView(tvTitle);
+
+        final int[] selH = {initH}, selM = {initM};
+        TextView tvDisplay = new TextView(this);
+        tvDisplay.setText(String.format("%02d:%02d", selH[0], selM[0]));
+        tvDisplay.setTextSize(56f);
+        tvDisplay.setTextColor(Color.parseColor("#0A66FF"));
+        tvDisplay.setTypeface(getResources().getFont(R.font.outfit_bold));
+        tvDisplay.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams dispP = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        dispP.bottomMargin = dpToPx(32);
+        tvDisplay.setLayoutParams(dispP);
+        root.addView(tvDisplay);
+
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams rowP = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        rowP.bottomMargin = dpToPx(32);
+        row.setLayoutParams(rowP);
+
+        // Horas
+        LinearLayout horaBlock = new LinearLayout(this);
+        horaBlock.setOrientation(LinearLayout.VERTICAL);
+        horaBlock.setGravity(Gravity.CENTER);
+        horaBlock.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+        TextView lblH = new TextView(this);
+        lblH.setText("Horas");
+        lblH.setTextSize(11f);
+        lblH.setTextColor(Color.parseColor("#6B7FA3"));
+        lblH.setTypeface(getResources().getFont(R.font.outfit_bold));
+        lblH.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams lblHP = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        lblHP.bottomMargin = dpToPx(10);
+        lblH.setLayoutParams(lblHP);
+        horaBlock.addView(lblH);
+        android.widget.NumberPicker npH = new android.widget.NumberPicker(this);
+        npH.setMinValue(0); npH.setMaxValue(23); npH.setValue(selH[0]);
+        npH.setWrapSelectorWheel(true);
+        String[] horasVals = new String[24];
+        for (int i = 0; i < 24; i++) horasVals[i] = String.format("%02d", i);
+        npH.setDisplayedValues(horasVals);
+        npH.setOnValueChangedListener((p, o, n) -> { selH[0] = n; tvDisplay.setText(String.format("%02d:%02d", selH[0], selM[0])); });
+        horaBlock.addView(npH);
+        row.addView(horaBlock);
+
+        TextView sep = new TextView(this);
+        sep.setText(":");
+        sep.setTextSize(40f);
+        sep.setTextColor(Color.parseColor("#0A66FF"));
+        sep.setTypeface(getResources().getFont(R.font.outfit_bold));
+        sep.setGravity(Gravity.CENTER);
+        sep.setPadding(dpToPx(8), dpToPx(24), dpToPx(8), 0);
+        row.addView(sep);
+
+        // Minutos
+        LinearLayout minBlock = new LinearLayout(this);
+        minBlock.setOrientation(LinearLayout.VERTICAL);
+        minBlock.setGravity(Gravity.CENTER);
+        minBlock.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+        TextView lblM = new TextView(this);
+        lblM.setText("Minutos");
+        lblM.setTextSize(11f);
+        lblM.setTextColor(Color.parseColor("#6B7FA3"));
+        lblM.setTypeface(getResources().getFont(R.font.outfit_bold));
+        lblM.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams lblMP = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        lblMP.bottomMargin = dpToPx(10);
+        lblM.setLayoutParams(lblMP);
+        minBlock.addView(lblM);
+        android.widget.NumberPicker npM = new android.widget.NumberPicker(this);
+        npM.setMinValue(0); npM.setMaxValue(11); npM.setValue(selM[0] / 5);
+        npM.setWrapSelectorWheel(true);
+        String[] minVals = new String[12];
+        for (int i = 0; i < 12; i++) minVals[i] = String.format("%02d", i * 5);
+        npM.setDisplayedValues(minVals);
+        npM.setOnValueChangedListener((p, o, n) -> { selM[0] = n * 5; tvDisplay.setText(String.format("%02d:%02d", selH[0], selM[0])); });
+        minBlock.addView(npM);
+        row.addView(minBlock);
+        root.addView(row);
+
+        TextView btnOk = new TextView(this);
+        btnOk.setText("Confirmar");
+        btnOk.setTextSize(15f);
+        btnOk.setTextColor(Color.WHITE);
+        btnOk.setTypeface(getResources().getFont(R.font.outfit_bold));
+        btnOk.setGravity(Gravity.CENTER);
+        btnOk.setPadding(0, dpToPx(16), 0, dpToPx(16));
+        android.graphics.drawable.GradientDrawable btnBg = new android.graphics.drawable.GradientDrawable();
+        btnBg.setColor(Color.parseColor("#0A66FF"));
+        btnBg.setCornerRadius(dpToPx(16));
+        btnOk.setBackground(btnBg);
+        btnOk.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        btnOk.setOnClickListener(v -> {
+            npH.clearFocus(); npM.clearFocus();
+            sheet.dismiss();
+            onResult.call(String.format("%02d:%02d", selH[0], selM[0]));
+        });
+        root.addView(btnOk);
+        sheet.setContentView(root);
+        sheet.show();
+    }
+
+    private void showCustomDatePicker(String fechaActual, KauCallback onResult) {
+        BottomSheetDialog sheet = new BottomSheetDialog(
+                this, com.google.android.material.R.style.Theme_Material3_Light_BottomSheetDialog);
+        Calendar cal = Calendar.getInstance();
+        try {
+            String clean = fechaActual.replaceAll("[^0-9/]", "").trim();
+            String[] parts = clean.split("/");
+            cal.set(Integer.parseInt(parts[2]), Integer.parseInt(parts[1]) - 1, Integer.parseInt(parts[0]));
+        } catch (Exception ignored) {}
+
+        final int[] selDay = {cal.get(Calendar.DAY_OF_MONTH)};
+        final int[] selMonth = {cal.get(Calendar.MONTH)};
+        final int[] selYear  = {cal.get(Calendar.YEAR)};
+
+        LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setBackgroundColor(Color.WHITE);
+        root.setPadding(dpToPx(20), dpToPx(16), dpToPx(20), dpToPx(32));
+
+        View handle = new View(this);
+        LinearLayout.LayoutParams hp = new LinearLayout.LayoutParams(dpToPx(40), dpToPx(4));
+        hp.gravity = Gravity.CENTER_HORIZONTAL;
+        hp.bottomMargin = dpToPx(20);
+        android.graphics.drawable.GradientDrawable hbg = new android.graphics.drawable.GradientDrawable();
+        hbg.setColor(Color.parseColor("#DDE6FF"));
+        hbg.setCornerRadius(dpToPx(4));
+        handle.setBackground(hbg);
+        handle.setLayoutParams(hp);
+        root.addView(handle);
+
+        TextView tvTitle = new TextView(this);
+        tvTitle.setText("¿Qué día?");
+        tvTitle.setTextSize(18f);
+        tvTitle.setTextColor(Color.parseColor("#0D1B3E"));
+        tvTitle.setTypeface(getResources().getFont(R.font.outfit_bold));
+        tvTitle.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams titleP = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        titleP.bottomMargin = dpToPx(20);
+        tvTitle.setLayoutParams(titleP);
+        root.addView(tvTitle);
+
+        LinearLayout calContainer = new LinearLayout(this);
+        calContainer.setOrientation(LinearLayout.VERTICAL);
+        root.addView(calContainer);
+
+        TextView btnOk = new TextView(this);
+        btnOk.setText("Confirmar");
+        btnOk.setTextSize(15f);
+        btnOk.setTextColor(Color.WHITE);
+        btnOk.setTypeface(getResources().getFont(R.font.outfit_bold));
+        btnOk.setGravity(Gravity.CENTER);
+        btnOk.setPadding(0, dpToPx(16), 0, dpToPx(16));
+        android.graphics.drawable.GradientDrawable btnBg = new android.graphics.drawable.GradientDrawable();
+        btnBg.setColor(Color.parseColor("#0A66FF"));
+        btnBg.setCornerRadius(dpToPx(16));
+        btnOk.setBackground(btnBg);
+        LinearLayout.LayoutParams bop = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        bop.topMargin = dpToPx(20);
+        btnOk.setLayoutParams(bop);
+        btnOk.setOnClickListener(v -> {
+            sheet.dismiss();
+            onResult.call(String.format("%02d/%02d/%04d", selDay[0], selMonth[0] + 1, selYear[0]));
+        });
+
+        buildCalendarView(calContainer, selDay, selMonth, selYear);
+        root.addView(btnOk);
+        sheet.setContentView(root);
+        sheet.show();
+    }
+
+    private static final String[] MESES    = {"Enero","Febrero","Marzo","Abril","Mayo","Junio",
+            "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"};
+    private static final String[] DIAS_SEM = {"L","M","X","J","V","S","D"};
+
+    private void buildCalendarView(LinearLayout container, int[] selDay, int[] selMonth, int[] selYear) {
+        container.removeAllViews();
+        LinearLayout header = new LinearLayout(this);
+        header.setOrientation(LinearLayout.HORIZONTAL);
+        header.setGravity(Gravity.CENTER_VERTICAL);
+        LinearLayout.LayoutParams hdrP = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        hdrP.bottomMargin = dpToPx(16);
+        header.setLayoutParams(hdrP);
+
+        TextView btnPrev = new TextView(this);
+        btnPrev.setText("‹"); btnPrev.setTextSize(22f);
+        btnPrev.setTextColor(Color.parseColor("#0A66FF"));
+        btnPrev.setTypeface(getResources().getFont(R.font.outfit_bold));
+        btnPrev.setGravity(Gravity.CENTER);
+        btnPrev.setPadding(dpToPx(14), dpToPx(8), dpToPx(14), dpToPx(8));
+        android.graphics.drawable.GradientDrawable prevBg = new android.graphics.drawable.GradientDrawable();
+        prevBg.setColor(Color.parseColor("#F0F5FF")); prevBg.setCornerRadius(dpToPx(12));
+        btnPrev.setBackground(prevBg);
+        header.addView(btnPrev);
+
+        TextView tvMesAnio = new TextView(this);
+        tvMesAnio.setText(MESES[selMonth[0]] + " " + selYear[0]);
+        tvMesAnio.setTextSize(16f); tvMesAnio.setTextColor(Color.parseColor("#0D1B3E"));
+        tvMesAnio.setTypeface(getResources().getFont(R.font.outfit_bold));
+        tvMesAnio.setGravity(Gravity.CENTER);
+        tvMesAnio.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+        header.addView(tvMesAnio);
+
+        TextView btnNext = new TextView(this);
+        btnNext.setText("›"); btnNext.setTextSize(22f);
+        btnNext.setTextColor(Color.parseColor("#0A66FF"));
+        btnNext.setTypeface(getResources().getFont(R.font.outfit_bold));
+        btnNext.setGravity(Gravity.CENTER);
+        btnNext.setPadding(dpToPx(14), dpToPx(8), dpToPx(14), dpToPx(8));
+        android.graphics.drawable.GradientDrawable nextBg = new android.graphics.drawable.GradientDrawable();
+        nextBg.setColor(Color.parseColor("#F0F5FF")); nextBg.setCornerRadius(dpToPx(12));
+        btnNext.setBackground(nextBg);
+        header.addView(btnNext);
+        container.addView(header);
+
+        LinearLayout semRow = new LinearLayout(this);
+        semRow.setOrientation(LinearLayout.HORIZONTAL);
+        LinearLayout.LayoutParams srP = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        srP.bottomMargin = dpToPx(8); semRow.setLayoutParams(srP);
+        for (String d : DIAS_SEM) {
+            TextView tv = new TextView(this);
+            tv.setText(d); tv.setTextSize(11f);
+            tv.setTextColor(Color.parseColor("#6B7FA3"));
+            tv.setTypeface(getResources().getFont(R.font.outfit_bold));
+            tv.setGravity(Gravity.CENTER);
+            tv.setLayoutParams(new LinearLayout.LayoutParams(0, dpToPx(32), 1f));
+            semRow.addView(tv);
+        }
+        container.addView(semRow);
+
+        Calendar cal = Calendar.getInstance();
+        cal.set(selYear[0], selMonth[0], 1);
+        int primerDia = cal.get(Calendar.DAY_OF_WEEK);
+        int offset    = (primerDia == Calendar.SUNDAY) ? 6 : primerDia - 2;
+        int diasEnMes = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
+        Calendar hoy  = Calendar.getInstance();
+
+        int filas = (int) Math.ceil((offset + diasEnMes) / 7.0);
+        for (int f = 0; f < filas; f++) {
+            LinearLayout row = new LinearLayout(this);
+            row.setOrientation(LinearLayout.HORIZONTAL);
+            LinearLayout.LayoutParams rp = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            rp.bottomMargin = dpToPx(4); row.setLayoutParams(rp);
+            for (int c = 0; c < 7; c++) {
+                int pos = f * 7 + c;
+                int dia = pos - offset + 1;
+                if (pos < offset || dia > diasEnMes) {
+                    View empty = new View(this);
+                    empty.setLayoutParams(new LinearLayout.LayoutParams(0, dpToPx(40), 1f));
+                    row.addView(empty);
+                    continue;
+                }
+                final int diaVal = dia;
+                boolean esSel = (diaVal == selDay[0]);
+                boolean esHoy = (diaVal == hoy.get(Calendar.DAY_OF_MONTH)
+                        && selMonth[0] == hoy.get(Calendar.MONTH) && selYear[0] == hoy.get(Calendar.YEAR));
+                LinearLayout cell = new LinearLayout(this);
+                cell.setGravity(Gravity.CENTER);
+                cell.setLayoutParams(new LinearLayout.LayoutParams(0, dpToPx(40), 1f));
+                android.graphics.drawable.GradientDrawable cellBg = new android.graphics.drawable.GradientDrawable();
+                cellBg.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+                cellBg.setColor(esSel ? Color.parseColor("#0A66FF")
+                        : esHoy ? Color.parseColor("#E8F0FF") : Color.TRANSPARENT);
+                cell.setBackground(cellBg);
+                TextView tvDia = new TextView(this);
+                tvDia.setText(String.valueOf(diaVal)); tvDia.setTextSize(13f);
+                tvDia.setTextColor(esSel ? Color.WHITE
+                        : esHoy ? Color.parseColor("#0A66FF") : Color.parseColor("#0D1B3E"));
+                tvDia.setTypeface(getResources().getFont(
+                        (esSel || esHoy) ? R.font.outfit_bold : R.font.outfit_regular));
+                tvDia.setGravity(Gravity.CENTER);
+                cell.addView(tvDia);
+                cell.setOnClickListener(v -> { selDay[0] = diaVal; buildCalendarView(container, selDay, selMonth, selYear); });
+                row.addView(cell);
+            }
+            container.addView(row);
+        }
+
+        btnPrev.setOnClickListener(v -> {
+            selMonth[0]--; if (selMonth[0] < 0) { selMonth[0] = 11; selYear[0]--; }
+            selDay[0] = 1; buildCalendarView(container, selDay, selMonth, selYear);
+        });
+        btnNext.setOnClickListener(v -> {
+            selMonth[0]++; if (selMonth[0] > 11) { selMonth[0] = 0; selYear[0]++; }
+            selDay[0] = 1; buildCalendarView(container, selDay, selMonth, selYear);
+        });
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    //  SETUP BOTONES Y NAV
+    // ════════════════════════════════════════════════════════════════
+    private void setupBotones() {
+        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
+        findViewById(R.id.btnAddCita).setOnClickListener(v -> showNuevaCitaSheet(null));
+        findViewById(R.id.btnFiltroServicio).setOnClickListener(v -> showFiltroServicio());
+    }
+
+    private void setupBottomNav() {
+        NavHelper.setup(this, "agenda");
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    //  HELPERS
+    // ════════════════════════════════════════════════════════════════
+
+    /** Necesitamos este método en el repo — añade el wrapper aquí */
+    // SupabaseRepository necesita actualizarCita con Map → añadimos el método:
+    // (ver nota al final del archivo)
+
+    private int getEstadoColor(String estado) {
+        switch (estado) {
+            case "confirmada": return Color.parseColor("#12B76A");
+            case "cancelada":  return Color.parseColor("#EF4444");
+            case "cobrada":    return Color.parseColor("#0A66FF");
+            default:           return Color.parseColor("#F59E0B");
+        }
+    }
+
+    /** yyyy-MM-dd */
+    private String fmt(Calendar cal) {
+        return String.format(Locale.getDefault(), "%04d-%02d-%02d",
+                cal.get(Calendar.YEAR),
+                cal.get(Calendar.MONTH) + 1,
+                cal.get(Calendar.DAY_OF_MONTH));
+    }
+
+    private int dpToPx(int dp) {
+        return Math.round(dp * getResources().getDisplayMetrics().density);
+    }
+
+    private void ocultarTeclado() {
+        View focus = getCurrentFocus();
+        if (focus != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(focus.getWindowToken(), 0);
+        }
+    }
+}

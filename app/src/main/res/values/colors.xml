@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ── Fondo principal ── -->
+    <color name="bg_main">#F5F8FF</color>
+
+    <!-- ── Splash ── -->
+    <color name="splash_bg">#FFFFFF</color>
+
+    <!-- ── Azul principal ── -->
+    <color name="accent_blue">#0A66FF</color>
+    <color name="accent_blue_light">#3D85FF</color>
+    <color name="blue_pale">#E8F0FF</color>
+    <color name="blue_pale2">#F0F5FF</color>
+
+    <!-- ── Tarjeta logo (splash) ── -->
+    <color name="logo_card_bg">#00000000</color>
+
+    <!-- ── Círculo decorativo splash ── -->
+    <color name="accent_green">#0A66FF</color>
+
+    <!-- ── Textos ── -->
+    <color name="text_primary">#0D1B3E</color>
+    <color name="text_muted">#6B7FA3</color>
+    <color name="text_on_blue">#FFFFFF</color>
+
+    <!-- ── Blanco ── -->
+    <color name="white">#FFFFFF</color>
+
+    <!-- ── Bordes ── -->
+    <color name="border">#DDE6FF</color>
+
+    <!-- ── Estados ── -->
+    <color name="color_ok">#12B76A</color>
+    <color name="color_warn">#F59E0B</color>
+    <color name="color_bad">#EF4444</color>
+
+    <!-- ── Bottom nav ── -->
+    <color name="nav_active">#FFFFFF</color>
+    <color name="nav_inactive">#6B7FA3</color>
+
+</resources>

@@ -1,0 +1,434 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_main">
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollClientes"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingBottom="90dp"
+        android:clipToPadding="false">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- ── TOPBAR ── -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="14dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="@color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="16dp"
+                    android:gravity="center_vertical">
+
+                    <!-- Botón atrás -->
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/btnBack"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        app:cardCornerRadius="14dp"
+                        app:cardElevation="0dp"
+                        app:cardBackgroundColor="@color/blue_pale"
+                        android:layout_marginEnd="12dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:text="←"
+                            android:textSize="20sp"
+                            android:textColor="@color/accent_blue"
+                            android:fontFamily="@font/outfit_bold"
+                            android:gravity="center"/>
+
+                    </androidx.cardview.widget.CardView>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Clientes"
+                            android:textSize="17sp"
+                            android:textColor="@color/text_primary"
+                            android:fontFamily="@font/outfit_bold"/>
+
+                        <TextView
+                            android:id="@+id/tvClientesSubtitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0 registrados"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_muted"
+                            android:fontFamily="@font/outfit_regular"
+                            android:layout_marginTop="1dp"/>
+
+                    </LinearLayout>
+
+                    <!-- Botón añadir -->
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/btnAddCliente"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        app:cardCornerRadius="14dp"
+                        app:cardElevation="0dp"
+                        app:cardBackgroundColor="@color/accent_blue">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:text="＋"
+                            android:textSize="20sp"
+                            android:textColor="@color/white"
+                            android:fontFamily="@font/outfit_bold"
+                            android:gravity="center"/>
+
+                    </androidx.cardview.widget.CardView>
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- ── BUSCADOR ── -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🔍"
+                        android:textSize="16sp"
+                        android:layout_marginEnd="8dp"/>
+
+                    <EditText
+                        android:id="@+id/etBuscar"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="Buscar por nombre, teléfono o email…"
+                        android:textSize="12sp"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="@color/text_muted"
+                        android:fontFamily="@font/outfit_regular"
+                        android:background="@null"
+                        android:paddingTop="14dp"
+                        android:paddingBottom="14dp"
+                        android:inputType="text"
+                        android:imeOptions="actionSearch"
+                        android:maxLines="1"/>
+
+                    <TextView
+                        android:id="@+id/btnLimpiarBusqueda"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="✕"
+                        android:textSize="14sp"
+                        android:textColor="@color/text_muted"
+                        android:padding="6dp"
+                        android:visibility="gone"/>
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- ── FILTROS ── -->
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="14dp"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/filtroTodos"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Todos"
+                        android:textSize="12sp"
+                        android:fontFamily="@font/outfit_bold"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="8dp"
+                        android:layout_marginEnd="8dp"
+                        android:background="@drawable/shape_filter_active"
+                        android:textColor="@color/white"/>
+
+                    <TextView
+                        android:id="@+id/filtroActivos"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Activos"
+                        android:textSize="12sp"
+                        android:fontFamily="@font/outfit_bold"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="8dp"
+                        android:layout_marginEnd="8dp"
+                        android:background="@drawable/shape_filter_inactive"
+                        android:textColor="@color/text_muted"/>
+
+                    <TextView
+                        android:id="@+id/filtroDeuda"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Con deuda"
+                        android:textSize="12sp"
+                        android:fontFamily="@font/outfit_bold"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="8dp"
+                        android:layout_marginEnd="8dp"
+                        android:background="@drawable/shape_filter_inactive"
+                        android:textColor="@color/text_muted"/>
+
+                    <TextView
+                        android:id="@+id/filtroInactivos"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Inactivos"
+                        android:textSize="12sp"
+                        android:fontFamily="@font/outfit_bold"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="8dp"
+                        android:background="@drawable/shape_filter_inactive"
+                        android:textColor="@color/text_muted"/>
+
+                </LinearLayout>
+            </HorizontalScrollView>
+
+            <!-- ── LISTA DE CLIENTES ── -->
+            <LinearLayout
+                android:id="@+id/listaClientes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"/>
+
+            <!-- ── ESTADO VACÍO ── -->
+            <LinearLayout
+                android:id="@+id/layoutVacioClientes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:paddingTop="48dp"
+                android:paddingBottom="48dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="👥"
+                    android:textSize="48sp"
+                    android:gravity="center"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Sin resultados"
+                    android:textSize="16sp"
+                    android:textColor="@color/text_primary"
+                    android:fontFamily="@font/outfit_bold"
+                    android:gravity="center"
+                    android:layout_marginTop="12dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Prueba con otro filtro o búsqueda"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_muted"
+                    android:fontFamily="@font/outfit_regular"
+                    android:gravity="center"
+                    android:layout_marginTop="4dp"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- ── BOTTOM NAV (Inicio · Clientes · [COBROS] · Agenda · Ajustes) ── -->
+    <!-- ══ BOTTOM NAV: Inicio · Clientes · [💪Gimnasio] · Agenda · Cobros ══ -->
+    <LinearLayout
+        android:id="@+id/bottomNavCustom"
+        android:layout_width="match_parent"
+        android:layout_height="74dp"
+        android:layout_gravity="bottom"
+        android:background="@color/white"
+        android:elevation="20dp"
+        android:orientation="horizontal"
+        android:paddingHorizontal="4dp"
+        android:paddingTop="6dp"
+        android:paddingBottom="8dp">
+
+        <!-- INICIO -->
+        <LinearLayout
+            android:id="@+id/nav_home"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:paddingVertical="4dp">
+            <TextView
+                android:id="@+id/navIconHome"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🏠"
+                android:textSize="17sp"
+                android:gravity="center"/>
+            <TextView
+                android:id="@+id/navLabelHome"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Inicio"
+                android:textSize="9sp"
+                android:textColor="@color/text_muted"
+                android:gravity="center"/>
+        </LinearLayout>
+
+        <!-- CLIENTES -->
+        <LinearLayout
+            android:id="@+id/nav_clientes"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:paddingVertical="4dp">
+            <TextView
+                android:id="@+id/navIconClientes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="👥"
+                android:textSize="17sp"
+                android:gravity="center"/>
+            <TextView
+                android:id="@+id/navLabelClientes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Clientes"
+                android:textSize="9sp"
+                android:textColor="@color/text_muted"
+                android:gravity="center"/>
+        </LinearLayout>
+        <!-- GIMNASIO -->
+        <LinearLayout
+            android:id="@+id/nav_gimnasio"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:paddingVertical="4dp">
+            <TextView
+                android:id="@+id/navIconGimnasio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="💪"
+                android:textSize="17sp"
+                android:gravity="center"/>
+            <TextView
+                android:id="@+id/navLabelGimnasio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Gimnasio"
+                android:textSize="9sp"
+                android:textColor="@color/accent_blue"
+                android:gravity="center"/>
+        </LinearLayout>
+
+        <!-- AGENDA -->
+        <LinearLayout
+            android:id="@+id/nav_agenda"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:paddingVertical="4dp">
+            <TextView
+                android:id="@+id/navIconAgenda"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📅"
+                android:textSize="17sp"
+                android:gravity="center"/>
+            <TextView
+                android:id="@+id/navLabelAgenda"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Agenda"
+                android:textSize="9sp"
+                android:textColor="@color/text_muted"
+                android:gravity="center"/>
+        </LinearLayout>
+
+        <!-- COBROS -->
+        <LinearLayout
+            android:id="@+id/nav_cobros"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:paddingVertical="4dp">
+            <TextView
+                android:id="@+id/navIconCobros"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="💰"
+                android:textSize="17sp"
+                android:gravity="center"/>
+            <TextView
+                android:id="@+id/navLabelCobros"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cobros"
+                android:textSize="9sp"
+                android:textColor="@color/text_muted"
+                android:gravity="center"/>
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

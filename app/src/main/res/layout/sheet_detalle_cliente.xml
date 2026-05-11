@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/shape_sheet_bg">
+
+    <!-- Handle -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="4dp"
+        android:background="@drawable/shape_handle"/>
+
+    <!-- Cabecera cliente -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="14dp"
+        android:paddingBottom="14dp">
+
+        <!-- Avatar inicial -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="3dp"
+            app:cardBackgroundColor="@color/accent_blue"
+            android:layout_marginEnd="14dp">
+
+            <TextView
+                android:id="@+id/tvDetalleInicial"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="L"
+                android:textSize="22sp"
+                android:textColor="@color/white"
+                android:fontFamily="@font/outfit_bold"
+                android:gravity="center"/>
+
+        </androidx.cardview.widget.CardView>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvDetalleNombre"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Lucía Martín"
+                android:textSize="17sp"
+                android:textColor="@color/text_primary"
+                android:fontFamily="@font/outfit_bold"/>
+
+            <TextView
+                android:id="@+id/tvDetalleFecha"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Alta: 04/10/2025"
+                android:textSize="11sp"
+                android:textColor="@color/text_muted"
+                android:fontFamily="@font/outfit_regular"
+                android:layout_marginTop="2dp"/>
+
+        </LinearLayout>
+
+        <!-- Badge estado -->
+        <TextView
+            android:id="@+id/tvDetalleEstado"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Activo"
+            android:textSize="11sp"
+            android:textColor="@color/white"
+            android:fontFamily="@font/outfit_bold"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:background="@drawable/shape_chip_ok"/>
+
+    </LinearLayout>
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/border"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"/>
+
+    <!-- KPIs cliente -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="3"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="14dp"
+        android:paddingBottom="4dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/tvDetalleSaldo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0,00€"
+                android:textSize="18sp"
+                android:textColor="@color/accent_blue"
+                android:fontFamily="@font/outfit_bold"
+                android:gravity="center"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Saldo"
+                android:textSize="10sp"
+                android:textColor="@color/text_muted"
+                android:fontFamily="@font/outfit_regular"
+                android:gravity="center"
+                android:layout_marginTop="2dp"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/tvDetalleMembresias"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1"
+                android:textSize="18sp"
+                android:textColor="@color/accent_blue"
+                android:fontFamily="@font/outfit_bold"
+                android:gravity="center"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Membresías"
+                android:textSize="10sp"
+                android:textColor="@color/text_muted"
+                android:fontFamily="@font/outfit_regular"
+                android:gravity="center"
+                android:layout_marginTop="2dp"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/tvDetalleCitas"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="3"
+                android:textSize="18sp"
+                android:textColor="@color/accent_blue"
+                android:fontFamily="@font/outfit_bold"
+                android:gravity="center"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Citas"
+                android:textSize="10sp"
+                android:textColor="@color/text_muted"
+                android:fontFamily="@font/outfit_regular"
+                android:gravity="center"
+                android:layout_marginTop="2dp"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Info contacto -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="4dp">
+
+        <TextView
+            android:id="@+id/tvDetalleTelefono"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📞 +34 600 111 222"
+            android:textSize="12sp"
+            android:textColor="@color/text_muted"
+            android:fontFamily="@font/outfit_regular"
+            android:layout_marginBottom="4dp"/>
+
+        <TextView
+            android:id="@+id/tvDetalleEmail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="✉️ lucia@mail.com"
+            android:textSize="12sp"
+            android:textColor="@color/text_muted"
+            android:fontFamily="@font/outfit_regular"
+            android:layout_marginBottom="4dp"/>
+
+        <TextView
+            android:id="@+id/tvDetalleNotas"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📝 Sin notas"
+            android:textSize="12sp"
+            android:textColor="@color/text_muted"
+            android:fontFamily="@font/outfit_regular"/>
+
+    </LinearLayout>
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/border"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="14dp"/>
+
+    <!-- Botones acción -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="2"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="14dp"
+        android:paddingBottom="8dp">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/btnDetalleCobrar"
+            android:layout_width="0dp"
+            android:layout_height="52dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="6dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="3dp"
+            app:cardBackgroundColor="@color/accent_blue">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="💰 Cobrar"
+                android:textSize="13sp"
+                android:textColor="@color/white"
+                android:fontFamily="@font/outfit_bold"
+                android:gravity="center"/>
+
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/btnDetalleCita"
+            android:layout_width="0dp"
+            android:layout_height="52dp"
+            android:layout_weight="1"
+            android:layout_marginStart="6dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@color/blue_pale">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="📅 Nueva cita"
+                android:textSize="13sp"
+                android:textColor="@color/accent_blue"
+                android:fontFamily="@font/outfit_bold"
+                android:gravity="center"/>
+
+        </androidx.cardview.widget.CardView>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="2"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="16dp">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/btnDetalleCheckin"
+            android:layout_width="0dp"
+            android:layout_height="52dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="6dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@color/blue_pale">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="🏋️ Check-in"
+                android:textSize="13sp"
+                android:textColor="@color/accent_blue"
+                android:fontFamily="@font/outfit_bold"
+                android:gravity="center"/>
+
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/btnDetalleToggle"
+            android:layout_width="0dp"
+            android:layout_height="52dp"
+            android:layout_weight="1"
+            android:layout_marginStart="6dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@color/blue_pale">
+
+            <TextView
+                android:id="@+id/tvDetalleToggleLabel"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="⏸ Inactivar"
+                android:textSize="13sp"
+                android:textColor="@color/accent_blue"
+                android:fontFamily="@font/outfit_bold"
+                android:gravity="center"/>
+
+        </androidx.cardview.widget.CardView>
+
+    </LinearLayout>
+
+    <View android:layout_width="match_parent" android:layout_height="16dp"/>
+
+</LinearLayout>

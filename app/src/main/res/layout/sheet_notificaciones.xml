@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/shape_sheet_bg">
+
+    <!-- Handle -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="4dp"
+        android:background="@drawable/shape_handle"/>
+
+    <!-- Cabecera -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Notificaciones"
+                android:textSize="18sp"
+                android:textColor="@color/text_primary"
+                android:fontFamily="@font/outfit_bold"/>
+
+            <TextView
+                android:id="@+id/tvNotifSubtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tienes 3 alertas pendientes"
+                android:textSize="11sp"
+                android:textColor="@color/text_muted"
+                android:fontFamily="@font/outfit_regular"
+                android:layout_marginTop="2dp"/>
+
+        </LinearLayout>
+
+        <!-- Botón marcar todo leído -->
+        <TextView
+            android:id="@+id/btnMarcarLeido"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Marcar leídas"
+            android:textSize="11sp"
+            android:textColor="@color/accent_blue"
+            android:fontFamily="@font/outfit_bold"
+            android:padding="8dp"/>
+
+    </LinearLayout>
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/border"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"/>
+
+    <!-- Lista de notificaciones (se llena desde Java) -->
+    <LinearLayout
+        android:id="@+id/listaNotificaciones"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"/>
+
+    <!-- Estado vacío -->
+    <LinearLayout
+        android:id="@+id/layoutVacio"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="32dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="✅"
+            android:textSize="40sp"
+            android:gravity="center"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Todo al día"
+            android:textSize="16sp"
+            android:textColor="@color/text_primary"
+            android:fontFamily="@font/outfit_bold"
+            android:gravity="center"
+            android:layout_marginTop="10dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No hay notificaciones pendientes"
+            android:textSize="12sp"
+            android:textColor="@color/text_muted"
+            android:fontFamily="@font/outfit_regular"
+            android:gravity="center"
+            android:layout_marginTop="4dp"/>
+
+    </LinearLayout>
+
+    <!-- Espaciado inferior para el gesto de navegación -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="24dp"/>
+
+</LinearLayout>

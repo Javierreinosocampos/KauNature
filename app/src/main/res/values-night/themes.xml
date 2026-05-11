@@ -1,0 +1,23 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <style name="Theme.KauNatureApplication"
+        parent="Theme.MaterialComponents.DayNight.NoActionBar">
+
+        <!-- Colores principales -->
+        <item name="colorPrimary">@color/accent_blue</item>
+        <item name="colorPrimaryVariant">@color/accent_blue</item>
+        <item name="colorOnPrimary">@color/white</item>
+
+        <!-- Fondo en modo oscuro -->
+        <item name="android:colorBackground">#000000</item>
+
+        <!-- Color de superficies -->
+        <item name="colorSurface">#000000</item>
+        <item name="colorOnSurface">@color/white</item>
+
+        <!-- Para que el sistema sepa que es modo oscuro -->
+        <item name="android:forceDarkAllowed">true</item>
+
+    </style>
+
+</resources>

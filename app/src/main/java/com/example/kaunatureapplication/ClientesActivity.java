@@ -21,26 +21,27 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class ClientesActivity extends AppCompatActivity {
 
     // ── Modelo local ─────────────────────────────────────────────────
     static class Cliente {
-        String id;           // UUID de Supabase
+        String id;
         String nombre;
         String apellidos;
         String telefono;
         String email;
         String notas;
-        String estado;       // "activo" | "inactivo"
+        String estado;
         double saldo;
         int    citas;
         int    membresias;
         String fechaAlta;
 
-        /** Construye desde el modelo de red */
         Cliente(ClienteModel m) {
             this.id        = m.id;
             this.nombre    = m.nombre    != null ? m.nombre    : "";
@@ -51,40 +52,23 @@ public class ClientesActivity extends AppCompatActivity {
             this.estado    = m.estado    != null ? m.estado    : "activo";
             this.saldo     = m.saldo;
             this.citas     = m.citasTotal;
-            this.membresias = 0;   // la BD no tiene membresías aún en ClienteModel
+            this.membresias = 0;
             this.fechaAlta = m.createdAt != null && m.createdAt.length() >= 10
-                    ? m.createdAt.substring(8, 10) + "/" + m.createdAt.substring(5, 7)
-                    + "/" + m.createdAt.substring(0, 4)
-                    : "—";
-        }
-
-        /** Constructor para clientes nuevos antes de guardar */
-        Cliente(String nombre, String telefono, String email,
-                String notas, String estado, double saldo,
-                int citas, int membresias, String fechaAlta) {
-            this.id        = null;
-            this.nombre    = nombre;
-            this.apellidos = "";
-            this.telefono  = telefono;
-            this.email     = email;
-            this.notas     = notas;
-            this.estado    = estado;
-            this.saldo     = saldo;
-            this.citas     = citas;
-            this.membresias = membresias;
-            this.fechaAlta = fechaAlta;
+                    ? m.createdAt.substring(8,10) + "/" + m.createdAt.substring(5,7)
+                    + "/" + m.createdAt.substring(0,4) : "—";
         }
 
         String inicial() {
             return nombre != null && !nombre.isEmpty()
                     ? String.valueOf(nombre.charAt(0)).toUpperCase() : "?";
         }
-        boolean tieneDeuda() { return saldo < 0; }
 
         String nombreCompleto() {
             return (apellidos != null && !apellidos.isEmpty())
                     ? nombre + " " + apellidos : nombre;
         }
+
+        boolean tieneDeuda() { return saldo < 0; }
     }
 
     // ── Estado ───────────────────────────────────────────────────────
@@ -108,13 +92,12 @@ public class ClientesActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_clientes);
-
         bindViews();
         setupBuscador();
         setupFiltros();
         setupBotones();
         setupBottomNav();
-        cargarClientes();   // ← carga desde Supabase
+        cargarClientes();
     }
 
     // ════════════════════════════════════════════════════════════════
@@ -137,21 +120,19 @@ public class ClientesActivity extends AppCompatActivity {
     // ════════════════════════════════════════════════════════════════
     private void cargarClientes() {
         tvSubtitle.setText("Cargando...");
-
         SupabaseRepository.get().getClientes(null,
                 new SupabaseRepository.Callback<List<ClienteModel>>() {
                     @Override public void onSuccess(List<ClienteModel> data) {
                         runOnUiThread(() -> {
                             todosLosClientes.clear();
-                            for (ClienteModel m : data)
-                                todosLosClientes.add(new Cliente(m));
+                            for (ClienteModel m : data) todosLosClientes.add(new Cliente(m));
                             renderLista();
                         });
                     }
                     @Override public void onError(String e) {
                         runOnUiThread(() -> {
                             Toast.makeText(ClientesActivity.this,
-                                    "Error al cargar clientes: " + e, Toast.LENGTH_LONG).show();
+                                    "Error al cargar: " + e, Toast.LENGTH_LONG).show();
                             renderLista();
                         });
                     }
@@ -171,7 +152,6 @@ public class ClientesActivity extends AppCompatActivity {
                 renderLista();
             }
         });
-
         btnLimpiar.setOnClickListener(v -> {
             etBuscar.setText("");
             busquedaActual = "";
@@ -206,7 +186,6 @@ public class ClientesActivity extends AppCompatActivity {
     // ════════════════════════════════════════════════════════════════
     private void renderLista() {
         clientesFiltrados.clear();
-
         for (Cliente c : todosLosClientes) {
             boolean pasaFiltro;
             switch (filtroActual) {
@@ -215,28 +194,23 @@ public class ClientesActivity extends AppCompatActivity {
                 case "deuda":    pasaFiltro = c.tieneDeuda();               break;
                 default:         pasaFiltro = true;
             }
-
             boolean pasaBusqueda = busquedaActual.isEmpty()
                     || c.nombre.toLowerCase().contains(busquedaActual)
                     || c.apellidos.toLowerCase().contains(busquedaActual)
                     || c.telefono.toLowerCase().contains(busquedaActual)
                     || c.email.toLowerCase().contains(busquedaActual);
-
             if (pasaFiltro && pasaBusqueda) clientesFiltrados.add(c);
         }
 
         listaClientes.removeAllViews();
-
         if (clientesFiltrados.isEmpty()) {
             layoutVacio.setVisibility(View.VISIBLE);
             listaClientes.setVisibility(View.GONE);
         } else {
             layoutVacio.setVisibility(View.GONE);
             listaClientes.setVisibility(View.VISIBLE);
-            for (Cliente c : clientesFiltrados)
-                listaClientes.addView(buildClienteCard(c));
+            for (Cliente c : clientesFiltrados) listaClientes.addView(buildClienteCard(c));
         }
-
         tvSubtitle.setText(todosLosClientes.size() + " registrados");
     }
 
@@ -268,7 +242,6 @@ public class ClientesActivity extends AppCompatActivity {
         avatar.setCardElevation(dpToPx(2));
         avatar.setCardBackgroundColor("inactivo".equals(cliente.estado)
                 ? Color.parseColor("#DDE6FF") : Color.parseColor("#0A66FF"));
-
         TextView tvInicial = new TextView(this);
         tvInicial.setLayoutParams(new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
@@ -285,7 +258,6 @@ public class ClientesActivity extends AppCompatActivity {
         textBlock.setOrientation(LinearLayout.VERTICAL);
         textBlock.setLayoutParams(new LinearLayout.LayoutParams(
                 0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-
         TextView tvNombre = new TextView(this);
         tvNombre.setText(cliente.nombreCompleto());
         tvNombre.setTextSize(13f);
@@ -293,7 +265,6 @@ public class ClientesActivity extends AppCompatActivity {
         tvNombre.setTypeface(getResources().getFont(R.font.outfit_bold));
         tvNombre.setAlpha("inactivo".equals(cliente.estado) ? 0.5f : 1f);
         textBlock.addView(tvNombre);
-
         TextView tvTel = new TextView(this);
         tvTel.setText(cliente.telefono.isEmpty() ? "Sin teléfono" : cliente.telefono);
         tvTel.setTextSize(11f);
@@ -314,7 +285,6 @@ public class ClientesActivity extends AppCompatActivity {
                 LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         rp.setMarginStart(dpToPx(8));
         rightCol.setLayoutParams(rp);
-
         TextView badge = new TextView(this);
         if (cliente.tieneDeuda()) {
             badge.setText(String.format("−%.2f€", Math.abs(cliente.saldo)).replace(".", ","));
@@ -363,7 +333,6 @@ public class ClientesActivity extends AppCompatActivity {
         ((TextView) view.findViewById(R.id.tvDetalleMembresias)).setText(String.valueOf(cliente.membresias));
         ((TextView) view.findViewById(R.id.tvDetalleCitas)).setText(String.valueOf(cliente.citas));
 
-        // Saldo
         TextView tvSaldo = view.findViewById(R.id.tvDetalleSaldo);
         if (cliente.tieneDeuda()) {
             tvSaldo.setText(String.format("−%.2f€", Math.abs(cliente.saldo)).replace(".", ","));
@@ -373,7 +342,6 @@ public class ClientesActivity extends AppCompatActivity {
             tvSaldo.setTextColor(Color.parseColor("#12B76A"));
         }
 
-        // Badge estado
         TextView tvEstado = view.findViewById(R.id.tvDetalleEstado);
         if ("activo".equals(cliente.estado)) {
             tvEstado.setText("Activo");
@@ -387,27 +355,20 @@ public class ClientesActivity extends AppCompatActivity {
         // Toggle activo/inactivo
         TextView tvToggle = view.findViewById(R.id.tvDetalleToggleLabel);
         tvToggle.setText("activo".equals(cliente.estado) ? "⏸ Inactivar" : "▶ Activar");
-
         view.findViewById(R.id.btnDetalleToggle).setOnClickListener(v -> {
-            if (cliente.id == null) {
-                // cliente local sin guardar
-                cliente.estado = "activo".equals(cliente.estado) ? "inactivo" : "activo";
-                sheet.dismiss();
-                renderLista();
-                return;
-            }
             String nuevoEstado = "activo".equals(cliente.estado) ? "inactivo" : "activo";
             view.findViewById(R.id.btnDetalleToggle).setEnabled(false);
-
+            if (cliente.id == null) {
+                cliente.estado = nuevoEstado; sheet.dismiss(); renderLista(); return;
+            }
             SupabaseRepository.get().toggleEstadoCliente(cliente.id, nuevoEstado,
                     new SupabaseRepository.Callback<Void>() {
                         @Override public void onSuccess(Void data) {
                             runOnUiThread(() -> {
                                 cliente.estado = nuevoEstado;
-                                sheet.dismiss();
-                                renderLista();
+                                sheet.dismiss(); renderLista();
                                 Toast.makeText(ClientesActivity.this,
-                                        cliente.nombre + " → " + nuevoEstado,
+                                        cliente.nombreCompleto() + " → " + nuevoEstado,
                                         Toast.LENGTH_SHORT).show();
                             });
                         }
@@ -421,31 +382,95 @@ public class ClientesActivity extends AppCompatActivity {
                     });
         });
 
-        // Botón cobrar → abre CobrosActivity (o podrías abrir sheet de cobro rápido)
+        // Botones existentes en el XML
         view.findViewById(R.id.btnDetalleCobrar).setOnClickListener(v -> {
             sheet.dismiss();
             startActivity(new Intent(this, CobrosActivity.class));
         });
-
-        // Botón nueva cita → abre AgendaActivity
         view.findViewById(R.id.btnDetalleCita).setOnClickListener(v -> {
             sheet.dismiss();
             startActivity(new Intent(this, AgendaActivity.class));
         });
-
-        // Check-in gimnasio → abre AforoActivity
         view.findViewById(R.id.btnDetalleCheckin).setOnClickListener(v -> {
             sheet.dismiss();
             startActivity(new Intent(this, AforoActivity.class));
         });
 
+        // ── Botones Editar y Eliminar ─────────────────────────────
+        // Se añaden al contenedor del sheet dinámicamente
+        // El sheet_detalle_cliente.xml tiene un ScrollView con un LinearLayout dentro
+        // Localizamos el LinearLayout raíz y añadimos los botones al final
+        android.view.ViewGroup contenedor = encontrarContenedor(view);
+        if (contenedor != null) {
+            // Separador
+            View sep = new View(this);
+            sep.setBackgroundColor(Color.parseColor("#DDE6FF"));
+            LinearLayout.LayoutParams sepP = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, dpToPx(1));
+            sepP.setMargins(0, dpToPx(12), 0, dpToPx(12));
+            sep.setLayoutParams(sepP);
+            contenedor.addView(sep);
+
+            // Botón editar
+            contenedor.addView(mkBtnSheet("✏️  Editar datos del cliente",
+                    "#EEF4FF", "#0A66FF",
+                    v -> { sheet.dismiss(); showFormularioCliente(cliente); }));
+
+            // Botón eliminar
+            contenedor.addView(mkBtnSheet("🗑  Eliminar cliente",
+                    "#FFF0F0", "#EF4444",
+                    v -> { sheet.dismiss(); confirmarEliminar(cliente); }));
+        }
+
         sheet.show();
     }
 
+    /** Busca el LinearLayout raíz dentro del sheet (puede estar dentro de un ScrollView) */
+    private android.view.ViewGroup encontrarContenedor(View root) {
+        if (root instanceof LinearLayout) return (android.view.ViewGroup) root;
+        if (root instanceof android.widget.ScrollView) {
+            android.widget.ScrollView sv = (android.widget.ScrollView) root;
+            if (sv.getChildCount() > 0 && sv.getChildAt(0) instanceof LinearLayout)
+                return (LinearLayout) sv.getChildAt(0);
+        }
+        if (root instanceof android.view.ViewGroup) {
+            android.view.ViewGroup vg = (android.view.ViewGroup) root;
+            for (int i = 0; i < vg.getChildCount(); i++) {
+                android.view.ViewGroup found = encontrarContenedor(vg.getChildAt(i));
+                if (found != null) return found;
+            }
+        }
+        return null;
+    }
+
+    private View mkBtnSheet(String texto, String bgColor, String textColor,
+                            View.OnClickListener listener) {
+        CardView btn = new CardView(this);
+        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, dpToPx(52));
+        p.bottomMargin = dpToPx(8);
+        btn.setLayoutParams(p);
+        btn.setRadius(dpToPx(14));
+        btn.setCardElevation(dpToPx(1));
+        btn.setCardBackgroundColor(Color.parseColor(bgColor));
+        TextView tv = new TextView(this);
+        tv.setText(texto);
+        tv.setTextSize(13f);
+        tv.setTextColor(Color.parseColor(textColor));
+        tv.setTypeface(getResources().getFont(R.font.outfit_bold));
+        tv.setGravity(Gravity.CENTER);
+        tv.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
+        btn.addView(tv);
+        btn.setClickable(true);
+        btn.setOnClickListener(listener);
+        return btn;
+    }
+
     // ════════════════════════════════════════════════════════════════
-    //  SHEET: NUEVO CLIENTE
+    //  FORMULARIO CREAR / EDITAR (unificado)
     // ════════════════════════════════════════════════════════════════
-    private void showNuevoClienteSheet() {
+    private void showFormularioCliente(Cliente clienteEditar) {
         BottomSheetDialog sheet = new BottomSheetDialog(
                 this, com.google.android.material.R.style.Theme_Material3_Light_BottomSheetDialog);
         View view = getLayoutInflater().inflate(R.layout.sheet_nuevo_cliente, null);
@@ -455,53 +480,230 @@ public class ClientesActivity extends AppCompatActivity {
         EditText etTelefono = view.findViewById(R.id.etNuevoTelefono);
         EditText etEmail    = view.findViewById(R.id.etNuevoEmail);
         EditText etNotas    = view.findViewById(R.id.etNuevoNotas);
-        TextView btnGuardar = view.findViewById(R.id.btnGuardarCliente);
 
-        btnGuardar.setOnClickListener(v -> {
+        // btnGuardarCliente es un CardView en el XML; el texto está en el TextView hijo
+        androidx.cardview.widget.CardView btnGuardarCard = view.findViewById(R.id.btnGuardarCliente);
+        TextView btnGuardarTv = (TextView) btnGuardarCard.getChildAt(0);
+
+        boolean esEdicion = (clienteEditar != null);
+
+        if (esEdicion) {
+            etNombre.setText(clienteEditar.nombre);
+            etTelefono.setText(clienteEditar.telefono);
+            etEmail.setText(clienteEditar.email);
+            etNotas.setText(clienteEditar.notas);
+            btnGuardarTv.setText("Guardar cambios");
+        }
+
+        btnGuardarCard.setOnClickListener(v -> {
             String nombre = etNombre.getText().toString().trim();
-            if (nombre.isEmpty()) {
-                etNombre.setError("El nombre es obligatorio");
-                return;
+            if (nombre.isEmpty()) { etNombre.setError("Obligatorio"); return; }
+
+            String telefono = etTelefono.getText().toString().trim();
+            String email    = etEmail.getText().toString().trim();
+            String notas    = etNotas.getText().toString().trim();
+
+            btnGuardarCard.setEnabled(false);
+            btnGuardarTv.setText("Guardando...");
+
+            if (esEdicion && clienteEditar.id != null) {
+                // ── EDITAR ────────────────────────────────────────
+                Map<String, Object> campos = new HashMap<>();
+                campos.put("nombre",   nombre);
+                campos.put("telefono", telefono);
+                campos.put("email",    email);
+                campos.put("notas",    notas);
+
+                SupabaseRepository.get().actualizarCliente(clienteEditar.id, campos,
+                        new SupabaseRepository.Callback<Void>() {
+                            @Override public void onSuccess(Void data) {
+                                runOnUiThread(() -> {
+                                    clienteEditar.nombre   = nombre;
+                                    clienteEditar.telefono = telefono;
+                                    clienteEditar.email    = email;
+                                    clienteEditar.notas    = notas;
+                                    sheet.dismiss();
+                                    ocultarTeclado();
+                                    renderLista();
+                                    Toast.makeText(ClientesActivity.this,
+                                            "✅ Cliente actualizado", Toast.LENGTH_SHORT).show();
+                                });
+                            }
+                            @Override public void onError(String e) {
+                                runOnUiThread(() -> {
+                                    btnGuardarCard.setEnabled(true);
+                                    btnGuardarTv.setText("Guardar cambios");
+                                    Toast.makeText(ClientesActivity.this,
+                                            "Error: " + e, Toast.LENGTH_SHORT).show();
+                                });
+                            }
+                        });
+            } else {
+                // ── CREAR ─────────────────────────────────────────
+                ClienteModel modelo = new ClienteModel();
+                modelo.nombre    = nombre;
+                modelo.apellidos = "";
+                modelo.telefono  = telefono;
+                modelo.email     = email;
+                modelo.notas     = notas;
+                modelo.estado    = "activo";
+                modelo.saldo     = 0;
+
+                SupabaseRepository.get().crearCliente(modelo,
+                        new SupabaseRepository.Callback<ClienteModel>() {
+                            @Override public void onSuccess(ClienteModel data) {
+                                runOnUiThread(() -> {
+                                    todosLosClientes.add(0, new Cliente(data));
+                                    sheet.dismiss();
+                                    ocultarTeclado();
+                                    renderLista();
+                                    Toast.makeText(ClientesActivity.this,
+                                            "✅ Cliente añadido: " + nombre,
+                                            Toast.LENGTH_SHORT).show();
+                                });
+                            }
+                            @Override public void onError(String e) {
+                                runOnUiThread(() -> {
+                                    btnGuardarCard.setEnabled(true);
+                                    btnGuardarTv.setText("Guardar");
+                                    Toast.makeText(ClientesActivity.this,
+                                            "Error: " + e, Toast.LENGTH_SHORT).show();
+                                });
+                            }
+                        });
             }
+        });
 
-            btnGuardar.setEnabled(false);
-            btnGuardar.setText("Guardando...");
+        sheet.show();
+    }
 
-            // Construir el modelo para Supabase
-            ClienteModel modelo = new ClienteModel();
-            modelo.nombre    = nombre;
-            modelo.apellidos = "";
-            modelo.telefono  = etTelefono.getText().toString().trim();
-            modelo.email     = etEmail.getText().toString().trim();
-            modelo.notas     = etNotas.getText().toString().trim();
-            modelo.estado    = "activo";
-            modelo.saldo     = 0;
+    // ════════════════════════════════════════════════════════════════
+    //  ELIMINAR CLIENTE (confirmación)
+    // ════════════════════════════════════════════════════════════════
+    private void confirmarEliminar(Cliente cliente) {
+        BottomSheetDialog sheet = new BottomSheetDialog(
+                this, com.google.android.material.R.style.Theme_Material3_Light_BottomSheetDialog);
 
-            SupabaseRepository.get().crearCliente(modelo,
-                    new SupabaseRepository.Callback<ClienteModel>() {
-                        @Override public void onSuccess(ClienteModel data) {
+        LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setBackgroundColor(Color.WHITE);
+        root.setPadding(dpToPx(24), dpToPx(20), dpToPx(24), dpToPx(44));
+        root.setGravity(Gravity.CENTER_HORIZONTAL);
+
+        // Handle
+        View handle = new View(this);
+        android.graphics.drawable.GradientDrawable hBg = new android.graphics.drawable.GradientDrawable();
+        hBg.setColor(Color.parseColor("#DDE6FF"));
+        hBg.setCornerRadius(dpToPx(4));
+        handle.setBackground(hBg);
+        LinearLayout.LayoutParams hP = new LinearLayout.LayoutParams(dpToPx(40), dpToPx(4));
+        hP.gravity = Gravity.CENTER_HORIZONTAL;
+        hP.bottomMargin = dpToPx(24);
+        handle.setLayoutParams(hP);
+        root.addView(handle);
+
+        TextView tvEmoji = new TextView(this);
+        tvEmoji.setText("🗑");
+        tvEmoji.setTextSize(44f);
+        tvEmoji.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams eP = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        eP.bottomMargin = dpToPx(12);
+        tvEmoji.setLayoutParams(eP);
+        root.addView(tvEmoji);
+
+        TextView tvTitulo = new TextView(this);
+        tvTitulo.setText("Eliminar cliente");
+        tvTitulo.setTextSize(20f);
+        tvTitulo.setTextColor(Color.parseColor("#0D1B3E"));
+        tvTitulo.setTypeface(getResources().getFont(R.font.outfit_bold));
+        tvTitulo.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams tP = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        tP.bottomMargin = dpToPx(8);
+        tvTitulo.setLayoutParams(tP);
+        root.addView(tvTitulo);
+
+        TextView tvDesc = new TextView(this);
+        tvDesc.setText("¿Eliminar a " + cliente.nombreCompleto() + "?\nEsta acción no se puede deshacer.");
+        tvDesc.setTextSize(13f);
+        tvDesc.setTextColor(Color.parseColor("#6B7FA3"));
+        tvDesc.setTypeface(getResources().getFont(R.font.outfit_regular));
+        tvDesc.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams dP = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        dP.bottomMargin = dpToPx(28);
+        tvDesc.setLayoutParams(dP);
+        root.addView(tvDesc);
+
+        LinearLayout btns = new LinearLayout(this);
+        btns.setOrientation(LinearLayout.HORIZONTAL);
+        btns.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+
+        // Cancelar
+        TextView btnCancelar = new TextView(this);
+        btnCancelar.setText("Cancelar");
+        btnCancelar.setTextSize(14f);
+        btnCancelar.setTextColor(Color.parseColor("#0A66FF"));
+        btnCancelar.setTypeface(getResources().getFont(R.font.outfit_bold));
+        btnCancelar.setGravity(Gravity.CENTER);
+        btnCancelar.setPadding(0, dpToPx(14), 0, dpToPx(14));
+        android.graphics.drawable.GradientDrawable cancelBg = new android.graphics.drawable.GradientDrawable();
+        cancelBg.setColor(Color.parseColor("#EEF4FF"));
+        cancelBg.setCornerRadius(dpToPx(16));
+        btnCancelar.setBackground(cancelBg);
+        LinearLayout.LayoutParams cP = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+        cP.setMarginEnd(dpToPx(10));
+        btnCancelar.setLayoutParams(cP);
+        btnCancelar.setOnClickListener(v -> sheet.dismiss());
+        btns.addView(btnCancelar);
+
+        // Eliminar
+        TextView btnEliminar = new TextView(this);
+        btnEliminar.setText("Eliminar");
+        btnEliminar.setTextSize(14f);
+        btnEliminar.setTextColor(Color.WHITE);
+        btnEliminar.setTypeface(getResources().getFont(R.font.outfit_bold));
+        btnEliminar.setGravity(Gravity.CENTER);
+        btnEliminar.setPadding(0, dpToPx(14), 0, dpToPx(14));
+        android.graphics.drawable.GradientDrawable elimBg = new android.graphics.drawable.GradientDrawable();
+        elimBg.setColor(Color.parseColor("#EF4444"));
+        elimBg.setCornerRadius(dpToPx(16));
+        btnEliminar.setBackground(elimBg);
+        btnEliminar.setLayoutParams(new LinearLayout.LayoutParams(
+                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+        btnEliminar.setOnClickListener(v -> {
+            if (cliente.id == null) {
+                todosLosClientes.remove(cliente); sheet.dismiss(); renderLista(); return;
+            }
+            btnEliminar.setEnabled(false);
+            btnEliminar.setText("Eliminando...");
+            SupabaseRepository.get().eliminarCliente(cliente.id,
+                    new SupabaseRepository.Callback<Void>() {
+                        @Override public void onSuccess(Void data) {
                             runOnUiThread(() -> {
-                                Cliente nuevo = new Cliente(data);
-                                todosLosClientes.add(0, nuevo);
-                                sheet.dismiss();
-                                ocultarTeclado();
-                                renderLista();
+                                todosLosClientes.remove(cliente);
+                                sheet.dismiss(); renderLista();
                                 Toast.makeText(ClientesActivity.this,
-                                        "✅ Cliente añadido: " + nombre,
+                                        "🗑 " + cliente.nombreCompleto() + " eliminado",
                                         Toast.LENGTH_SHORT).show();
                             });
                         }
                         @Override public void onError(String e) {
                             runOnUiThread(() -> {
-                                btnGuardar.setEnabled(true);
-                                btnGuardar.setText("Guardar");
+                                btnEliminar.setEnabled(true);
+                                btnEliminar.setText("Eliminar");
                                 Toast.makeText(ClientesActivity.this,
                                         "Error: " + e, Toast.LENGTH_SHORT).show();
                             });
                         }
                     });
         });
+        btns.addView(btnEliminar);
+        root.addView(btns);
 
+        sheet.setContentView(root);
         sheet.show();
     }
 
@@ -510,7 +712,7 @@ public class ClientesActivity extends AppCompatActivity {
     // ════════════════════════════════════════════════════════════════
     private void setupBotones() {
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
-        findViewById(R.id.btnAddCliente).setOnClickListener(v -> showNuevoClienteSheet());
+        findViewById(R.id.btnAddCliente).setOnClickListener(v -> showFormularioCliente(null));
     }
 
     private void setupBottomNav() {

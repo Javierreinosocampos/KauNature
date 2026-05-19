@@ -592,7 +592,9 @@ public class CobrosActivity extends AppCompatActivity {
         EditText etImporte  = view.findViewById(R.id.etCobroImporte);
         EditText etNotas    = view.findViewById(R.id.etCobroNotas);
         TextView tvTitulo   = view.findViewById(R.id.tvNuevoCobroTitulo);
-        TextView btnGuardar = view.findViewById(R.id.btnGuardarCobro);
+        // btnGuardarCobro es CardView en el XML
+        androidx.cardview.widget.CardView btnGuardarCard = view.findViewById(R.id.btnGuardarCobro);
+        TextView btnGuardar = (TextView) btnGuardarCard.getChildAt(0);
 
         final String[] metodoSel = {METODOS_KEY[0]};
         final String[] estadoSel = {"cobrado"};
@@ -675,7 +677,7 @@ public class CobrosActivity extends AppCompatActivity {
         }
 
         // ── Guardar ───────────────────────────────────────────────
-        btnGuardar.setOnClickListener(v -> {
+        btnGuardarCard.setOnClickListener(v -> {
             String nombre   = etCliente.getText().toString().trim();
             String importeS = etImporte.getText().toString().trim();
             if (nombre.isEmpty())   { etCliente.setError("Obligatorio"); return; }
@@ -689,7 +691,7 @@ public class CobrosActivity extends AppCompatActivity {
             String notas    = etNotas.getText().toString().trim();
             String hoy      = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
 
-            btnGuardar.setEnabled(false);
+            btnGuardarCard.setEnabled(false);
             btnGuardar.setText("Guardando...");
 
             if (cobroEditar != null && cobroEditar.id != null) {
@@ -722,7 +724,7 @@ public class CobrosActivity extends AppCompatActivity {
                             }
                             @Override public void onError(String e) {
                                 runOnUiThread(() -> {
-                                    btnGuardar.setEnabled(true);
+                                    btnGuardarCard.setEnabled(true);
                                     btnGuardar.setText("Guardar");
                                     Toast.makeText(CobrosActivity.this,
                                             "Error: " + e, Toast.LENGTH_SHORT).show();
@@ -748,7 +750,7 @@ public class CobrosActivity extends AppCompatActivity {
                             }
                             @Override public void onError(String e) {
                                 runOnUiThread(() -> {
-                                    btnGuardar.setEnabled(true);
+                                    btnGuardarCard.setEnabled(true);
                                     btnGuardar.setText("Guardar");
                                     Toast.makeText(CobrosActivity.this,
                                             "Error: " + e, Toast.LENGTH_SHORT).show();

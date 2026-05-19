@@ -51,8 +51,8 @@ public class AgendaActivity extends AppCompatActivity {
 
         Cita(CitaModel m) {
             this.id       = m.id;
-            this.cliente  = m.clienteNombre  != null ? m.clienteNombre  : "";
-            this.servicio = m.servicioNombre != null ? m.servicioNombre : "";
+            this.cliente  = m.clienteNombre  != null ? m.clienteNombre.trim()  : "";
+            this.servicio = m.servicioNombre != null ? m.servicioNombre.trim() : "";
             this.fechaBD  = m.fecha    != null ? m.fecha    : "";
             this.hora     = m.horaDisplay();
             this.notas    = m.notas    != null ? m.notas    : "";
@@ -99,8 +99,7 @@ public class AgendaActivity extends AppCompatActivity {
 
     // ── Servicios ────────────────────────────────────────────────────
     private final String[] SERVICIOS = {
-            "Masaje Relajante", "Masaje Deportivo", "Masaje Terapéutico",
-            "Gimnasio", "Pilates", "Otro"
+            "Masaje"
     };
 
     // ── Estado ───────────────────────────────────────────────────────
@@ -128,7 +127,26 @@ public class AgendaActivity extends AppCompatActivity {
         setupTabs();
         setupBotones();
         setupBottomNav();
-        cargarCitas(); // carga desde Supabase
+        // Marcar tab activo inicial
+        tabDiaria.setBackground(getDrawable(R.drawable.shape_tab_active));
+        tabDiaria.setTextColor(Color.WHITE);
+        cargarCitas();
+    }
+
+    private boolean primeraVez = true;
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (primeraVez) {
+            primeraVez = false;
+            return;
+        }
+        // Al volver: mostrar lo que hay y refrescar en background
+        renderVista();          // muestra datos actuales inmediatamente
+        if (!cargando) {
+            cargarCitas();      // actualiza desde Supabase
+        }
     }
 
     // ════════════════════════════════════════════════════════════════
@@ -151,7 +169,6 @@ public class AgendaActivity extends AppCompatActivity {
         if (cargando) return;
         cargando = true;
 
-        // Rango: primer día del mes anterior → último del mes siguiente
         Calendar desde = (Calendar) fechaSeleccionada.clone();
         desde.set(Calendar.DAY_OF_MONTH, 1);
         desde.add(Calendar.MONTH, -1);
@@ -169,8 +186,16 @@ public class AgendaActivity extends AppCompatActivity {
                     @Override public void onSuccess(List<CitaModel> data) {
                         runOnUiThread(() -> {
                             cargando = false;
+                            // Reemplazar datos solo cuando llegan — nunca limpiar antes
                             todasLasCitas.clear();
-                            for (CitaModel m : data) todasLasCitas.add(new Cita(m));
+                            for (CitaModel m : data) {
+                                if (m.clienteNombre != null && !m.clienteNombre.isEmpty())
+                                    todasLasCitas.add(new Cita(m));
+                                else if (m.clienteNombre == null) {
+                                    m.clienteNombre = "";
+                                    todasLasCitas.add(new Cita(m));
+                                }
+                            }
                             renderVista();
                         });
                     }
@@ -178,8 +203,8 @@ public class AgendaActivity extends AppCompatActivity {
                         runOnUiThread(() -> {
                             cargando = false;
                             Toast.makeText(AgendaActivity.this,
-                                    "Error al cargar citas: " + e, Toast.LENGTH_LONG).show();
-                            renderVista(); // muestra vacío
+                                    "Error cargando citas: " + e, Toast.LENGTH_SHORT).show();
+                            renderVista();
                         });
                     }
                 });
@@ -209,6 +234,16 @@ public class AgendaActivity extends AppCompatActivity {
     //  RENDER
     // ════════════════════════════════════════════════════════════════
     private void renderVista() {
+        // Restaurar siempre el estado visual de los tabs
+        for (TextView t : new TextView[]{tabDiaria, tabSemanal, tabMensual}) {
+            t.setBackground(getDrawable(R.drawable.shape_tab_inactive));
+            t.setTextColor(Color.parseColor("#6B7FA3"));
+        }
+        TextView tabActivo = vistaActual.equals("semanal") ? tabSemanal
+                : vistaActual.equals("mensual") ? tabMensual : tabDiaria;
+        tabActivo.setBackground(getDrawable(R.drawable.shape_tab_active));
+        tabActivo.setTextColor(Color.WHITE);
+
         contenedor.removeAllViews();
         switch (vistaActual) {
             case "diaria":  renderDiaria();  break;
@@ -851,13 +886,17 @@ public class AgendaActivity extends AppCompatActivity {
         TextView tvFecha   = view.findViewById(R.id.tvCitaFecha);
         TextView tvHora    = view.findViewById(R.id.tvCitaHora);
         TextView tvTitulo  = view.findViewById(R.id.tvNuevaCitaTitulo);
-        TextView btnGuardar = view.findViewById(R.id.btnGuardarCita);
+        CardView btnGuardarCard = view.findViewById(R.id.btnGuardarCita);
+        TextView btnGuardar = (TextView) btnGuardarCard.getChildAt(0);
 
-        final String[] servicioSel = {SERVICIOS[0]};
-        final String[] fechaSelStr = {new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        // ── Estado del formulario ──────────────────────────────────
+        final String[] clienteIdSel = {null};  // UUID del cliente seleccionado (puede ser null)
+        final String[] servicioSel  = {SERVICIOS[0]};
+        final String[] fechaSelStr  = {new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
                 .format(fechaSeleccionada.getTime())};
-        final String[] horaSelStr  = {"10:00"};
+        final String[] horaSelStr   = {"10:00"};
 
+        // Si es edición, prerellenar
         if (citaEditar != null) {
             tvTitulo.setText("Editar cita");
             etCliente.setText(citaEditar.cliente);
@@ -865,62 +904,113 @@ public class AgendaActivity extends AppCompatActivity {
             etNotas.setText(citaEditar.notas);
             tvFecha.setText("📅 " + citaEditar.fecha);
             tvHora.setText("🕐 " + citaEditar.hora);
-            servicioSel[0]  = citaEditar.servicio;
-            fechaSelStr[0]  = citaEditar.fecha;
-            horaSelStr[0]   = citaEditar.hora;
+            servicioSel[0] = citaEditar.servicio;
+            fechaSelStr[0] = citaEditar.fecha;
+            horaSelStr[0]  = citaEditar.hora;
         } else {
             tvFecha.setText("📅 " + fechaSelStr[0]);
             tvHora.setText("🕐 " + horaSelStr[0]);
         }
 
-        // Chips servicio
-        LinearLayout layoutServicios = view.findViewById(R.id.layoutServicios);
+        // ── Lista de sugerencias de clientes ──────────────────────
+        // La insertamos en el ScrollView raíz justo después del CardView del cliente
+        LinearLayout layoutSug = new LinearLayout(this);
+        layoutSug.setOrientation(LinearLayout.VERTICAL);
+        layoutSug.setVisibility(View.GONE);
+        LinearLayout.LayoutParams sugLP = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        sugLP.setMargins(dpToPx(16), 0, dpToPx(16), dpToPx(8));
+        layoutSug.setLayoutParams(sugLP);
+        // etCliente → CardView → LinearLayout raíz
+        android.view.ViewGroup cardCliente = (android.view.ViewGroup) etCliente.getParent();
+        android.view.ViewGroup rootLayout  = (android.view.ViewGroup) cardCliente.getParent();
+        int idxCard = -1;
+        for (int i = 0; i < rootLayout.getChildCount(); i++) {
+            if (rootLayout.getChildAt(i) == cardCliente) { idxCard = i; break; }
+        }
+        if (idxCard >= 0) rootLayout.addView(layoutSug, idxCard + 1);
+
+        // ── TextWatcher: busca mientras el usuario escribe ─────────
+        // IMPORTANTE: la selección de un cliente de la lista usa un flag
+        // para que setText() no dispare una nueva búsqueda
+        final boolean[] seleccionando = {false};
+
+        etCliente.addTextChangedListener(new android.text.TextWatcher() {
+            private final android.os.Handler h = new android.os.Handler();
+            private Runnable r;
+            public void beforeTextChanged(CharSequence s, int a, int b, int c) {}
+            public void onTextChanged(CharSequence s, int a, int b, int c) {
+                if (seleccionando[0]) return;
+                // El usuario escribió → limpiar la selección anterior
+                clienteIdSel[0] = null;
+                if (r != null) h.removeCallbacks(r);
+            }
+            public void afterTextChanged(android.text.Editable s) {
+                if (seleccionando[0]) {
+                    seleccionando[0] = false;
+                    return;
+                }
+                String txt = s.toString().trim();
+                if (txt.length() < 2) {
+                    layoutSug.setVisibility(View.GONE);
+                    layoutSug.removeAllViews();
+                    return;
+                }
+                r = () -> mostrarSugerencias(txt, layoutSug, etCliente, clienteIdSel, seleccionando);
+                h.postDelayed(r, 350);
+            }
+        });
+
+        // ── Chips de servicio ──────────────────────────────────────
+        LinearLayout layoutServ = view.findViewById(R.id.layoutServicios);
         for (String serv : SERVICIOS) {
             TextView chip = new TextView(this);
             chip.setText(serv);
             chip.setTextSize(11f);
             chip.setTypeface(getResources().getFont(R.font.outfit_bold));
             chip.setPadding(dpToPx(14), dpToPx(8), dpToPx(14), dpToPx(8));
-            LinearLayout.LayoutParams chp = new LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams cp = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-            chp.setMarginEnd(dpToPx(6));
-            chip.setLayoutParams(chp);
+            cp.setMarginEnd(dpToPx(6));
+            chip.setLayoutParams(cp);
             boolean activo = serv.equals(servicioSel[0]);
             chip.setBackground(getDrawable(activo
                     ? R.drawable.shape_filter_active : R.drawable.shape_filter_inactive));
             chip.setTextColor(activo ? Color.WHITE : Color.parseColor("#6B7FA3"));
             chip.setOnClickListener(v -> {
                 servicioSel[0] = serv;
-                for (int i = 0; i < layoutServicios.getChildCount(); i++) {
-                    TextView c = (TextView) layoutServicios.getChildAt(i);
+                for (int j = 0; j < layoutServ.getChildCount(); j++) {
+                    TextView c = (TextView) layoutServ.getChildAt(j);
                     boolean sel = c.getText().toString().equals(serv);
                     c.setBackground(getDrawable(sel
                             ? R.drawable.shape_filter_active : R.drawable.shape_filter_inactive));
                     c.setTextColor(sel ? Color.WHITE : Color.parseColor("#6B7FA3"));
                 }
             });
-            layoutServicios.addView(chip);
+            layoutServ.addView(chip);
         }
 
+        // ── Selectores de fecha y hora ────────────────────────────
         view.findViewById(R.id.cardFecha).setOnClickListener(v ->
                 showCustomDatePicker(tvFecha.getText().toString(), result -> {
                     fechaSelStr[0] = result;
                     tvFecha.setText("📅 " + result);
                 }));
-
         view.findViewById(R.id.cardHora).setOnClickListener(v ->
                 showCustomTimePicker(tvHora.getText().toString(), result -> {
                     horaSelStr[0] = result;
                     tvHora.setText("🕐 " + result);
                 }));
 
-        btnGuardar.setOnClickListener(v -> {
+        // ── Guardar ───────────────────────────────────────────────
+        btnGuardarCard.setOnClickListener(v -> {
+            // El nombre del cliente es SIEMPRE lo que está en el EditText
             String nombre = etCliente.getText().toString().trim();
             if (nombre.isEmpty()) { etCliente.setError("Campo obligatorio"); return; }
 
             String precioStr = etPrecio.getText().toString().trim();
             double precioNum = 0;
-            try { precioNum = Double.parseDouble(precioStr.replace("€", "").replace(",", ".")); }
+            try { precioNum = Double.parseDouble(precioStr.replace("€","").replace(",",".")); }
             catch (Exception ignored) {}
 
             String[] partes = fechaSelStr[0].split("/");
@@ -929,33 +1019,42 @@ public class AgendaActivity extends AppCompatActivity {
             int anio = Integer.parseInt(partes[2]);
             String fechaBD = String.format("%04d-%02d-%02d", anio, mes, dia);
 
-            btnGuardar.setEnabled(false);
+            btnGuardarCard.setEnabled(false);
             btnGuardar.setText("Guardando...");
 
+            final double precioFinal  = precioNum;
+            final String nombreFinal  = nombre;
+            final String servicioFinal= servicioSel[0];
+            final String horaFinal    = horaSelStr[0];
+            final String notasFinal   = etNotas.getText().toString().trim();
+            // clienteIdSel[0] puede ser null si escribió el nombre a mano
+            final String clienteId    = clienteIdSel[0];
+
             if (citaEditar != null && citaEditar.id != null) {
-                // ── EDITAR en Supabase ────────────────────────────────
+                // EDITAR
                 Map<String, Object> body = new HashMap<>();
-                body.put("cliente_nombre",  nombre);
-                body.put("servicio_nombre", servicioSel[0]);
+                body.put("cliente_nombre",  nombreFinal);
+                body.put("servicio_nombre", servicioFinal);
                 body.put("fecha",           fechaBD);
-                body.put("hora",            horaSelStr[0]);
-                body.put("precio",          precioNum);
-                body.put("notas",           etNotas.getText().toString().trim());
+                body.put("hora",            horaFinal);
+                body.put("precio",          precioFinal);
+                body.put("notas",           notasFinal);
+                if (clienteId != null) body.put("cliente_id", clienteId);
 
                 SupabaseRepository.get().actualizarCita(citaEditar.id, body,
                         new SupabaseRepository.Callback<Void>() {
                             @Override public void onSuccess(Void data) {
                                 runOnUiThread(() -> {
-                                    citaEditar.cliente   = nombre;
-                                    citaEditar.servicio  = servicioSel[0];
-                                    citaEditar.fecha     = fechaSelStr[0];
-                                    citaEditar.fechaBD   = fechaBD;
-                                    citaEditar.hora      = horaSelStr[0];
-                                    citaEditar.precio    = precioStr.isEmpty() ? "0€" : precioStr + "€";
-                                    citaEditar.notas     = etNotas.getText().toString().trim();
-                                    citaEditar.diaMes    = dia;
-                                    citaEditar.mes       = mes;
-                                    citaEditar.anio      = anio;
+                                    citaEditar.cliente  = nombreFinal;
+                                    citaEditar.servicio = servicioFinal;
+                                    citaEditar.fecha    = fechaSelStr[0];
+                                    citaEditar.fechaBD  = fechaBD;
+                                    citaEditar.hora     = horaFinal;
+                                    citaEditar.precio   = precioStr.isEmpty() ? "0€" : precioStr + "€";
+                                    citaEditar.notas    = notasFinal;
+                                    citaEditar.diaMes   = dia;
+                                    citaEditar.mes      = mes;
+                                    citaEditar.anio     = anio;
                                     sheet.dismiss();
                                     ocultarTeclado();
                                     renderVista();
@@ -965,7 +1064,7 @@ public class AgendaActivity extends AppCompatActivity {
                             }
                             @Override public void onError(String e) {
                                 runOnUiThread(() -> {
-                                    btnGuardar.setEnabled(true);
+                                    btnGuardarCard.setEnabled(true);
                                     btnGuardar.setText("Guardar");
                                     Toast.makeText(AgendaActivity.this,
                                             "Error: " + e, Toast.LENGTH_SHORT).show();
@@ -973,16 +1072,25 @@ public class AgendaActivity extends AppCompatActivity {
                             }
                         });
             } else {
-                // ── CREAR en Supabase ─────────────────────────────────
-                final double precioFinal = precioNum;
+                // CREAR
                 SupabaseRepository.get().crearCita(
-                        null, nombre, null, servicioSel[0],
-                        fechaBD, horaSelStr[0], precioFinal,
-                        etNotas.getText().toString().trim(),
+                        clienteId, nombreFinal, null, servicioFinal,
+                        fechaBD, horaFinal, precioFinal, notasFinal,
                         new SupabaseRepository.Callback<CitaModel>() {
                             @Override public void onSuccess(CitaModel model) {
                                 runOnUiThread(() -> {
-                                    todasLasCitas.add(new Cita(model));
+                                    // Asegurar campos aunque el dummy venga vacío
+                                    if (model.clienteNombre == null || model.clienteNombre.isEmpty())
+                                        model.clienteNombre = nombreFinal;
+                                    if (model.servicioNombre == null || model.servicioNombre.isEmpty())
+                                        model.servicioNombre = servicioFinal;
+                                    if (model.fecha == null || model.fecha.isEmpty())
+                                        model.fecha = fechaBD;
+                                    if (model.hora == null || model.hora.isEmpty())
+                                        model.hora = horaFinal + ":00";
+                                    if (model.estado == null) model.estado = "pendiente";
+                                    // precio ya asignado por Supabase o se recargará en onResume
+                                    todasLasCitas.add(0, new Cita(model));
                                     sheet.dismiss();
                                     ocultarTeclado();
                                     renderVista();
@@ -992,7 +1100,7 @@ public class AgendaActivity extends AppCompatActivity {
                             }
                             @Override public void onError(String e) {
                                 runOnUiThread(() -> {
-                                    btnGuardar.setEnabled(true);
+                                    btnGuardarCard.setEnabled(true);
                                     btnGuardar.setText("Guardar");
                                     Toast.makeText(AgendaActivity.this,
                                             "Error: " + e, Toast.LENGTH_SHORT).show();
@@ -1460,4 +1568,152 @@ public class AgendaActivity extends AppCompatActivity {
             imm.hideSoftInputFromWindow(focus.getWindowToken(), 0);
         }
     }
+
+    // ════════════════════════════════════════════════════════════════
+    //  BUSCADOR DE CLIENTES — busca en Supabase y muestra sugerencias
+    // ════════════════════════════════════════════════════════════════
+    // ════════════════════════════════════════════════════════════════
+    //  BUSCADOR DE CLIENTES
+    // ════════════════════════════════════════════════════════════════
+    private void mostrarSugerencias(String texto, LinearLayout layoutSug,
+                                    EditText etCliente, String[] clienteIdSel,
+                                    boolean[] seleccionando) {
+        SupabaseRepository.get().getClientes(null,
+                new SupabaseRepository.Callback<List<ClienteModel>>() {
+                    @Override public void onSuccess(List<ClienteModel> data) {
+                        runOnUiThread(() -> {
+                            layoutSug.removeAllViews();
+                            String q = texto.toLowerCase().trim();
+
+                            List<ClienteModel> matches = new ArrayList<>();
+                            for (ClienteModel c : data) {
+                                if (matches.size() >= 6) break;
+                                String nom = c.nombre != null ? c.nombre.trim() : "";
+                                String ape = c.apellidos != null ? c.apellidos.trim() : "";
+                                String full = ape.isEmpty() ? nom : nom + " " + ape;
+                                String tel  = c.telefono != null ? c.telefono.trim() : "";
+                                if (full.toLowerCase().contains(q) || tel.contains(q))
+                                    matches.add(c);
+                            }
+
+                            if (matches.isEmpty()) {
+                                layoutSug.setVisibility(View.GONE);
+                                return;
+                            }
+
+                            // Contenedor con borde y sombra
+                            CardView contenedor = new CardView(AgendaActivity.this);
+                            contenedor.setLayoutParams(new LinearLayout.LayoutParams(
+                                    LinearLayout.LayoutParams.MATCH_PARENT,
+                                    LinearLayout.LayoutParams.WRAP_CONTENT));
+                            contenedor.setRadius(dpToPx(14));
+                            contenedor.setCardElevation(dpToPx(6));
+                            contenedor.setCardBackgroundColor(Color.WHITE);
+
+                            LinearLayout lista = new LinearLayout(AgendaActivity.this);
+                            lista.setOrientation(LinearLayout.VERTICAL);
+                            contenedor.addView(lista);
+
+                            for (int idx = 0; idx < matches.size(); idx++) {
+                                ClienteModel c = matches.get(idx);
+                                String nom  = c.nombre   != null ? c.nombre.trim()   : "";
+                                String ape  = c.apellidos!= null ? c.apellidos.trim(): "";
+                                String full = ape.isEmpty() ? nom : nom + " " + ape;
+                                String tel  = c.telefono != null ? c.telefono.trim() : "";
+                                if (full.isEmpty()) full = "Cliente";
+                                String inicial = String.valueOf(full.charAt(0)).toUpperCase();
+
+                                // Fila
+                                LinearLayout fila = new LinearLayout(AgendaActivity.this);
+                                fila.setOrientation(LinearLayout.HORIZONTAL);
+                                fila.setGravity(Gravity.CENTER_VERTICAL);
+                                fila.setPadding(dpToPx(14), dpToPx(13), dpToPx(14), dpToPx(13));
+                                fila.setClickable(true);
+                                fila.setFocusable(true);
+
+                                // Avatar
+                                CardView av = new CardView(AgendaActivity.this);
+                                LinearLayout.LayoutParams avP = new LinearLayout.LayoutParams(dpToPx(36), dpToPx(36));
+                                avP.setMarginEnd(dpToPx(10));
+                                av.setLayoutParams(avP);
+                                av.setRadius(dpToPx(10));
+                                av.setCardElevation(0);
+                                av.setCardBackgroundColor(Color.parseColor("#0A66FF"));
+                                TextView tvI = new TextView(AgendaActivity.this);
+                                tvI.setText(inicial);
+                                tvI.setTextSize(14f);
+                                tvI.setTextColor(Color.WHITE);
+                                tvI.setTypeface(getResources().getFont(R.font.outfit_bold));
+                                tvI.setGravity(Gravity.CENTER);
+                                tvI.setLayoutParams(new LinearLayout.LayoutParams(
+                                        LinearLayout.LayoutParams.MATCH_PARENT,
+                                        LinearLayout.LayoutParams.MATCH_PARENT));
+                                av.addView(tvI);
+                                fila.addView(av);
+
+                                // Info
+                                LinearLayout info = new LinearLayout(AgendaActivity.this);
+                                info.setOrientation(LinearLayout.VERTICAL);
+                                info.setLayoutParams(new LinearLayout.LayoutParams(
+                                        0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+                                TextView tvN = new TextView(AgendaActivity.this);
+                                tvN.setText(full);
+                                tvN.setTextSize(13f);
+                                tvN.setTextColor(Color.parseColor("#0D1B3E"));
+                                tvN.setTypeface(getResources().getFont(R.font.outfit_bold));
+                                info.addView(tvN);
+                                if (!tel.isEmpty()) {
+                                    TextView tvT = new TextView(AgendaActivity.this);
+                                    tvT.setText(tel);
+                                    tvT.setTextSize(11f);
+                                    tvT.setTextColor(Color.parseColor("#6B7FA3"));
+                                    tvT.setTypeface(getResources().getFont(R.font.outfit_regular));
+                                    info.addView(tvT);
+                                }
+                                fila.addView(info);
+
+                                // Flecha
+                                TextView arrow = new TextView(AgendaActivity.this);
+                                arrow.setText("›");
+                                arrow.setTextSize(20f);
+                                arrow.setTextColor(Color.parseColor("#0A66FF"));
+                                arrow.setPadding(dpToPx(8), 0, 0, 0);
+                                fila.addView(arrow);
+
+                                // ── CLICK: asigna nombre e id, cierra la lista ──
+                                final String idFinal   = c.id;
+                                final String nomFinal  = full;
+                                fila.setOnClickListener(vv -> {
+                                    // Marcar que el próximo cambio de texto es programático
+                                    seleccionando[0]  = true;
+                                    clienteIdSel[0]   = idFinal;
+                                    etCliente.setText(nomFinal);
+                                    etCliente.setSelection(nomFinal.length());
+                                    layoutSug.setVisibility(View.GONE);
+                                    layoutSug.removeAllViews();
+                                    ocultarTeclado();
+                                });
+
+                                lista.addView(fila);
+
+                                // Separador
+                                if (idx < matches.size() - 1) {
+                                    View sep = new View(AgendaActivity.this);
+                                    LinearLayout.LayoutParams sp = new LinearLayout.LayoutParams(
+                                            LinearLayout.LayoutParams.MATCH_PARENT, dpToPx(1));
+                                    sp.setMargins(dpToPx(14), 0, dpToPx(14), 0);
+                                    sep.setLayoutParams(sp);
+                                    sep.setBackgroundColor(Color.parseColor("#EEF2FF"));
+                                    lista.addView(sep);
+                                }
+                            }
+
+                            layoutSug.addView(contenedor);
+                            layoutSug.setVisibility(View.VISIBLE);
+                        });
+                    }
+                    @Override public void onError(String e) { /* silencioso */ }
+                });
+    }
+
 }

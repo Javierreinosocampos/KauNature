@@ -10,7 +10,6 @@ import retrofit2.http.GET;
 import retrofit2.http.PATCH;
 import retrofit2.http.POST;
 import retrofit2.http.Query;
-import retrofit2.http.QueryMap;
 
 public interface SupabaseApi {
 
@@ -27,28 +26,33 @@ public interface SupabaseApi {
     @POST("clientes")
     Call<List<ClienteModel>> crearCliente(@Body ClienteModel cliente);
 
+    // Toggle estado (activo/inactivo) — solo actualiza el campo estado
     @PATCH("clientes")
     Call<List<ClienteModel>> actualizarCliente(
             @Query("id") String idFiltro,    // "eq.UUID"
             @Body Map<String, Object> campos
     );
 
+    // Edición completa de campos (nombre, teléfono, email, notas…)
+    @PATCH("clientes")
+    Call<List<ClienteModel>> actualizarClienteMap(
+            @Query("id") String idFiltro,    // "eq.UUID"
+            @Body Map<String, Object> campos
+    );
+
+    @DELETE("clientes")
+    Call<Void> eliminarCliente(@Query("id") String idFiltro);
+
     // ══════════════════════════════════════════════════════════════════
     //  CITAS
     // ══════════════════════════════════════════════════════════════════
 
-    /** Citas de una fecha exacta (usa la vista v_citas que resuelve nombres) */
     @GET("v_citas")
     Call<List<CitaModel>> getCitasPorFecha(
             @Query("fecha") String fecha,    // "eq.yyyy-MM-dd"
             @Query("order") String order
     );
 
-    /**
-     * Citas en un rango de fechas.
-     * Retrofit permite dos @Query con el mismo nombre → Supabase recibe
-     * ?fecha=gte.desde&fecha=lte.hasta que es la sintaxis correcta de PostgREST.
-     */
     @GET("v_citas")
     Call<List<CitaModel>> getCitasRangoFecha(
             @Query("fecha") String desde,    // "gte.yyyy-MM-dd"
@@ -142,3 +146,5 @@ public interface SupabaseApi {
             @Query("cliente_nombre")     String nombre
     );
 }
+
+/* repasar todo el crid porque ahora mismo no funciona bien */

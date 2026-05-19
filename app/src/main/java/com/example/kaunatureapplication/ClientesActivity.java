@@ -423,6 +423,179 @@ public class ClientesActivity extends AppCompatActivity {
         }
 
         sheet.show();
+
+        // Cargar membresía activa y mostrar banner si existe
+        if (cliente.id != null) {
+            SupabaseRepository.get().getMembresias(cliente.id, true,
+                    new SupabaseRepository.Callback<List<MembresiaModel>>() {
+                        @Override public void onSuccess(List<MembresiaModel> mems) {
+                            runOnUiThread(() -> {
+                                if (!mems.isEmpty()) mostrarBannerMembresia(view, mems.get(0), sheet);
+                            });
+                        }
+                        @Override public void onError(String e) {}
+                    });
+        }
+    }
+
+    private void mostrarBannerMembresia(View sheetView, MembresiaModel mem, BottomSheetDialog sheet) {
+        android.view.ViewGroup c2 = encontrarContenedor(sheetView);
+        if (c2 == null) return;
+
+        CardView banner = new CardView(this);
+        LinearLayout.LayoutParams bp = new LinearLayout.LayoutParams(-1, -2);
+        bp.setMargins(0, dpToPx(12), 0, 0); banner.setLayoutParams(bp);
+        banner.setRadius(dpToPx(16)); banner.setCardElevation(dpToPx(2));
+        banner.setCardBackgroundColor(Color.parseColor("#E8F0FF"));
+
+        LinearLayout inner = new LinearLayout(this);
+        inner.setOrientation(LinearLayout.VERTICAL);
+        inner.setPadding(dpToPx(16), dpToPx(14), dpToPx(16), dpToPx(14));
+
+        TextView tvTit = new TextView(this);
+        tvTit.setText("🎫 Membresía activa · " + mem.tipo);
+        tvTit.setTextSize(13f); tvTit.setTextColor(Color.parseColor("#0D1B3E"));
+        tvTit.setTypeface(getResources().getFont(R.font.outfit_bold));
+        inner.addView(tvTit);
+
+        TextView tvPr = new TextView(this);
+        tvPr.setText(String.format("%.0f€/mes · desde %s", mem.precio,
+                mem.fechaInicio != null ? mem.fechaInicio : "—"));
+        tvPr.setTextSize(11f); tvPr.setTextColor(Color.parseColor("#6B7FA3"));
+        tvPr.setTypeface(getResources().getFont(R.font.outfit_regular));
+        LinearLayout.LayoutParams pp2 = new LinearLayout.LayoutParams(-2, -2);
+        pp2.topMargin = dpToPx(3); tvPr.setLayoutParams(pp2);
+        inner.addView(tvPr);
+
+        LinearLayout rowB = new LinearLayout(this);
+        rowB.setOrientation(LinearLayout.HORIZONTAL);
+        LinearLayout.LayoutParams rbP = new LinearLayout.LayoutParams(-1, -2);
+        rbP.topMargin = dpToPx(12); rowB.setLayoutParams(rbP);
+
+        CardView bEdit = new CardView(this);
+        LinearLayout.LayoutParams ep = new LinearLayout.LayoutParams(0, dpToPx(42), 1f);
+        ep.setMarginEnd(dpToPx(8)); bEdit.setLayoutParams(ep);
+        bEdit.setRadius(dpToPx(10)); bEdit.setCardElevation(0);
+        bEdit.setCardBackgroundColor(Color.parseColor("#0A66FF"));
+        TextView tvEd = new TextView(this); tvEd.setText("✏️ Editar cuota");
+        tvEd.setTextSize(12f); tvEd.setTextColor(Color.WHITE);
+        tvEd.setTypeface(getResources().getFont(R.font.outfit_bold));
+        tvEd.setGravity(Gravity.CENTER); tvEd.setLayoutParams(new LinearLayout.LayoutParams(-1, -1));
+        bEdit.addView(tvEd); bEdit.setClickable(true);
+        bEdit.setOnClickListener(v -> showEditarCuotaSheet(mem));
+        rowB.addView(bEdit);
+
+        CardView bCan = new CardView(this);
+        bCan.setLayoutParams(new LinearLayout.LayoutParams(0, dpToPx(42), 1f));
+        bCan.setRadius(dpToPx(10)); bCan.setCardElevation(0);
+        bCan.setCardBackgroundColor(Color.parseColor("#FFF0F0"));
+        TextView tvCan = new TextView(this); tvCan.setText("❌ Cancelar membresía");
+        tvCan.setTextSize(11f); tvCan.setTextColor(Color.parseColor("#EF4444"));
+        tvCan.setTypeface(getResources().getFont(R.font.outfit_bold));
+        tvCan.setGravity(Gravity.CENTER); tvCan.setLayoutParams(new LinearLayout.LayoutParams(-1, -1));
+        bCan.addView(tvCan); bCan.setClickable(true);
+        bCan.setOnClickListener(v -> {
+            if (mem.id == null) return;
+            tvCan.setText("Cancelando..."); bCan.setClickable(false);
+            String hoy = new java.text.SimpleDateFormat("yyyy-MM-dd",
+                    java.util.Locale.getDefault()).format(new java.util.Date());
+            SupabaseRepository.get().cancelarMembresia(mem.id, hoy,
+                    new SupabaseRepository.Callback<Void>() {
+                        @Override public void onSuccess(Void d) {
+                            runOnUiThread(() -> { sheet.dismiss();
+                                Toast.makeText(ClientesActivity.this, "Membresía cancelada", Toast.LENGTH_SHORT).show(); });
+                        }
+                        @Override public void onError(String e) {
+                            runOnUiThread(() -> { tvCan.setText("❌ Cancelar membresía"); bCan.setClickable(true);
+                                Toast.makeText(ClientesActivity.this, "Error: " + e, Toast.LENGTH_SHORT).show(); });
+                        }
+                    });
+        });
+        rowB.addView(bCan);
+        inner.addView(rowB);
+        banner.addView(inner);
+        c2.addView(banner);
+    }
+
+    private void showEditarCuotaSheet(MembresiaModel mem) {
+        BottomSheetDialog s2 = new BottomSheetDialog(this,
+                com.google.android.material.R.style.Theme_Material3_Light_BottomSheetDialog);
+        LinearLayout root2 = new LinearLayout(this);
+        root2.setOrientation(LinearLayout.VERTICAL);
+        root2.setBackgroundColor(Color.WHITE);
+        root2.setPadding(dpToPx(20), dpToPx(24), dpToPx(20), dpToPx(48));
+
+        TextView tvT2 = new TextView(this);
+        tvT2.setText("Editar cuota mensual"); tvT2.setTextSize(18f);
+        tvT2.setTextColor(Color.parseColor("#0D1B3E"));
+        tvT2.setTypeface(getResources().getFont(R.font.outfit_bold));
+        root2.addView(tvT2);
+
+        final double[] np = {mem.precio};
+        LinearLayout rowP = new LinearLayout(this);
+        rowP.setOrientation(LinearLayout.HORIZONTAL);
+        rowP.setGravity(Gravity.CENTER_VERTICAL);
+        LinearLayout.LayoutParams rpp = new LinearLayout.LayoutParams(-1, -2);
+        rpp.topMargin = dpToPx(24); rpp.bottomMargin = dpToPx(32); rowP.setLayoutParams(rpp);
+
+        CardView bm = new CardView(this);
+        bm.setLayoutParams(new LinearLayout.LayoutParams(dpToPx(52), dpToPx(52)));
+        bm.setRadius(dpToPx(12)); bm.setCardElevation(dpToPx(1));
+        bm.setCardBackgroundColor(Color.parseColor("#EEF4FF"));
+        TextView tvMn = new TextView(this); tvMn.setText("−"); tvMn.setTextSize(26f);
+        tvMn.setTextColor(Color.parseColor("#0A66FF")); tvMn.setTypeface(getResources().getFont(R.font.outfit_bold));
+        tvMn.setGravity(Gravity.CENTER); tvMn.setLayoutParams(new LinearLayout.LayoutParams(-1, -1));
+        bm.addView(tvMn); bm.setClickable(true); rowP.addView(bm);
+
+        final TextView tvPrecio2 = new TextView(this);
+        tvPrecio2.setText(String.format("%.0f€", mem.precio));
+        tvPrecio2.setTextSize(40f); tvPrecio2.setTextColor(Color.parseColor("#0A66FF"));
+        tvPrecio2.setTypeface(getResources().getFont(R.font.outfit_bold));
+        tvPrecio2.setGravity(Gravity.CENTER);
+        tvPrecio2.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1f));
+        rowP.addView(tvPrecio2);
+
+        CardView bma = new CardView(this);
+        bma.setLayoutParams(new LinearLayout.LayoutParams(dpToPx(52), dpToPx(52)));
+        bma.setRadius(dpToPx(12)); bma.setCardElevation(dpToPx(1));
+        bma.setCardBackgroundColor(Color.parseColor("#EEF4FF"));
+        TextView tvMa = new TextView(this); tvMa.setText("+"); tvMa.setTextSize(26f);
+        tvMa.setTextColor(Color.parseColor("#0A66FF")); tvMa.setTypeface(getResources().getFont(R.font.outfit_bold));
+        tvMa.setGravity(Gravity.CENTER); tvMa.setLayoutParams(new LinearLayout.LayoutParams(-1, -1));
+        bma.addView(tvMa); bma.setClickable(true); rowP.addView(bma);
+
+        bm.setOnClickListener(v -> { if (np[0]>5) { np[0]-=5; tvPrecio2.setText(String.format("%.0f€",np[0])); } });
+        bma.setOnClickListener(v -> { if (np[0]<500) { np[0]+=5; tvPrecio2.setText(String.format("%.0f€",np[0])); } });
+        root2.addView(rowP);
+
+        CardView btnSave = new CardView(this);
+        btnSave.setLayoutParams(new LinearLayout.LayoutParams(-1, dpToPx(54)));
+        btnSave.setRadius(dpToPx(16)); btnSave.setCardElevation(dpToPx(3));
+        btnSave.setCardBackgroundColor(Color.parseColor("#0A66FF"));
+        TextView tvSave = new TextView(this); tvSave.setText("Guardar nueva cuota");
+        tvSave.setTextSize(14f); tvSave.setTextColor(Color.WHITE);
+        tvSave.setTypeface(getResources().getFont(R.font.outfit_bold));
+        tvSave.setGravity(Gravity.CENTER); tvSave.setLayoutParams(new LinearLayout.LayoutParams(-1, -1));
+        btnSave.addView(tvSave); btnSave.setClickable(true);
+        btnSave.setOnClickListener(v -> {
+            if (mem.id == null) return;
+            tvSave.setText("Guardando..."); btnSave.setClickable(false);
+            SupabaseRepository.get().actualizarPrecioMembresia(mem.id, np[0],
+                    new SupabaseRepository.Callback<Void>() {
+                        @Override public void onSuccess(Void d) {
+                            runOnUiThread(() -> { mem.precio = np[0]; s2.dismiss();
+                                Toast.makeText(ClientesActivity.this,
+                                        "✅ Cuota: " + (int)np[0] + "€/mes", Toast.LENGTH_SHORT).show(); });
+                        }
+                        @Override public void onError(String e) {
+                            runOnUiThread(() -> { tvSave.setText("Guardar nueva cuota"); btnSave.setClickable(true);
+                                Toast.makeText(ClientesActivity.this, "Error: "+e, Toast.LENGTH_SHORT).show(); });
+                        }
+                    });
+        });
+        root2.addView(btnSave);
+        s2.setContentView(root2);
+        s2.show();
     }
 
     /** Busca el LinearLayout raíz dentro del sheet (puede estar dentro de un ScrollView) */

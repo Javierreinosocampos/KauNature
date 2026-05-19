@@ -117,12 +117,31 @@ public class AgendaActivity extends AppCompatActivity {
     // ════════════════════════════════════════════════════════════════
     //  onCreate
     // ════════════════════════════════════════════════════════════════
+    // ID de cita a abrir automáticamente (viene del MainActivity)
+    private String citaIdPendiente = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_agenda);
 
         fechaSeleccionada = Calendar.getInstance();
+
+        // Si venimos del MainActivity con una cita concreta
+        if (getIntent() != null) {
+            citaIdPendiente = getIntent().getStringExtra("CITA_ID");
+            String citaFecha = getIntent().getStringExtra("CITA_FECHA");
+            if (citaFecha != null && citaFecha.length() >= 10) {
+                // Navegar a la fecha de esa cita
+                try {
+                    int anio = Integer.parseInt(citaFecha.substring(0, 4));
+                    int mes  = Integer.parseInt(citaFecha.substring(5, 7)) - 1;
+                    int dia  = Integer.parseInt(citaFecha.substring(8, 10));
+                    fechaSeleccionada.set(anio, mes, dia);
+                } catch (Exception ignored) {}
+            }
+        }
+
         bindViews();
         setupTabs();
         setupBotones();
@@ -186,17 +205,23 @@ public class AgendaActivity extends AppCompatActivity {
                     @Override public void onSuccess(List<CitaModel> data) {
                         runOnUiThread(() -> {
                             cargando = false;
-                            // Reemplazar datos solo cuando llegan — nunca limpiar antes
                             todasLasCitas.clear();
                             for (CitaModel m : data) {
-                                if (m.clienteNombre != null && !m.clienteNombre.isEmpty())
-                                    todasLasCitas.add(new Cita(m));
-                                else if (m.clienteNombre == null) {
-                                    m.clienteNombre = "";
-                                    todasLasCitas.add(new Cita(m));
-                                }
+                                if (m.clienteNombre == null) m.clienteNombre = "";
+                                todasLasCitas.add(new Cita(m));
                             }
                             renderVista();
+                            // Si venimos del MainActivity, abrir el detalle de la cita concreta
+                            if (citaIdPendiente != null) {
+                                for (Cita c : todasLasCitas) {
+                                    if (citaIdPendiente.equals(c.id)) {
+                                        citaIdPendiente = null; // consumir — solo una vez
+                                        showDetalleCita(c);
+                                        break;
+                                    }
+                                }
+                                citaIdPendiente = null; // limpiar aunque no se encontró
+                            }
                         });
                     }
                     @Override public void onError(String e) {

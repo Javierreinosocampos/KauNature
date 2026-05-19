@@ -145,6 +145,27 @@ public interface SupabaseApi {
             @Query("horario_semanal_id") String franjaId,
             @Query("cliente_nombre")     String nombre
     );
-}
 
-/* repasar todo el crid porque ahora mismo no funciona bien */
+    // ══════════════════════════════════════════════════════════════════
+    //  MEMBRESÍAS
+    // ══════════════════════════════════════════════════════════════════
+
+    @GET("membresias")
+    Call<List<MembresiaModel>> getMembresias(
+            @Query("cliente_id") String clienteIdFiltro,
+            @Query("activa")     String activaFiltro,
+            @Query("order")      String order
+    );
+
+    @POST("membresias")
+    Call<List<MembresiaModel>> crearMembresia(@Body java.util.Map<String, Object> body);
+
+    @PATCH("membresias")
+    Call<List<MembresiaModel>> actualizarMembresia(
+            @Query("id") String idFiltro,
+            @Body java.util.Map<String, Object> campos
+    );
+
+    @DELETE("membresias")
+    Call<Void> eliminarMembresia(@Query("id") String idFiltro);
+}

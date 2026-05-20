@@ -68,7 +68,9 @@ public class ClientesActivity extends AppCompatActivity {
                     ? nombre + " " + apellidos : nombre;
         }
 
-        boolean tieneDeuda() { return saldo < 0; }
+        double deudaReal = 0; // calculada desde cobros pendientes
+        boolean tieneDeuda() { return deudaReal > 0 || saldo < 0; }
+        double deudaTotal()  { return deudaReal > 0 ? deudaReal : Math.abs(Math.min(saldo, 0)); }
     }
 
     // ── Estado ───────────────────────────────────────────────────────
@@ -127,6 +129,8 @@ public class ClientesActivity extends AppCompatActivity {
                             todosLosClientes.clear();
                             for (ClienteModel m : data) todosLosClientes.add(new Cliente(m));
                             renderLista();
+                            // Cargar cobros pendientes para calcular deuda real
+                            cargarDeudasReales();
                         });
                     }
                     @Override public void onError(String e) {
@@ -136,6 +140,34 @@ public class ClientesActivity extends AppCompatActivity {
                             renderLista();
                         });
                     }
+                });
+    }
+
+    /** Carga cobros pendientes y asigna deuda real a cada cliente */
+    private void cargarDeudasReales() {
+        SupabaseRepository.get().getCobros("eq.pendiente",
+                new SupabaseRepository.Callback<List<CobroModel>>() {
+                    @Override public void onSuccess(List<CobroModel> cobros) {
+                        // Sumar deuda por clienteId
+                        java.util.Map<String, Double> deudas = new java.util.HashMap<>();
+                        for (CobroModel c : cobros) {
+                            if (c.clienteId == null) continue;
+                            deudas.put(c.clienteId,
+                                    deudas.getOrDefault(c.clienteId, 0.0) + c.importe);
+                        }
+                        // Asignar a cada cliente
+                        boolean hayDeudas = false;
+                        for (Cliente cl : todosLosClientes) {
+                            if (cl.id != null && deudas.containsKey(cl.id)) {
+                                cl.deudaReal = deudas.get(cl.id);
+                                hayDeudas = true;
+                            }
+                        }
+                        if (hayDeudas) {
+                            runOnUiThread(() -> renderLista());
+                        }
+                    }
+                    @Override public void onError(String e) {}
                 });
     }
 
@@ -287,7 +319,7 @@ public class ClientesActivity extends AppCompatActivity {
         rightCol.setLayoutParams(rp);
         TextView badge = new TextView(this);
         if (cliente.tieneDeuda()) {
-            badge.setText(String.format("−%.2f€", Math.abs(cliente.saldo)).replace(".", ","));
+            badge.setText(String.format("−%.2f€", cliente.deudaTotal()).replace(".", ","));
             badge.setTextColor(Color.WHITE);
             badge.setBackground(getDrawable(R.drawable.shape_chip_blue));
             badge.getBackground().setTint(Color.parseColor("#EF4444"));
@@ -382,18 +414,26 @@ public class ClientesActivity extends AppCompatActivity {
                     });
         });
 
-        // Botones existentes en el XML
+        // Botones con paso de contexto del cliente
         view.findViewById(R.id.btnDetalleCobrar).setOnClickListener(v -> {
             sheet.dismiss();
-            startActivity(new Intent(this, CobrosActivity.class));
+            Intent iCobros = new Intent(this, CobrosActivity.class);
+            iCobros.putExtra("CLIENTE_ID",     cliente.id);
+            iCobros.putExtra("CLIENTE_NOMBRE", cliente.nombreCompleto());
+            startActivity(iCobros);
         });
         view.findViewById(R.id.btnDetalleCita).setOnClickListener(v -> {
             sheet.dismiss();
-            startActivity(new Intent(this, AgendaActivity.class));
+            Intent iAgenda = new Intent(this, AgendaActivity.class);
+            iAgenda.putExtra("CLIENTE_ID",     cliente.id);
+            iAgenda.putExtra("CLIENTE_NOMBRE", cliente.nombreCompleto());
+            startActivity(iAgenda);
         });
         view.findViewById(R.id.btnDetalleCheckin).setOnClickListener(v -> {
             sheet.dismiss();
-            startActivity(new Intent(this, AforoActivity.class));
+            Intent iGym = new Intent(this, GimnasioActivity.class);
+            iGym.putExtra("CLIENTE_NOMBRE", cliente.nombreCompleto());
+            startActivity(iGym);
         });
 
         // ── Botones Editar y Eliminar ─────────────────────────────
@@ -431,6 +471,56 @@ public class ClientesActivity extends AppCompatActivity {
                         @Override public void onSuccess(List<MembresiaModel> mems) {
                             runOnUiThread(() -> {
                                 if (!mems.isEmpty()) mostrarBannerMembresia(view, mems.get(0), sheet);
+                            });
+                        }
+                        @Override public void onError(String e) {}
+                    });
+        }
+
+        // Cargar cobros y citas reales del cliente
+        if (cliente.id != null) {
+            // Cobros pendientes
+            SupabaseRepository.get().getCobros(null,
+                    new SupabaseRepository.Callback<List<CobroModel>>() {
+                        @Override public void onSuccess(List<CobroModel> data) {
+                            double pendiente = 0;
+                            for (CobroModel c : data) {
+                                if (cliente.id.equals(c.clienteId) && "pendiente".equals(c.estado))
+                                    pendiente += c.importe;
+                            }
+                            final double deuda = pendiente;
+                            runOnUiThread(() -> {
+                                TextView tvSaldo = view.findViewById(R.id.tvDetalleSaldo);
+                                if (tvSaldo == null) return;
+                                if (deuda > 0) {
+                                    tvSaldo.setText(String.format("%.2f€ pendiente", deuda).replace(".", ","));
+                                    tvSaldo.setTextColor(Color.parseColor("#EF4444"));
+                                } else {
+                                    tvSaldo.setText("Al día ✅");
+                                    tvSaldo.setTextColor(Color.parseColor("#12B76A"));
+                                }
+                            });
+                        }
+                        @Override public void onError(String e) {}
+                    });
+
+            // Citas totales y próximas
+            SupabaseRepository.get().getCitasRango("2020-01-01", "2030-12-31",
+                    new SupabaseRepository.Callback<List<CitaModel>>() {
+                        @Override public void onSuccess(List<CitaModel> data) {
+                            int total = 0, proximas = 0;
+                            for (CitaModel c : data) {
+                                if (cliente.id.equals(c.clienteId)) {
+                                    total++;
+                                    if ("pendiente".equals(c.estado) || "confirmada".equals(c.estado))
+                                        proximas++;
+                                }
+                            }
+                            final int t = total, p = proximas;
+                            runOnUiThread(() -> {
+                                TextView tvCitas = view.findViewById(R.id.tvDetalleCitas);
+                                if (tvCitas != null)
+                                    tvCitas.setText(t + (p > 0 ? " (" + p + " próx.)" : ""));
                             });
                         }
                         @Override public void onError(String e) {}

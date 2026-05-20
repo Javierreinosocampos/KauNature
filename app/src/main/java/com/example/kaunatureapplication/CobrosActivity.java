@@ -1,5 +1,6 @@
 package com.example.kaunatureapplication;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -28,6 +29,7 @@ public class CobrosActivity extends AppCompatActivity {
     // ── Modelo local ─────────────────────────────────────────────────
     static class Cobro {
         String id;          // UUID Supabase
+        String clienteId;   // UUID del cliente (para enlazar)
         String cliente;
         String concepto;
         double importe;
@@ -39,8 +41,9 @@ public class CobrosActivity extends AppCompatActivity {
 
         /** Construye desde modelo de red */
         Cobro(CobroModel m) {
-            this.id       = m.id;
-            this.cliente  = m.clienteNombre != null ? m.clienteNombre : "";
+            this.id        = m.id;
+            this.clienteId = m.clienteId;
+            this.cliente   = m.clienteNombre != null ? m.clienteNombre : "";
             this.concepto = m.concepto      != null ? m.concepto      : "";
             this.importe  = m.importe;
             this.metodo   = m.metodo        != null ? m.metodo        : "Efectivo";
@@ -92,8 +95,11 @@ public class CobrosActivity extends AppCompatActivity {
     private static final String[] METODOS_KEY = {"Efectivo","Tarjeta","Bizum","Transferencia"};
 
     // ── Estado ───────────────────────────────────────────────────────
-    private final List<Cobro> todosCobros = new ArrayList<>();
-    private String filtroActual = "Todos";
+    private final List<Cobro> todosCobros    = new ArrayList<>();
+    private String filtroActual              = "Todos";
+    private String filtroClienteId           = null;  // viene de ClientesActivity
+    private String filtroClienteNom          = null;
+    private final List<ClienteModel> todosLosClientes = new ArrayList<>();
 
     // ── Views ────────────────────────────────────────────────────────
     private LinearLayout listaPendientes, listaHistorial;
@@ -115,7 +121,16 @@ public class CobrosActivity extends AppCompatActivity {
         setupFiltros();
         setupBotones();
         setupBottomNav();
-        cargarCobros();     // ← carga desde Supabase
+
+        // Recibir cliente desde ClientesActivity
+        if (getIntent() != null) {
+            filtroClienteId  = getIntent().getStringExtra("CLIENTE_ID");
+            filtroClienteNom = getIntent().getStringExtra("CLIENTE_NOMBRE");
+
+        }
+
+        cargarClientes();  // cargar pool de clientes para el buscador
+        cargarCobros();
     }
 
     // ════════════════════════════════════════════════════════════════
@@ -198,6 +213,10 @@ public class CobrosActivity extends AppCompatActivity {
     private void renderTodo() {
         List<Cobro> filtrados = new ArrayList<>();
         for (Cobro c : todosCobros) {
+            // Si venimos de un cliente concreto, filtrar solo sus cobros
+            if (filtroClienteId != null && !filtroClienteId.isEmpty()) {
+                if (!filtroClienteId.equals(c.clienteId)) continue;
+            }
             boolean pasa;
             switch (filtroActual) {
                 case "pendiente":     pasa = "pendiente".equals(c.estado);      break;
@@ -499,6 +518,23 @@ public class CobrosActivity extends AppCompatActivity {
             layout.addView(btnCobrar);
         }
 
+        // ── Botón: ver cliente (si tiene clienteId) ───────────────
+        if (cobro.clienteId != null && !cobro.clienteId.isEmpty()) {
+            CardView btnCliente = buildAccionBtn("👤 Ver cliente", "#EEF4FF", false);
+            ((TextView) btnCliente.getChildAt(0)).setTextColor(Color.parseColor("#0A66FF"));
+            LinearLayout.LayoutParams clP = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, dpToPx(52));
+            clP.bottomMargin = dpToPx(8);
+            btnCliente.setLayoutParams(clP);
+            btnCliente.setOnClickListener(v -> {
+                sheet.dismiss();
+                Intent iClientes = new Intent(this, ClientesActivity.class);
+                iClientes.putExtra("OPEN_CLIENTE_ID", cobro.clienteId);
+                startActivity(iClientes);
+            });
+            layout.addView(btnCliente);
+        }
+
         // ── Botón: editar ──────────────────────────────────────────
         CardView btnEditar = buildAccionBtn("✏️ Editar cobro", "#E8F0FF", false);
         ((TextView) btnEditar.getChildAt(0)).setTextColor(Color.parseColor("#0A66FF"));
@@ -592,12 +628,30 @@ public class CobrosActivity extends AppCompatActivity {
         EditText etImporte  = view.findViewById(R.id.etCobroImporte);
         EditText etNotas    = view.findViewById(R.id.etCobroNotas);
         TextView tvTitulo   = view.findViewById(R.id.tvNuevoCobroTitulo);
-        // btnGuardarCobro es CardView en el XML
         androidx.cardview.widget.CardView btnGuardarCard = view.findViewById(R.id.btnGuardarCobro);
         TextView btnGuardar = (TextView) btnGuardarCard.getChildAt(0);
 
+        // Buscador de clientes — se inyecta debajo del campo etCliente
+        final String[] clienteIdSel  = {null};
+        final boolean[] seleccionando = {false};
+        android.widget.LinearLayout layoutSug = new android.widget.LinearLayout(this);
+        layoutSug.setOrientation(android.widget.LinearLayout.VERTICAL);
+        layoutSug.setVisibility(android.view.View.GONE);
+        android.view.ViewGroup parentEt = (android.view.ViewGroup) etCliente.getParent();
+        int idxEt = -1;
+        for (int i = 0; i < parentEt.getChildCount(); i++)
+            if (parentEt.getChildAt(i) == etCliente) { idxEt = i; break; }
+        if (idxEt >= 0) parentEt.addView(layoutSug, idxEt + 1);
+        setupBuscadorClientes(etCliente, layoutSug, clienteIdSel, seleccionando);
+
         final String[] metodoSel = {METODOS_KEY[0]};
         final String[] estadoSel = {"cobrado"};
+
+        // Si venimos de ClientesActivity, prerellenar cliente
+        if (cobroEditar == null && filtroClienteNom != null && !filtroClienteNom.isEmpty()) {
+            etCliente.setText(filtroClienteNom);
+            clienteIdSel[0] = filtroClienteId;
+        }
 
         if (cobroEditar != null) {
             tvTitulo.setText("Editar cobro");
@@ -735,7 +789,7 @@ public class CobrosActivity extends AppCompatActivity {
                 // ── CREAR ─────────────────────────────────────────
                 final double importeFinal = importe;
                 SupabaseRepository.get().crearCobro(
-                        null, nombre, concepto, importe,
+                        clienteIdSel[0], nombre, concepto, importe,
                         metodoSel[0], estadoSel[0], notas,
                         new SupabaseRepository.Callback<CobroModel>() {
                             @Override public void onSuccess(CobroModel data) {
@@ -799,4 +853,134 @@ public class CobrosActivity extends AppCompatActivity {
             imm.hideSoftInputFromWindow(focus.getWindowToken(), 0);
         }
     }
+
+    // ── Cargar pool de clientes para autocompletar ────────────────
+    private void cargarClientes() {
+        SupabaseRepository.get().getClientes(null,
+                new SupabaseRepository.Callback<List<ClienteModel>>() {
+                    @Override public void onSuccess(List<ClienteModel> data) {
+                        todosLosClientes.clear();
+                        todosLosClientes.addAll(data);
+                    }
+                    @Override public void onError(String e) {}
+                });
+    }
+
+    // ── Buscador de clientes en el formulario de cobro ────────────
+    private void setupBuscadorClientes(android.widget.EditText etCliente,
+                                       android.widget.LinearLayout layoutSug,
+                                       String[] clienteIdSel, boolean[] seleccionando) {
+        etCliente.addTextChangedListener(new android.text.TextWatcher() {
+            private final android.os.Handler h = new android.os.Handler();
+            private Runnable r;
+            public void beforeTextChanged(CharSequence s, int a, int b, int c) {}
+            public void onTextChanged(CharSequence s, int a, int b, int c) {
+                if (seleccionando[0]) return;
+                clienteIdSel[0] = null;
+                if (r != null) h.removeCallbacks(r);
+            }
+            public void afterTextChanged(android.text.Editable s) {
+                if (seleccionando[0]) { seleccionando[0] = false; return; }
+                String txt = s.toString().trim();
+                if (txt.length() < 2) {
+                    layoutSug.setVisibility(android.view.View.GONE);
+                    layoutSug.removeAllViews(); return;
+                }
+                r = () -> mostrarSugerenciasClientes(txt, layoutSug, etCliente,
+                        clienteIdSel, seleccionando);
+                h.postDelayed(r, 300);
+            }
+        });
+    }
+
+    private void mostrarSugerenciasClientes(String texto, android.widget.LinearLayout layoutSug,
+                                            android.widget.EditText etCliente,
+                                            String[] clienteIdSel, boolean[] seleccionando) {
+        layoutSug.removeAllViews();
+        String q = texto.toLowerCase();
+        List<ClienteModel> hits = new ArrayList<>();
+        for (ClienteModel c : todosLosClientes) {
+            if (hits.size() >= 5) break;
+            String nom = (c.nombre != null ? c.nombre : "") + " " +
+                    (c.apellidos != null ? c.apellidos : "");
+            String tel  = c.telefono != null ? c.telefono : "";
+            if (nom.toLowerCase().contains(q) || tel.contains(q)) hits.add(c);
+        }
+        if (hits.isEmpty()) { layoutSug.setVisibility(android.view.View.GONE); return; }
+
+        androidx.cardview.widget.CardView card = new androidx.cardview.widget.CardView(this);
+        card.setLayoutParams(new android.widget.LinearLayout.LayoutParams(-1, -2));
+        card.setRadius(dpToPx(12)); card.setCardElevation(dpToPx(4));
+        card.setCardBackgroundColor(Color.WHITE);
+        android.widget.LinearLayout inner = new android.widget.LinearLayout(this);
+        inner.setOrientation(android.widget.LinearLayout.VERTICAL);
+        card.addView(inner);
+
+        for (int i = 0; i < hits.size(); i++) {
+            ClienteModel c = hits.get(i);
+            String nom = ((c.nombre != null ? c.nombre : "") + " " +
+                    (c.apellidos != null ? c.apellidos : "")).trim();
+            if (nom.isEmpty()) nom = "Cliente";
+            String tel = c.telefono != null ? c.telefono : "";
+
+            android.widget.LinearLayout fila = new android.widget.LinearLayout(this);
+            fila.setOrientation(android.widget.LinearLayout.HORIZONTAL);
+            fila.setGravity(android.view.Gravity.CENTER_VERTICAL);
+            fila.setPadding(dpToPx(14), dpToPx(12), dpToPx(14), dpToPx(12));
+            fila.setClickable(true); fila.setFocusable(true);
+
+            // Avatar
+            androidx.cardview.widget.CardView av = new androidx.cardview.widget.CardView(this);
+            android.widget.LinearLayout.LayoutParams avP = new android.widget.LinearLayout.LayoutParams(dpToPx(34), dpToPx(34));
+            avP.setMarginEnd(dpToPx(10)); av.setLayoutParams(avP);
+            av.setRadius(dpToPx(10)); av.setCardElevation(0);
+            av.setCardBackgroundColor(Color.parseColor("#0A66FF"));
+            android.widget.TextView tvI = new android.widget.TextView(this);
+            tvI.setText(nom.isEmpty() ? "?" : String.valueOf(nom.charAt(0)).toUpperCase());
+            tvI.setTextSize(13f); tvI.setTextColor(Color.WHITE);
+            tvI.setGravity(android.view.Gravity.CENTER);
+            tvI.setTypeface(getResources().getFont(R.font.outfit_bold));
+            tvI.setLayoutParams(new android.widget.LinearLayout.LayoutParams(-1, -1));
+            av.addView(tvI); fila.addView(av);
+
+            android.widget.LinearLayout info = new android.widget.LinearLayout(this);
+            info.setOrientation(android.widget.LinearLayout.VERTICAL);
+            info.setLayoutParams(new android.widget.LinearLayout.LayoutParams(0, -2, 1f));
+            android.widget.TextView tvN = new android.widget.TextView(this);
+            tvN.setText(nom); tvN.setTextSize(13f); tvN.setTextColor(Color.parseColor("#0D1B3E"));
+            tvN.setTypeface(getResources().getFont(R.font.outfit_bold));
+            info.addView(tvN);
+            if (!tel.isEmpty()) {
+                android.widget.TextView tvT = new android.widget.TextView(this);
+                tvT.setText(tel); tvT.setTextSize(11f); tvT.setTextColor(Color.parseColor("#6B7FA3"));
+                tvT.setTypeface(getResources().getFont(R.font.outfit_regular));
+                info.addView(tvT);
+            }
+            fila.addView(info);
+
+            final String idF = c.id, nomF = nom;
+            fila.setOnClickListener(vv -> {
+                seleccionando[0] = true;
+                clienteIdSel[0]  = idF;
+                etCliente.setText(nomF);
+                etCliente.setSelection(nomF.length());
+                layoutSug.setVisibility(android.view.View.GONE);
+                layoutSug.removeAllViews();
+                android.view.inputmethod.InputMethodManager imm =
+                        (android.view.inputmethod.InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(etCliente.getWindowToken(), 0);
+            });
+            inner.addView(fila);
+            if (i < hits.size() - 1) {
+                android.view.View sep = new android.view.View(this);
+                android.widget.LinearLayout.LayoutParams sp =
+                        new android.widget.LinearLayout.LayoutParams(-1, dpToPx(1));
+                sp.setMargins(dpToPx(14), 0, dpToPx(14), 0); sep.setLayoutParams(sp);
+                sep.setBackgroundColor(Color.parseColor("#E5EDFF")); inner.addView(sep);
+            }
+        }
+        layoutSug.addView(card);
+        layoutSug.setVisibility(android.view.View.VISIBLE);
+    }
+
 }

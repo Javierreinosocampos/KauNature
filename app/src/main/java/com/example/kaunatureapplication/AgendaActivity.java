@@ -34,6 +34,7 @@ public class AgendaActivity extends AppCompatActivity {
     // ── Modelo local Cita ────────────────────────────────────────────
     static class Cita {
         String id;           // UUID de Supabase (null si aún no guardada)
+        String clienteId;    // UUID del cliente (para vincular cobros)
         String cliente;
         String servicio;
         String fecha;        // dd/MM/yyyy  (display)
@@ -50,8 +51,9 @@ public class AgendaActivity extends AppCompatActivity {
         int anio;
 
         Cita(CitaModel m) {
-            this.id       = m.id;
-            this.cliente  = m.clienteNombre  != null ? m.clienteNombre.trim()  : "";
+            this.id        = m.id;
+            this.clienteId = m.clienteId;
+            this.cliente   = m.clienteNombre  != null ? m.clienteNombre.trim()  : "";
             this.servicio = m.servicioNombre != null ? m.servicioNombre.trim() : "";
             this.fechaBD  = m.fecha    != null ? m.fecha    : "";
             this.hora     = m.horaDisplay();
@@ -118,7 +120,9 @@ public class AgendaActivity extends AppCompatActivity {
     //  onCreate
     // ════════════════════════════════════════════════════════════════
     // ID de cita a abrir automáticamente (viene del MainActivity)
-    private String citaIdPendiente = null;
+    private String citaIdPendiente   = null;
+    private String clienteFiltroId   = null;  // viene de ClientesActivity
+    private String clienteFiltroNom  = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,12 +131,14 @@ public class AgendaActivity extends AppCompatActivity {
 
         fechaSeleccionada = Calendar.getInstance();
 
-        // Si venimos del MainActivity con una cita concreta
+        // Recibir extras de MainActivity (cita concreta) o ClientesActivity (cliente)
         if (getIntent() != null) {
-            citaIdPendiente = getIntent().getStringExtra("CITA_ID");
+            citaIdPendiente  = getIntent().getStringExtra("CITA_ID");
+            clienteFiltroId  = getIntent().getStringExtra("CLIENTE_ID");
+            clienteFiltroNom = getIntent().getStringExtra("CLIENTE_NOMBRE");
+
             String citaFecha = getIntent().getStringExtra("CITA_FECHA");
             if (citaFecha != null && citaFecha.length() >= 10) {
-                // Navegar a la fecha de esa cita
                 try {
                     int anio = Integer.parseInt(citaFecha.substring(0, 4));
                     int mes  = Integer.parseInt(citaFecha.substring(5, 7)) - 1;
@@ -867,11 +873,11 @@ public class AgendaActivity extends AppCompatActivity {
         sheet.show();
     }
 
-    /** Cambia el estado de una cita en Supabase y actualiza la UI */
+    /** Cambia el estado de una cita en Supabase y actualiza la UI.
+     *  Si el nuevo estado es "cobrada", crea automáticamente un cobro. */
     private void cambiarEstado(Cita cita, String nuevoEstado,
                                BottomSheetDialog sheet, String msgOk) {
         if (cita.id == null) {
-            // Cita local (no guardada aún) — solo actualiza en memoria
             cita.estado = nuevoEstado;
             sheet.dismiss();
             renderVista();
@@ -886,12 +892,56 @@ public class AgendaActivity extends AppCompatActivity {
                             sheet.dismiss();
                             renderVista();
                             Toast.makeText(AgendaActivity.this, msgOk, Toast.LENGTH_SHORT).show();
+
+                            // ── Si se marca como COBRADA → crear cobro automático ──
+                            if ("cobrada".equals(nuevoEstado)) {
+                                crearCobroDesdeCita(cita);
+                            }
                         });
                     }
                     @Override public void onError(String e) {
                         runOnUiThread(() ->
                                 Toast.makeText(AgendaActivity.this,
                                         "Error: " + e, Toast.LENGTH_SHORT).show());
+                    }
+                });
+    }
+
+    /** Crea un cobro en la tabla cobros cuando una cita se marca como cobrada */
+    private void crearCobroDesdeCita(Cita cita) {
+        // Extraer el precio numérico del string "35€"
+        double importe = 0;
+        try {
+            String precioStr = cita.precio.replace("€", "").replace(",", ".").trim();
+            importe = Double.parseDouble(precioStr);
+        } catch (Exception ignored) {}
+
+        if (importe <= 0) return; // no crear cobro de 0€
+
+        String concepto = (cita.servicio != null && !cita.servicio.isEmpty()
+                ? cita.servicio : "Servicio") + " · " + cita.fecha;
+
+        final double importeFinal = importe;
+
+        SupabaseRepository.get().crearCobro(
+                cita.clienteId,   // puede ser null si la cita no tiene cliente vinculado
+                cita.cliente,     // nombre del cliente
+                concepto,
+                importeFinal,
+                "Efectivo",       // método por defecto
+                "cobrado",        // ya está cobrado
+                "",               // notas vacías
+                new SupabaseRepository.Callback<CobroModel>() {
+                    @Override public void onSuccess(CobroModel cobro) {
+                        runOnUiThread(() ->
+                                Toast.makeText(AgendaActivity.this,
+                                        "💰 Cobro de " + String.format("%.0f€", importeFinal) +
+                                                " registrado en Cobros",
+                                        Toast.LENGTH_LONG).show());
+                    }
+                    @Override public void onError(String e) {
+                        // No bloquear la UI si falla el cobro — la cita ya está marcada
+                        android.util.Log.e("AGENDA", "Error creando cobro: " + e);
                     }
                 });
     }
@@ -935,6 +985,12 @@ public class AgendaActivity extends AppCompatActivity {
         } else {
             tvFecha.setText("📅 " + fechaSelStr[0]);
             tvHora.setText("🕐 " + horaSelStr[0]);
+            // Si venimos de ClientesActivity, prerellenar el cliente
+            if (clienteFiltroNom != null && !clienteFiltroNom.isEmpty()) {
+                etCliente.setText(clienteFiltroNom);
+                clienteIdSel[0] = clienteFiltroId;
+                tvTitulo.setText("Nueva cita · " + clienteFiltroNom);
+            }
         }
 
         // ── Lista de sugerencias de clientes ──────────────────────

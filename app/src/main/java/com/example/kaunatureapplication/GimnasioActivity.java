@@ -102,12 +102,20 @@ public class GimnasioActivity extends AppCompatActivity {
     private TextView            btnVistaDia, btnVistaSemana, btnVistaMes;
     private HorizontalScrollView hsvDias;
 
+    // Nombre de cliente preseleccionado desde ClientesActivity
+    private String clientePreseleccionado = null;
+
     // ════════════════════════════════════════════════════════════════
     //  onCreate
     // ════════════════════════════════════════════════════════════════
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Recibir cliente desde ClientesActivity
+        if (getIntent() != null) {
+            clientePreseleccionado = getIntent().getStringExtra("CLIENTE_NOMBRE");
+        }
 
         if (selectedFecha.isEmpty()) selectedFecha = hoy();
         diaIdx = diaSemanaIdx(selectedFecha);
@@ -1618,6 +1626,10 @@ public class GimnasioActivity extends AppCompatActivity {
         root.addView(mkSheetLabel("BUSCAR CLIENTE"));
         EditText etBuscar = mkEditText("Escribe un nombre...");
         setMB(etBuscar, 10);
+        // Si venimos desde ClientesActivity, prerellenar el nombre
+        if (clientePreseleccionado != null && !clientePreseleccionado.isEmpty()) {
+            etBuscar.setText(clientePreseleccionado);
+        }
         root.addView(etBuscar);
 
         // Lista de clientes disponibles

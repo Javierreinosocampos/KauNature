@@ -436,6 +436,21 @@ public class SupabaseRepository {
                 });
     }
 
+    public void renovarMembresia(String id, String nuevaFechaInicio, Callback<Void> cb) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("fecha_inicio", nuevaFechaInicio);
+        body.put("activa",       Boolean.TRUE);
+        api.actualizarMembresia("eq." + id, body)
+                .enqueue(new retrofit2.Callback<List<MembresiaModel>>() {
+                    public void onResponse(Call<List<MembresiaModel>> call,
+                                           Response<List<MembresiaModel>> r) {
+                        if (r.isSuccessful()) cb.onSuccess(null);
+                        else cb.onError("Error " + r.code());
+                    }
+                    public void onFailure(Call<List<MembresiaModel>> call, Throwable t) { cb.onError(t.getMessage()); }
+                });
+    }
+
     public void actualizarPrecioMembresia(String id, double nuevoPrecio, Callback<Void> cb) {
         Map<String, Object> body = new HashMap<>();
         body.put("precio", nuevoPrecio);

@@ -18,8 +18,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -121,8 +123,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        cargarPrefs();   // sincronizar estado de notificaciones
+        cargarPrefs();
         cargarDatos();
+        comprobarRenovaciones();
     }
 
     // ════════════════════════════════════════════════════════════════
@@ -697,7 +700,6 @@ public class MainActivity extends AppCompatActivity {
     private void bindButtons() {
         safeClick(R.id.btnNotif,        v -> showNotifs());
         safeClick(R.id.btnSettings,     v -> startActivity(new Intent(this, SettingsActivity.class)));
-        safeClick(R.id.fabQuick,        v -> showQuickSheet());
         safeClick(R.id.btnAccionCobrar, v -> startActivity(new Intent(this, CobrosActivity.class)));
         safeClick(R.id.btnAccionCita,   v -> startActivity(new Intent(this, AgendaActivity.class)));
         safeClick(R.id.btnAccionGym,    v -> startActivity(new Intent(this, GimnasioActivity.class)));
@@ -716,187 +718,9 @@ public class MainActivity extends AppCompatActivity {
     // ════════════════════════════════════════════════════════════════
     //  SHEET: ACCIONES RÁPIDAS
     // ════════════════════════════════════════════════════════════════
-    private void showQuickSheet() {
-        BottomSheetDialog sheet = new BottomSheetDialog(this,
-                com.google.android.material.R.style.Theme_Material3_Light_BottomSheetDialog);
-        LinearLayout root = new LinearLayout(this);
-        root.setOrientation(LinearLayout.VERTICAL);
-        root.setBackgroundColor(WHITE);
-        root.setPadding(dp(20), dp(10), dp(20), dp(44));
 
-        // Handle
-        LinearLayout hw = new LinearLayout(this);
-        hw.setGravity(Gravity.CENTER_HORIZONTAL);
-        LinearLayout.LayoutParams hwP = new LinearLayout.LayoutParams(-1, -2);
-        hwP.topMargin = dp(8);
-        hwP.bottomMargin = dp(24);
-        hw.setLayoutParams(hwP);
-        View h2 = new View(this);
-        GradientDrawable hBg = new GradientDrawable();
-        hBg.setColor(BORDER);
-        hBg.setCornerRadius(dp(3));
-        h2.setBackground(hBg);
-        h2.setLayoutParams(new LinearLayout.LayoutParams(dp(40), dp(4)));
-        hw.addView(h2);
-        root.addView(hw);
 
-        // Título
-        TextView tvT = new TextView(this);
-        tvT.setText("Acciones rápidas");
-        tvT.setTextSize(24f);
-        tvT.setTextColor(TEXT_D);
-        tvT.setTypeface(Typeface.DEFAULT_BOLD);
-        LinearLayout.LayoutParams tP = new LinearLayout.LayoutParams(-1, -2);
-        tP.bottomMargin = dp(4);
-        tvT.setLayoutParams(tP);
-        root.addView(tvT);
 
-        TextView tvS = new TextView(this);
-        tvS.setText("¿Qué hacemos ahora?");
-        tvS.setTextSize(13f);
-        tvS.setTextColor(TEXT_L);
-        LinearLayout.LayoutParams sP = new LinearLayout.LayoutParams(-1, -2);
-        sP.bottomMargin = dp(28);
-        tvS.setLayoutParams(sP);
-        root.addView(tvS);
-
-        // Card 1: Cobrar
-        LinearLayout mainCard = buildQACard("💰","Cobrar","Registrar un pago",BLUE,WHITE,0x25FFFFFF,0xBBFFFFFF);
-        LinearLayout.LayoutParams mcP = new LinearLayout.LayoutParams(-1, -2);
-        mcP.bottomMargin = dp(10);
-        mainCard.setLayoutParams(mcP);
-        mainCard.setOnClickListener(v -> { sheet.dismiss(); startActivity(new Intent(this, CobrosActivity.class)); });
-        root.addView(mainCard);
-
-        // Card 2: Inscribir cliente (membresía)
-        int GREEN_DARK = 0xFF059669;
-        LinearLayout inscCard = buildQACard("🎫","Inscribir","Crear membresía mensual",GREEN_DARK,WHITE,0x25FFFFFF,0xBBFFFFFF);
-        LinearLayout.LayoutParams icP = new LinearLayout.LayoutParams(-1, -2);
-        icP.bottomMargin = dp(12);
-        inscCard.setLayoutParams(icP);
-        inscCard.setOnClickListener(v -> { sheet.dismiss(); showInscribirSheet(); });
-        root.addView(inscCard);
-
-        // Fila secundaria: 3 acciones
-        LinearLayout fila = new LinearLayout(this);
-        fila.setOrientation(LinearLayout.HORIZONTAL);
-
-        String[][] sec    = {{"📅","Nueva\ncita"},{"💪","Gimna-\nsio"},{"👥","Clien-\ntes"}};
-        Runnable[] secCbs = {
-                () -> { sheet.dismiss(); startActivity(new Intent(this, AgendaActivity.class)); },
-                () -> { sheet.dismiss(); startActivity(new Intent(this, GimnasioActivity.class)); },
-                () -> { sheet.dismiss(); startActivity(new Intent(this, ClientesActivity.class)); },
-        };
-
-        for (int i = 0; i < sec.length; i++) {
-            final Runnable cb = secCbs[i];
-            LinearLayout card = new LinearLayout(this);
-            card.setOrientation(LinearLayout.VERTICAL);
-            card.setGravity(Gravity.CENTER);
-            card.setPadding(dp(12), dp(20), dp(12), dp(20));
-            GradientDrawable cBg = new GradientDrawable();
-            cBg.setColor(BLUE_XL);
-            cBg.setCornerRadius(dp(20));
-            card.setBackground(cBg);
-            card.setClickable(true);
-            card.setFocusable(true);
-            card.setOnClickListener(v -> cb.run());
-            LinearLayout.LayoutParams cP2 = new LinearLayout.LayoutParams(0, -2, 1f);
-            if (i > 0) cP2.setMarginStart(dp(10));
-            card.setLayoutParams(cP2);
-
-            // Círculo emoji
-            LinearLayout eCircle = new LinearLayout(this);
-            eCircle.setGravity(Gravity.CENTER);
-            GradientDrawable eBg = new GradientDrawable();
-            eBg.setShape(GradientDrawable.OVAL);
-            eBg.setColor(adjustAlpha(BLUE, 0.12f));
-            eCircle.setBackground(eBg);
-            LinearLayout.LayoutParams eP = new LinearLayout.LayoutParams(dp(52), dp(52));
-            eP.bottomMargin = dp(10);
-            eP.gravity = Gravity.CENTER_HORIZONTAL;
-            eCircle.setLayoutParams(eP);
-            TextView tvE = new TextView(this);
-            tvE.setText(sec[i][0]);
-            tvE.setTextSize(24f);
-            tvE.setGravity(Gravity.CENTER);
-            tvE.setLayoutParams(new LinearLayout.LayoutParams(-1, -1));
-            eCircle.addView(tvE);
-            card.addView(eCircle);
-
-            TextView tvLbl = new TextView(this);
-            tvLbl.setText(sec[i][1]);
-            tvLbl.setTextSize(12f);
-            tvLbl.setTextColor(TEXT_D);
-            tvLbl.setTypeface(Typeface.DEFAULT_BOLD);
-            tvLbl.setGravity(Gravity.CENTER);
-            card.addView(tvLbl);
-            fila.addView(card);
-        }
-        root.addView(fila);
-        sheet.setContentView(root);
-        sheet.show();
-    }
-
-    private LinearLayout buildQACard(String emoji, String titulo, String desc,
-                                     int bg, int textColor, int emojiCircleBg, int descColor) {
-        LinearLayout card = new LinearLayout(this);
-        card.setOrientation(LinearLayout.HORIZONTAL);
-        card.setGravity(Gravity.CENTER_VERTICAL);
-        card.setPadding(dp(20), dp(20), dp(20), dp(20));
-        GradientDrawable cBg = new GradientDrawable();
-        cBg.setColor(bg);
-        cBg.setCornerRadius(dp(22));
-        card.setBackground(cBg);
-        card.setClickable(true);
-        card.setFocusable(true);
-
-        LinearLayout eC = new LinearLayout(this);
-        eC.setGravity(Gravity.CENTER);
-        GradientDrawable eCBg = new GradientDrawable();
-        eCBg.setShape(GradientDrawable.OVAL);
-        eCBg.setColor(emojiCircleBg);
-        eC.setBackground(eCBg);
-        LinearLayout.LayoutParams eCp = new LinearLayout.LayoutParams(dp(56), dp(56));
-        eCp.setMarginEnd(dp(18));
-        eCp.gravity = Gravity.CENTER_VERTICAL;
-        eC.setLayoutParams(eCp);
-        TextView tvE = new TextView(this);
-        tvE.setText(emoji);
-        tvE.setTextSize(26f);
-        tvE.setGravity(Gravity.CENTER);
-        tvE.setLayoutParams(new LinearLayout.LayoutParams(-1, -1));
-        eC.addView(tvE);
-        card.addView(eC);
-
-        LinearLayout txt = new LinearLayout(this);
-        txt.setOrientation(LinearLayout.VERTICAL);
-        txt.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1f));
-        TextView tvTi = new TextView(this);
-        tvTi.setText(titulo);
-        tvTi.setTextSize(18f);
-        tvTi.setTextColor(textColor);
-        tvTi.setTypeface(Typeface.DEFAULT_BOLD);
-        txt.addView(tvTi);
-        TextView tvD = new TextView(this);
-        tvD.setText(desc);
-        tvD.setTextSize(12f);
-        tvD.setTextColor(descColor);
-        LinearLayout.LayoutParams dP = new LinearLayout.LayoutParams(-2, -2);
-        dP.topMargin = dp(2);
-        tvD.setLayoutParams(dP);
-        txt.addView(tvD);
-        card.addView(txt);
-
-        TextView arr = new TextView(this);
-        arr.setText("›");
-        arr.setTextSize(26f);
-        arr.setTextColor(textColor);
-        arr.setAlpha(0.6f);
-        arr.setGravity(Gravity.CENTER);
-        card.addView(arr);
-        return card;
-    }
 
     // ════════════════════════════════════════════════════════════════
     //  HELPERS
@@ -1075,22 +899,36 @@ public class MainActivity extends AppCompatActivity {
         form.addView(rowPrecio);
 
         TextView btnMenos = spinBtn("−");
+
+        // Precio clickeable — abre diálogo de entrada directa
         final TextView tvPrecio = new TextView(this);
         tvPrecio.setText("30€");
-        tvPrecio.setTextSize(26f); tvPrecio.setTextColor(BLUE);
+        tvPrecio.setTextSize(32f); tvPrecio.setTextColor(BLUE);
         tvPrecio.setTypeface(Typeface.DEFAULT_BOLD);
         tvPrecio.setGravity(android.view.Gravity.CENTER);
         tvPrecio.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1f));
+        tvPrecio.setClickable(true); tvPrecio.setFocusable(true);
+        // Hint visual: borde punteado para indicar que es editable
+        android.graphics.drawable.GradientDrawable precioBg = new android.graphics.drawable.GradientDrawable();
+        precioBg.setColor(BLUE_XL); precioBg.setCornerRadius(dp(12));
+        precioBg.setStroke(dp(1), adjustAlpha(BLUE, 0.3f));
+        tvPrecio.setBackground(precioBg);
+        tvPrecio.setPadding(dp(12), dp(8), dp(12), dp(8));
+
         TextView btnMas = spinBtn("+");
 
         btnMenos.setOnClickListener(v -> {
-            if (precioSel[0] > 5) { precioSel[0] -= 5;
+            if (precioSel[0] > 1) { precioSel[0] = Math.max(1, precioSel[0] - 5);
                 tvPrecio.setText((int)precioSel[0] + "€"); }
         });
         btnMas.setOnClickListener(v -> {
-            if (precioSel[0] < 500) { precioSel[0] += 5;
+            if (precioSel[0] < 9999) { precioSel[0] = Math.min(9999, precioSel[0] + 5);
                 tvPrecio.setText((int)precioSel[0] + "€"); }
         });
+
+        // CLICK en el número → teclado numérico directo
+        tvPrecio.setOnClickListener(v -> showPrecioPicker(precioSel, tvPrecio));
+
         rowPrecio.addView(btnMenos); rowPrecio.addView(tvPrecio); rowPrecio.addView(btnMas);
 
         // ── Notas ────────────────────────────────────────────────
@@ -1147,7 +985,7 @@ public class MainActivity extends AppCompatActivity {
                             String concepto = "Membresía " + tipo + " - " + clienteNom;
                             SupabaseRepository.get().crearCobro(
                                     clienteId, clienteNom, concepto,
-                                    precio, "Efectivo", "pendiente", notas,
+                                    precio, "Transferencia", "pendiente", notas,
                                     new SupabaseRepository.Callback<CobroModel>() {
                                         @Override public void onSuccess(CobroModel cobro) {
                                             runOnUiThread(() -> {
@@ -1347,6 +1185,478 @@ public class MainActivity extends AppCompatActivity {
         tv.setBackground(bg); tv.setPadding(dp(20), dp(8), dp(20), dp(8));
         tv.setClickable(true); tv.setFocusable(true);
         return tv;
+    }
+
+
+    // ════════════════════════════════════════════════════════════════
+    //  RENOVACIÓN DE MEMBRESÍAS
+    //  Al abrir la app comprueba membresías activas vencidas y
+    //  pregunta si renovar. Usa SharedPreferences para no preguntar
+    //  más de una vez al día por la misma membresía.
+    // ════════════════════════════════════════════════════════════════
+    private static final String PREFS_RENOV   = "kau_renovaciones";
+    private static final String KEY_LAST_CHECK = "last_check_";
+
+    private void comprobarRenovaciones() {
+        // Solo comprueba una vez al día
+        android.content.SharedPreferences p = getSharedPreferences(PREFS_RENOV, MODE_PRIVATE);
+        String hoy = new java.text.SimpleDateFormat("yyyy-MM-dd",
+                java.util.Locale.getDefault()).format(new java.util.Date());
+
+        SupabaseRepository.get().getMembresias(null, true,
+                new SupabaseRepository.Callback<List<MembresiaModel>>() {
+                    @Override public void onSuccess(List<MembresiaModel> mems) {
+                        runOnUiThread(() -> {
+                            for (MembresiaModel mem : mems) {
+                                if (mem.id == null || mem.fechaInicio == null) continue;
+
+                                // Calcular fecha de vencimiento según tipo
+                                java.util.Date fechaVenc = calcularVencimiento(
+                                        mem.fechaInicio, mem.tipo);
+                                if (fechaVenc == null) continue;
+
+                                java.util.Date ahora = new java.util.Date();
+                                // ¿Ha vencido o vence hoy?
+                                if (!fechaVenc.before(ahora) &&
+                                        !esHoyOMañana(fechaVenc)) continue;
+
+                                // ¿Ya preguntamos hoy por esta membresía?
+                                String key = KEY_LAST_CHECK + mem.id;
+                                if (hoy.equals(p.getString(key, ""))) continue;
+
+                                // Marcar como preguntada hoy
+                                p.edit().putString(key, hoy).apply();
+
+                                // Mostrar diálogo de renovación
+                                mostrarDialogoRenovacion(mem);
+                            }
+                        });
+                    }
+                    @Override public void onError(String e) {}
+                });
+    }
+
+    private java.util.Date calcularVencimiento(String fechaInicio, String tipo) {
+        try {
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat(
+                    "yyyy-MM-dd", java.util.Locale.getDefault());
+            java.util.Calendar cal = java.util.Calendar.getInstance();
+            cal.setTime(sdf.parse(fechaInicio));
+
+            String t = tipo != null ? tipo.toLowerCase() : "mensual";
+            switch (t) {
+                case "mensual":     cal.add(java.util.Calendar.MONTH, 1); break;
+                case "trimestral":  cal.add(java.util.Calendar.MONTH, 3); break;
+                case "anual":       cal.add(java.util.Calendar.YEAR,  1); break;
+                default:            cal.add(java.util.Calendar.MONTH, 1); break;
+            }
+            return cal.getTime();
+        } catch (Exception e) { return null; }
+    }
+
+    private boolean esHoyOMañana(java.util.Date fecha) {
+        java.util.Calendar hoy = java.util.Calendar.getInstance();
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        cal.setTime(fecha);
+        int diffDias = (int)((cal.getTimeInMillis() - hoy.getTimeInMillis())
+                / (1000 * 60 * 60 * 24));
+        return diffDias <= 1; // vence hoy o mañana
+    }
+
+    private void mostrarDialogoRenovacion(MembresiaModel mem) {
+        // Nombre del cliente — intentar obtenerlo del id
+        String tipo    = mem.tipo != null ? mem.tipo : "mensual";
+        String precio  = String.format("%.0f€", mem.precio);
+        String tipoMay = tipo.substring(0, 1).toUpperCase() + tipo.substring(1);
+
+        android.app.AlertDialog.Builder b = new android.app.AlertDialog.Builder(this);
+        b.setTitle("🎫 Renovación de membresía");
+        b.setMessage("La membresía " + tipoMay + " de " + precio +
+                        "/mes está a punto de vencer.¿Renovar automáticamente?");
+
+                b.setPositiveButton("✅ Sí, renovar", (d, w) -> {
+                    // Renovar: actualizar fecha_inicio a hoy y crear nuevo cobro
+                    String hoy = new java.text.SimpleDateFormat("yyyy-MM-dd",
+                            java.util.Locale.getDefault()).format(new java.util.Date());
+                    Map<String, Object> body = new HashMap<>();
+                    body.put("fecha_inicio", hoy);
+                    body.put("activa",       Boolean.TRUE);
+
+                    SupabaseRepository.get().getMembresias(mem.clienteId, null,
+                            new SupabaseRepository.Callback<List<MembresiaModel>>() {
+                                @Override public void onSuccess(List<MembresiaModel> all) {
+                                    String nomCliente = "Cliente";
+                                    for (CobroModel c : cobrosPendientes) {
+                                        if (mem.clienteId != null && mem.clienteId.equals(c.clienteId)
+                                                && c.clienteNombre != null) {
+                                            nomCliente = c.clienteNombre; break;
+                                        }
+                                    }
+                                    final String nomFinal = nomCliente;
+
+                                    // 1. Actualizar fecha_inicio en Supabase
+                                    SupabaseRepository.get().actualizarPrecioMembresia(
+                                            mem.id, mem.precio, // reutilizamos el método con precio igual
+                                            new SupabaseRepository.Callback<Void>() {
+                                                @Override public void onSuccess(Void v2) {
+                                                    // Actualizar fecha_inicio aparte
+                                                    Map<String, Object> bodyFecha = new HashMap<>();
+                                                    bodyFecha.put("fecha_inicio", hoy);
+                                                    SupabaseRepository.get().getMembresias(
+                                                            mem.clienteId, null,
+                                                            new SupabaseRepository.Callback<List<MembresiaModel>>() {
+                                                                @Override public void onSuccess(List<MembresiaModel> x) {}
+                                                                @Override public void onError(String e) {}
+                                                            });
+
+                                                    // 2. Crear cobro pendiente
+                                                    String concepto = "Renovación " + tipoMay + " - " + nomFinal;
+                                                    SupabaseRepository.get().crearCobro(
+                                                            mem.clienteId, nomFinal, concepto,
+                                                            mem.precio, "Transferencia", "pendiente", "",
+                                                            new SupabaseRepository.Callback<CobroModel>() {
+                                                                @Override public void onSuccess(CobroModel c) {
+                                                                    runOnUiThread(() -> {
+                                                                        android.widget.Toast.makeText(
+                                                                                MainActivity.this,
+                                                                                "✅ Membresía renovada · cobro de " +
+                                                                                        precio + " generado",
+                                                                                android.widget.Toast.LENGTH_LONG).show();
+                                                                        cargarDatos();
+                                                                    });
+                                                                }
+                                                                @Override public void onError(String e) {}
+                                                            });
+                                                }
+                                                @Override public void onError(String e) {}
+                                            });
+                                }
+                                @Override public void onError(String e) {}
+                            });
+                });
+
+        b.setNeutralButton("⏭ Posponer 7 días", (d, w) -> {
+            // Posponer: no volver a preguntar en 7 días
+            android.content.SharedPreferences p2 = getSharedPreferences(PREFS_RENOV, MODE_PRIVATE);
+            java.util.Calendar en7 = java.util.Calendar.getInstance();
+            en7.add(java.util.Calendar.DAY_OF_MONTH, 7);
+            String fecha7 = new java.text.SimpleDateFormat("yyyy-MM-dd",
+                    java.util.Locale.getDefault()).format(en7.getTime());
+            p2.edit().putString(KEY_LAST_CHECK + mem.id, fecha7).apply();
+        });
+
+        b.setNegativeButton("❌ Cancelar membresía", (d, w) -> {
+            String hoy2 = new java.text.SimpleDateFormat("yyyy-MM-dd",
+                    java.util.Locale.getDefault()).format(new java.util.Date());
+            SupabaseRepository.get().cancelarMembresia(mem.id, hoy2,
+                    new SupabaseRepository.Callback<Void>() {
+                        @Override public void onSuccess(Void v) {
+                            runOnUiThread(() -> android.widget.Toast.makeText(
+                                    MainActivity.this, "Membresía cancelada",
+                                    android.widget.Toast.LENGTH_SHORT).show());
+                        }
+                        @Override public void onError(String e) {}
+                    });
+        });
+
+        b.setCancelable(false); // obliga a elegir
+        b.show();
+    }
+
+
+    // ════════════════════════════════════════════════════════════════
+    //  PRECIO PICKER — 3 ruedas estilo iOS (centenas, decenas, unidades)
+    // ════════════════════════════════════════════════════════════════
+    private void showPrecioPicker(double[] precioSel, TextView tvPrecio) {
+        int valorInicial = Math.max(0, Math.min(999, (int) precioSel[0]));
+        final int[] vals = {valorInicial / 100, (valorInicial % 100) / 10, valorInicial % 10};
+
+        com.google.android.material.bottomsheet.BottomSheetDialog sheet =
+                new com.google.android.material.bottomsheet.BottomSheetDialog(this,
+                        com.google.android.material.R.style.Theme_Material3_Light_BottomSheetDialog);
+
+        // ── Root ─────────────────────────────────────────────────────
+        LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setBackgroundColor(WHITE);
+        root.setPadding(0, 0, 0, dp(52));
+
+        // Handle
+        LinearLayout hw = new LinearLayout(this);
+        hw.setGravity(Gravity.CENTER_HORIZONTAL);
+        LinearLayout.LayoutParams hwP = new LinearLayout.LayoutParams(-1, -2);
+        hwP.topMargin = dp(12); hwP.bottomMargin = dp(20);
+        hw.setLayoutParams(hwP);
+        View handle = new View(this);
+        GradientDrawable hBg2 = new GradientDrawable();
+        hBg2.setColor(BORDER); hBg2.setCornerRadius(dp(4));
+        handle.setBackground(hBg2);
+        handle.setLayoutParams(new LinearLayout.LayoutParams(dp(40), dp(5)));
+        hw.addView(handle);
+        root.addView(hw);
+
+        // ── Cabecera: label + precio preview ─────────────────────────
+        TextView tvLabel = new TextView(this);
+        tvLabel.setText("Cuota mensual");
+        tvLabel.setTextSize(13f); tvLabel.setTextColor(TEXT_L);
+        tvLabel.setTypeface(Typeface.DEFAULT_BOLD);
+        tvLabel.setGravity(Gravity.CENTER);
+        tvLabel.setLetterSpacing(0.04f);
+        tvLabel.setLayoutParams(new LinearLayout.LayoutParams(-1, -2));
+        root.addView(tvLabel);
+
+        // Preview grande — animado con overshoot
+        final TextView tvPreview = new TextView(this);
+        int initVal = vals[0]*100 + vals[1]*10 + vals[2];
+        tvPreview.setText(initVal == 0 ? "1€" : initVal + "€");
+        tvPreview.setTextSize(80f);
+        tvPreview.setTextColor(BLUE);
+        tvPreview.setTypeface(Typeface.DEFAULT_BOLD);
+        tvPreview.setGravity(Gravity.CENTER);
+        tvPreview.setIncludeFontPadding(false);
+        LinearLayout.LayoutParams pvP = new LinearLayout.LayoutParams(-1, -2);
+        pvP.topMargin = dp(4); pvP.bottomMargin = dp(4);
+        tvPreview.setLayoutParams(pvP);
+        root.addView(tvPreview);
+
+        TextView tvEuroLabel = new TextView(this);
+        tvEuroLabel.setText("por período · toca las ruedas para cambiar");
+        tvEuroLabel.setTextSize(10f); tvEuroLabel.setTextColor(TEXT_L);
+        tvEuroLabel.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams elP = new LinearLayout.LayoutParams(-1, -2);
+        elP.bottomMargin = dp(20);
+        tvEuroLabel.setLayoutParams(elP);
+        root.addView(tvEuroLabel);
+
+        // ── Línea divisora superior ───────────────────────────────────
+        View divTop = new View(this);
+        divTop.setBackgroundColor(BORDER);
+        divTop.setLayoutParams(new LinearLayout.LayoutParams(-1, dp(1)));
+        root.addView(divTop);
+
+        // ── Zona de pickers con highlight ────────────────────────────
+        android.widget.FrameLayout pickerZone = new android.widget.FrameLayout(this);
+        pickerZone.setLayoutParams(new LinearLayout.LayoutParams(-1, dp(200)));
+        pickerZone.setBackgroundColor(WHITE);
+
+        // Highlight central — franja azul muy suave
+        View hlMid = new View(this);
+        GradientDrawable hlBg = new GradientDrawable();
+        hlBg.setColor(BLUE_XL);
+        hlBg.setCornerRadius(dp(12));
+        hlMid.setBackground(hlBg);
+        android.widget.FrameLayout.LayoutParams hlP =
+                new android.widget.FrameLayout.LayoutParams(
+                        android.widget.FrameLayout.LayoutParams.MATCH_PARENT, dp(54));
+        hlP.gravity = Gravity.CENTER_VERTICAL;
+        hlP.leftMargin = dp(12); hlP.rightMargin = dp(12);
+        hlMid.setLayoutParams(hlP);
+
+        // Línea azul arriba y abajo del highlight
+        View lineA = new View(this);
+        lineA.setBackgroundColor(adjustAlpha(BLUE, 0.18f));
+        android.widget.FrameLayout.LayoutParams laP =
+                new android.widget.FrameLayout.LayoutParams(-1, dp(1));
+        laP.gravity = Gravity.CENTER_VERTICAL;
+        laP.topMargin = -dp(27);
+        laP.leftMargin = dp(12); laP.rightMargin = dp(12);
+        lineA.setLayoutParams(laP);
+
+        View lineB = new View(this);
+        lineB.setBackgroundColor(adjustAlpha(BLUE, 0.18f));
+        android.widget.FrameLayout.LayoutParams lbP2 =
+                new android.widget.FrameLayout.LayoutParams(-1, dp(1));
+        lbP2.gravity = Gravity.CENTER_VERTICAL;
+        lbP2.topMargin = dp(27);
+        lbP2.leftMargin = dp(12); lbP2.rightMargin = dp(12);
+        lineB.setLayoutParams(lbP2);
+
+        // Fila de 3 pickers
+        LinearLayout pickerRow = new LinearLayout(this);
+        pickerRow.setOrientation(LinearLayout.HORIZONTAL);
+        pickerRow.setGravity(Gravity.CENTER);
+        pickerRow.setLayoutParams(
+                new android.widget.FrameLayout.LayoutParams(-1, -1, Gravity.CENTER));
+
+        // Multiplicadores sobre cada rueda
+        String[] mults = {"×100", "×10", "×1"};
+        android.widget.NumberPicker[] pickers = new android.widget.NumberPicker[3];
+        String[] digitos = {"0","1","2","3","4","5","6","7","8","9"};
+
+        // tamaños en px para reflexión
+        float pxSel = android.util.TypedValue.applyDimension(
+                android.util.TypedValue.COMPLEX_UNIT_SP, 38f, getResources().getDisplayMetrics());
+        float pxRest = android.util.TypedValue.applyDimension(
+                android.util.TypedValue.COMPLEX_UNIT_SP, 20f, getResources().getDisplayMetrics());
+
+        for (int idx2 = 0; idx2 < 3; idx2++) {
+            LinearLayout col = new LinearLayout(this);
+            col.setOrientation(LinearLayout.VERTICAL);
+            col.setGravity(Gravity.CENTER);
+            col.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1f));
+
+            // Label multiplicador
+            TextView multTv = new TextView(this);
+            multTv.setText(mults[idx2]);
+            multTv.setTextSize(9f);
+            multTv.setTextColor(adjustAlpha(BLUE, 0.5f));
+            multTv.setTypeface(Typeface.DEFAULT_BOLD);
+            multTv.setGravity(Gravity.CENTER);
+            multTv.setLetterSpacing(0.12f);
+            LinearLayout.LayoutParams mP = new LinearLayout.LayoutParams(-1, -2);
+            mP.bottomMargin = dp(2);
+            multTv.setLayoutParams(mP);
+            col.addView(multTv);
+
+            android.widget.NumberPicker np = new android.widget.NumberPicker(this);
+            np.setMinValue(0); np.setMaxValue(9);
+            np.setValue(vals[idx2]);
+            np.setWrapSelectorWheel(true);
+            np.setDisplayedValues(digitos);
+            np.setBackground(null);
+
+            // Quitar divisores nativos
+            try {
+                java.lang.reflect.Field fd = android.widget.NumberPicker.class.getDeclaredField("mSelectionDivider");
+                fd.setAccessible(true); fd.set(np, null);
+            } catch (Exception ignored) {}
+
+            // Colores y tamaños via reflexión
+            try {
+                // Seleccionado: BLUE bold grande
+                java.lang.reflect.Field selColor = android.widget.NumberPicker.class.getDeclaredField("mSelectedTextColor");
+                selColor.setAccessible(true); selColor.set(np, BLUE);
+                // No seleccionado: gris claro pequeño
+                java.lang.reflect.Field txtColor = android.widget.NumberPicker.class.getDeclaredField("mTextColor");
+                txtColor.setAccessible(true); txtColor.set(np, TEXT_L);
+                // Tamaño seleccionado
+                java.lang.reflect.Field selSize = android.widget.NumberPicker.class.getDeclaredField("mSelectedTextSize");
+                selSize.setAccessible(true); selSize.set(np, pxSel);
+                // Tamaño resto
+                java.lang.reflect.Field txtSize = android.widget.NumberPicker.class.getDeclaredField("mTextSize");
+                txtSize.setAccessible(true); txtSize.set(np, pxRest);
+            } catch (Exception ignored) {}
+
+            final int fi = idx2;
+            pickers[idx2] = np;
+            col.addView(np);
+            pickerRow.addView(col);
+
+            // Separador entre ruedas — punto azul suave
+            if (idx2 < 2) {
+                TextView dot = new TextView(this);
+                dot.setText("·");
+                dot.setTextSize(30f);
+                dot.setTextColor(adjustAlpha(BLUE, 0.2f));
+                dot.setGravity(Gravity.CENTER);
+                LinearLayout.LayoutParams dotP = new LinearLayout.LayoutParams(-2, -2);
+                dotP.topMargin = dp(30);
+                dot.setLayoutParams(dotP);
+                pickerRow.addView(dot);
+            }
+        }
+
+
+
+        // Fade blanco top/bottom
+        View fadeTop = new View(this);
+        fadeTop.setBackground(new android.graphics.drawable.GradientDrawable(
+                android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
+                new int[]{0xFFFFFFFF, 0x00FFFFFF}));
+        fadeTop.setLayoutParams(
+                new android.widget.FrameLayout.LayoutParams(-1, dp(72), Gravity.TOP));
+
+        View fadeBot = new View(this);
+        fadeBot.setBackground(new android.graphics.drawable.GradientDrawable(
+                android.graphics.drawable.GradientDrawable.Orientation.BOTTOM_TOP,
+                new int[]{0xFFFFFFFF, 0x00FFFFFF}));
+        fadeBot.setLayoutParams(
+                new android.widget.FrameLayout.LayoutParams(-1, dp(72), Gravity.BOTTOM));
+
+        pickerZone.addView(hlMid);
+        pickerZone.addView(lineA);
+        pickerZone.addView(lineB);
+        pickerZone.addView(pickerRow);
+        pickerZone.addView(fadeTop);
+        pickerZone.addView(fadeBot);
+        root.addView(pickerZone);
+
+        // ── Línea divisora inferior ───────────────────────────────────
+        View divBot = new View(this);
+        divBot.setBackgroundColor(BORDER);
+        divBot.setLayoutParams(new LinearLayout.LayoutParams(-1, dp(1)));
+        root.addView(divBot);
+
+        // ── Botón confirmar ───────────────────────────────────────────
+        GradientDrawable btnGrad = new GradientDrawable(
+                GradientDrawable.Orientation.LEFT_RIGHT,
+                new int[]{0xFF1D4ED8, 0xFF2563EB});
+        btnGrad.setCornerRadius(dp(22));
+        android.widget.FrameLayout btnFrame = new android.widget.FrameLayout(this);
+        LinearLayout.LayoutParams bfP = new LinearLayout.LayoutParams(-1, dp(60));
+        bfP.setMargins(dp(24), dp(24), dp(24), 0);
+        btnFrame.setLayoutParams(bfP);
+        btnFrame.setBackground(btnGrad);
+        btnFrame.setClickable(true); btnFrame.setFocusable(true);
+
+        LinearLayout btnInner = new LinearLayout(this);
+        btnInner.setOrientation(LinearLayout.HORIZONTAL);
+        btnInner.setGravity(Gravity.CENTER);
+        btnInner.setLayoutParams(new android.widget.FrameLayout.LayoutParams(-1, -1));
+
+        TextView btnTxt = new TextView(this);
+        btnTxt.setText("Confirmar");
+        btnTxt.setTextSize(16f); btnTxt.setTextColor(WHITE);
+        btnTxt.setTypeface(Typeface.DEFAULT_BOLD);
+        btnTxt.setLetterSpacing(0.03f);
+        btnInner.addView(btnTxt);
+
+        // Sincronizar valor del botón — reasignamos los listeners con lógica unificada
+        for (int k = 0; k < pickers.length; k++) {
+            final int ki = k;
+            pickers[ki].setOnValueChangedListener((p, o, n) -> {
+                vals[ki] = n;
+                int t = vals[0]*100 + vals[1]*10 + vals[2];
+                final int display = t == 0 ? 1 : t;
+                // Pulso overshoot en preview
+                tvPreview.animate().cancel();
+                tvPreview.animate()
+                        .scaleX(0.78f).scaleY(0.78f).setDuration(60)
+                        .setInterpolator(new android.view.animation.AccelerateInterpolator())
+                        .withEndAction(() -> {
+                            tvPreview.setText(display + "€");
+                            tvPreview.animate().scaleX(1f).scaleY(1f).setDuration(280)
+                                    .setInterpolator(new android.view.animation.OvershootInterpolator(3f))
+                                    .start();
+                        }).start();
+            });
+        }
+
+        btnFrame.setOnClickListener(v2 -> {
+            int rawTotal = vals[0]*100 + vals[1]*10 + vals[2];
+            final int totalFinal = rawTotal == 0 ? 1 : rawTotal;
+            precioSel[0] = totalFinal;
+            btnFrame.animate().scaleX(0.96f).scaleY(0.96f).setDuration(70)
+                    .withEndAction(() -> {
+                        btnFrame.animate().scaleX(1f).scaleY(1f).setDuration(150)
+                                .setInterpolator(new android.view.animation.OvershootInterpolator(2f)).start();
+                        tvPrecio.setText(totalFinal + "€");
+                        tvPrecio.animate().alpha(0.2f).setDuration(60)
+                                .withEndAction(() -> tvPrecio.animate().alpha(1f).setDuration(180).start())
+                                .start();
+                        sheet.dismiss();
+                    }).start();
+        });
+        root.addView(btnFrame);
+
+        sheet.setContentView(root);
+        sheet.setOnShowListener(d -> {
+            com.google.android.material.bottomsheet.BottomSheetBehavior<?> beh =
+                    com.google.android.material.bottomsheet.BottomSheetBehavior.from((View) root.getParent());
+            beh.setState(com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED);
+            beh.setSkipCollapsed(true);
+        });
+        sheet.show();
     }
 
 }

@@ -30,7 +30,6 @@ public class SplashActivity extends AppCompatActivity {
         View centerBlock = findViewById(R.id.centerBlock);
         View bottomBlock = findViewById(R.id.bottomBlock);
 
-        // Empezar invisibles desde Java (no desde XML)
         centerBlock.setVisibility(View.INVISIBLE);
         bottomBlock.setVisibility(View.INVISIBLE);
 
@@ -54,12 +53,43 @@ public class SplashActivity extends AppCompatActivity {
             bottomBlock.startAnimation(fadeInBottom);
         }, 900);
 
-        // Navegar a MainActivity
+        // ── Navegar tras la animación ─────────────────────────────
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            Intent intent = new Intent(SplashActivity.this, MainActivity.class);
-            startActivity(intent);
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-            finish();
+
+            // Cargar sesión guardada
+            SessionManager.loadSession(this);
+
+            if (SessionManager.isLoggedIn()) {
+                if (SessionManager.isTokenExpired()) {
+                    // Token expirado → intentar refresh silencioso
+                    new AuthRepository().refreshToken(this, new AuthRepository.AuthCallback() {
+                        @Override public void onSuccess() {
+                            goToMain(); // refresh ok → entrar
+                        }
+                        @Override public void onError(String error) {
+                            // Refresh falló (sesión muy antigua) → login
+                            goToLogin();
+                        }
+                    });
+                } else {
+                    goToMain(); // token vigente → entrar directamente
+                }
+            } else {
+                goToLogin(); // sin sesión → login
+            }
+
         }, SPLASH_DURATION);
+    }
+
+    private void goToMain() {
+        startActivity(new Intent(this, MainActivity.class));
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+        finish();
+    }
+
+    private void goToLogin() {
+        startActivity(new Intent(this, LoginActivity.class));
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+        finish();
     }
 }

@@ -391,119 +391,128 @@
                 <!-- ── KPIs ── -->
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="16dp">
+                    android:layout_height="76dp"
+                    android:layout_marginBottom="16dp"
+                    android:orientation="horizontal">
 
                     <androidx.cardview.widget.CardView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
                         android:layout_marginEnd="6dp"
+                        android:layout_weight="1"
+                        app:cardBackgroundColor="#FFFFFF"
                         app:cardCornerRadius="18dp"
-                        app:cardElevation="2dp"
-                        app:cardBackgroundColor="#FFFFFF">
+                        app:cardElevation="2dp">
+
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
                             android:padding="16dp">
+
                             <TextView
                                 android:id="@+id/tvKpiCitas"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:ellipsize="none"
+                                android:maxLines="1"
                                 android:text="—"
                                 android:textColor="#2563EB"
                                 android:textStyle="bold"
-                                android:maxLines="1"
-                                android:ellipsize="none"
-                                app:autoSizeTextType="uniform"
-                                app:autoSizeMinTextSize="14sp"
                                 app:autoSizeMaxTextSize="32sp"
-                                app:autoSizeStepGranularity="1sp"/>
+                                app:autoSizeMinTextSize="14sp"
+                                app:autoSizeStepGranularity="1sp"
+                                app:autoSizeTextType="uniform" />
+
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:letterSpacing="0.05"
                                 android:text="Citas hoy"
-                                android:textSize="10sp"
                                 android:textColor="#9CA3AF"
-                                android:textStyle="bold"
-                                android:letterSpacing="0.05"/>
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
                         </LinearLayout>
                     </androidx.cardview.widget.CardView>
 
                     <androidx.cardview.widget.CardView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
                         android:layout_marginStart="6dp"
                         android:layout_marginEnd="6dp"
+                        android:layout_weight="1"
+                        app:cardBackgroundColor="#FFFFFF"
                         app:cardCornerRadius="18dp"
-                        app:cardElevation="2dp"
-                        app:cardBackgroundColor="#FFFFFF">
+                        app:cardElevation="2dp">
+
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
                             android:padding="16dp">
+
                             <TextView
                                 android:id="@+id/tvKpiGym"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:ellipsize="none"
+                                android:maxLines="1"
                                 android:text="—"
                                 android:textColor="#10B981"
                                 android:textStyle="bold"
-                                android:maxLines="1"
-                                android:ellipsize="none"
-                                app:autoSizeTextType="uniform"
-                                app:autoSizeMinTextSize="14sp"
                                 app:autoSizeMaxTextSize="32sp"
-                                app:autoSizeStepGranularity="1sp"/>
+                                app:autoSizeMinTextSize="14sp"
+                                app:autoSizeStepGranularity="1sp"
+                                app:autoSizeTextType="uniform" />
+
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:letterSpacing="0.05"
                                 android:text="En gym ahora"
-                                android:textSize="10sp"
                                 android:textColor="#9CA3AF"
-                                android:textStyle="bold"
-                                android:letterSpacing="0.05"/>
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
                         </LinearLayout>
                     </androidx.cardview.widget.CardView>
 
                     <androidx.cardview.widget.CardView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
                         android:layout_marginStart="6dp"
+                        android:layout_weight="1"
+                        app:cardBackgroundColor="#FFFFFF"
                         app:cardCornerRadius="18dp"
-                        app:cardElevation="2dp"
-                        app:cardBackgroundColor="#FFFFFF">
+                        app:cardElevation="2dp">
+
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
                             android:padding="16dp">
+
                             <TextView
                                 android:id="@+id/tvKpiIngresos"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:ellipsize="none"
+                                android:maxLines="1"
                                 android:text="—"
                                 android:textColor="#F59E0B"
                                 android:textStyle="bold"
-                                android:maxLines="1"
-                                android:ellipsize="none"
-                                app:autoSizeTextType="uniform"
-                                app:autoSizeMinTextSize="12sp"
                                 app:autoSizeMaxTextSize="28sp"
-                                app:autoSizeStepGranularity="1sp"/>
+                                app:autoSizeMinTextSize="12sp"
+                                app:autoSizeStepGranularity="1sp"
+                                app:autoSizeTextType="uniform" />
+
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:letterSpacing="0.05"
                                 android:text="Pendiente"
-                                android:textSize="10sp"
                                 android:textColor="#9CA3AF"
-                                android:textStyle="bold"
-                                android:letterSpacing="0.05"/>
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
                         </LinearLayout>
                     </androidx.cardview.widget.CardView>
 

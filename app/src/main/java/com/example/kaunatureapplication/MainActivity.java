@@ -107,15 +107,45 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle b) {
         super.onCreate(b);
         setContentView(R.layout.activity_main);
+
+        // CRÍTICO: cargar sesión en memoria antes de cualquier petición
+        // Si el proceso fue matado por Android, los campos estáticos se pierden
+        SessionManager.loadSession(this);
+
+        // Si no hay sesión → volver al login
+        if (!SessionManager.isLoggedIn()) {
+            startActivity(new android.content.Intent(this, LoginActivity.class));
+            finish();
+            return;
+        }
+
+        // Si el token expiró → refrescarlo antes de cargar datos
+        if (SessionManager.isTokenExpired()) {
+            new AuthRepository().refreshToken(this, new AuthRepository.AuthCallback() {
+                @Override public void onSuccess() {
+                    runOnUiThread(() -> iniciarUI(b));
+                }
+                @Override public void onError(String error) {
+                    // Sesión inválida → login
+                    SessionManager.clear(MainActivity.this);
+                    startActivity(new android.content.Intent(
+                            MainActivity.this, LoginActivity.class));
+                    finish();
+                }
+            });
+            return;
+        }
+
+        iniciarUI(b);
+    }
+
+    private void iniciarUI(Bundle b) {
         bind();
         setupGreeting();
         setupFecha();
         NavHelper.setup(this, "home");
         bindButtons();
-
-        // Cargar estado persistente de notificaciones
         cargarPrefs();
-        // KPIs y listas: mostrar placeholders y cargar de Supabase
         mostrarKpisVacios();
         cargarDatos();
     }
@@ -166,7 +196,15 @@ public class MainActivity extends AppCompatActivity {
                         });
                     }
                     @Override public void onError(String e) {
-                        // Mantener placeholders si falla
+                        android.util.Log.e("MAIN", "Error citas: " + e);
+                        if (e != null && (e.contains("401") || e.contains("403"))) {
+                            runOnUiThread(() -> {
+                                SessionManager.clear(MainActivity.this);
+                                startActivity(new android.content.Intent(
+                                        MainActivity.this, LoginActivity.class));
+                                finish();
+                            });
+                        }
                     }
                 });
     }
@@ -1272,68 +1310,68 @@ public class MainActivity extends AppCompatActivity {
         android.app.AlertDialog.Builder b = new android.app.AlertDialog.Builder(this);
         b.setTitle("🎫 Renovación de membresía");
         b.setMessage("La membresía " + tipoMay + " de " + precio +
-                        "/mes está a punto de vencer.¿Renovar automáticamente?");
+                "/mes está a punto de vencer.¿Renovar automáticamente?");
 
-                b.setPositiveButton("✅ Sí, renovar", (d, w) -> {
-                    // Renovar: actualizar fecha_inicio a hoy y crear nuevo cobro
-                    String hoy = new java.text.SimpleDateFormat("yyyy-MM-dd",
-                            java.util.Locale.getDefault()).format(new java.util.Date());
-                    Map<String, Object> body = new HashMap<>();
-                    body.put("fecha_inicio", hoy);
-                    body.put("activa",       Boolean.TRUE);
+        b.setPositiveButton("✅ Sí, renovar", (d, w) -> {
+            // Renovar: actualizar fecha_inicio a hoy y crear nuevo cobro
+            String hoy = new java.text.SimpleDateFormat("yyyy-MM-dd",
+                    java.util.Locale.getDefault()).format(new java.util.Date());
+            Map<String, Object> body = new HashMap<>();
+            body.put("fecha_inicio", hoy);
+            body.put("activa",       Boolean.TRUE);
 
-                    SupabaseRepository.get().getMembresias(mem.clienteId, null,
-                            new SupabaseRepository.Callback<List<MembresiaModel>>() {
-                                @Override public void onSuccess(List<MembresiaModel> all) {
-                                    String nomCliente = "Cliente";
-                                    for (CobroModel c : cobrosPendientes) {
-                                        if (mem.clienteId != null && mem.clienteId.equals(c.clienteId)
-                                                && c.clienteNombre != null) {
-                                            nomCliente = c.clienteNombre; break;
-                                        }
-                                    }
-                                    final String nomFinal = nomCliente;
-
-                                    // 1. Actualizar fecha_inicio en Supabase
-                                    SupabaseRepository.get().actualizarPrecioMembresia(
-                                            mem.id, mem.precio, // reutilizamos el método con precio igual
-                                            new SupabaseRepository.Callback<Void>() {
-                                                @Override public void onSuccess(Void v2) {
-                                                    // Actualizar fecha_inicio aparte
-                                                    Map<String, Object> bodyFecha = new HashMap<>();
-                                                    bodyFecha.put("fecha_inicio", hoy);
-                                                    SupabaseRepository.get().getMembresias(
-                                                            mem.clienteId, null,
-                                                            new SupabaseRepository.Callback<List<MembresiaModel>>() {
-                                                                @Override public void onSuccess(List<MembresiaModel> x) {}
-                                                                @Override public void onError(String e) {}
-                                                            });
-
-                                                    // 2. Crear cobro pendiente
-                                                    String concepto = "Renovación " + tipoMay + " - " + nomFinal;
-                                                    SupabaseRepository.get().crearCobro(
-                                                            mem.clienteId, nomFinal, concepto,
-                                                            mem.precio, "Transferencia", "pendiente", "",
-                                                            new SupabaseRepository.Callback<CobroModel>() {
-                                                                @Override public void onSuccess(CobroModel c) {
-                                                                    runOnUiThread(() -> {
-                                                                        android.widget.Toast.makeText(
-                                                                                MainActivity.this,
-                                                                                "✅ Membresía renovada · cobro de " +
-                                                                                        precio + " generado",
-                                                                                android.widget.Toast.LENGTH_LONG).show();
-                                                                        cargarDatos();
-                                                                    });
-                                                                }
-                                                                @Override public void onError(String e) {}
-                                                            });
-                                                }
-                                                @Override public void onError(String e) {}
-                                            });
+            SupabaseRepository.get().getMembresias(mem.clienteId, null,
+                    new SupabaseRepository.Callback<List<MembresiaModel>>() {
+                        @Override public void onSuccess(List<MembresiaModel> all) {
+                            String nomCliente = "Cliente";
+                            for (CobroModel c : cobrosPendientes) {
+                                if (mem.clienteId != null && mem.clienteId.equals(c.clienteId)
+                                        && c.clienteNombre != null) {
+                                    nomCliente = c.clienteNombre; break;
                                 }
-                                @Override public void onError(String e) {}
-                            });
-                });
+                            }
+                            final String nomFinal = nomCliente;
+
+                            // 1. Actualizar fecha_inicio en Supabase
+                            SupabaseRepository.get().actualizarPrecioMembresia(
+                                    mem.id, mem.precio, // reutilizamos el método con precio igual
+                                    new SupabaseRepository.Callback<Void>() {
+                                        @Override public void onSuccess(Void v2) {
+                                            // Actualizar fecha_inicio aparte
+                                            Map<String, Object> bodyFecha = new HashMap<>();
+                                            bodyFecha.put("fecha_inicio", hoy);
+                                            SupabaseRepository.get().getMembresias(
+                                                    mem.clienteId, null,
+                                                    new SupabaseRepository.Callback<List<MembresiaModel>>() {
+                                                        @Override public void onSuccess(List<MembresiaModel> x) {}
+                                                        @Override public void onError(String e) {}
+                                                    });
+
+                                            // 2. Crear cobro pendiente
+                                            String concepto = "Renovación " + tipoMay + " - " + nomFinal;
+                                            SupabaseRepository.get().crearCobro(
+                                                    mem.clienteId, nomFinal, concepto,
+                                                    mem.precio, "Transferencia", "pendiente", "",
+                                                    new SupabaseRepository.Callback<CobroModel>() {
+                                                        @Override public void onSuccess(CobroModel c) {
+                                                            runOnUiThread(() -> {
+                                                                android.widget.Toast.makeText(
+                                                                        MainActivity.this,
+                                                                        "✅ Membresía renovada · cobro de " +
+                                                                                precio + " generado",
+                                                                        android.widget.Toast.LENGTH_LONG).show();
+                                                                cargarDatos();
+                                                            });
+                                                        }
+                                                        @Override public void onError(String e) {}
+                                                    });
+                                        }
+                                        @Override public void onError(String e) {}
+                                    });
+                        }
+                        @Override public void onError(String e) {}
+                    });
+        });
 
         b.setNeutralButton("⏭ Posponer 7 días", (d, w) -> {
             // Posponer: no volver a preguntar en 7 días
@@ -1587,58 +1625,58 @@ public class MainActivity extends AppCompatActivity {
         divBot.setLayoutParams(new LinearLayout.LayoutParams(-1, dp(1)));
         root.addView(divBot);
 
-        // ── Botón confirmar ───────────────────────────────────────────
-        GradientDrawable btnGrad = new GradientDrawable(
-                GradientDrawable.Orientation.LEFT_RIGHT,
-                new int[]{0xFF1D4ED8, 0xFF2563EB});
-        btnGrad.setCornerRadius(dp(22));
-        android.widget.FrameLayout btnFrame = new android.widget.FrameLayout(this);
-        LinearLayout.LayoutParams bfP = new LinearLayout.LayoutParams(-1, dp(60));
-        bfP.setMargins(dp(24), dp(24), dp(24), 0);
-        btnFrame.setLayoutParams(bfP);
-        btnFrame.setBackground(btnGrad);
-        btnFrame.setClickable(true); btnFrame.setFocusable(true);
-
-        LinearLayout btnInner = new LinearLayout(this);
-        btnInner.setOrientation(LinearLayout.HORIZONTAL);
-        btnInner.setGravity(Gravity.CENTER);
-        btnInner.setLayoutParams(new android.widget.FrameLayout.LayoutParams(-1, -1));
-
-        TextView btnTxt = new TextView(this);
-        btnTxt.setText("Confirmar");
-        btnTxt.setTextSize(16f); btnTxt.setTextColor(WHITE);
-        btnTxt.setTypeface(Typeface.DEFAULT_BOLD);
-        btnTxt.setLetterSpacing(0.03f);
-        btnInner.addView(btnTxt);
-
-        // Sincronizar valor del botón — reasignamos los listeners con lógica unificada
+        // ── Listeners con animación overshoot ────────────────────────
         for (int k = 0; k < pickers.length; k++) {
             final int ki = k;
             pickers[ki].setOnValueChangedListener((p, o, n) -> {
                 vals[ki] = n;
-                int t = vals[0]*100 + vals[1]*10 + vals[2];
-                final int display = t == 0 ? 1 : t;
-                // Pulso overshoot en preview
+                int total = vals[0]*100 + vals[1]*10 + vals[2];
+                final int disp = total == 0 ? 1 : total;
                 tvPreview.animate().cancel();
                 tvPreview.animate()
-                        .scaleX(0.78f).scaleY(0.78f).setDuration(60)
-                        .setInterpolator(new android.view.animation.AccelerateInterpolator())
+                        .scaleX(0.72f).scaleY(0.72f)
+                        .setDuration(60)
+                        .setInterpolator(new android.view.animation.AccelerateInterpolator(1.5f))
                         .withEndAction(() -> {
-                            tvPreview.setText(display + "€");
-                            tvPreview.animate().scaleX(1f).scaleY(1f).setDuration(280)
-                                    .setInterpolator(new android.view.animation.OvershootInterpolator(3f))
+                            tvPreview.setText(disp + "€");
+                            tvPreview.animate()
+                                    .scaleX(1f).scaleY(1f)
+                                    .setDuration(320)
+                                    .setInterpolator(new android.view.animation.OvershootInterpolator(4f))
                                     .start();
                         }).start();
             });
         }
 
-        btnFrame.setOnClickListener(v2 -> {
-            int rawTotal = vals[0]*100 + vals[1]*10 + vals[2];
-            final int totalFinal = rawTotal == 0 ? 1 : rawTotal;
+        // ── BOTÓN — solo "Confirmar" ──────────────────────────────────
+        GradientDrawable btnBg = new GradientDrawable(
+                GradientDrawable.Orientation.LEFT_RIGHT,
+                new int[]{0xFF1D4ED8, 0xFF2563EB});
+        btnBg.setCornerRadius(dp(22));
+
+        TextView btnOk = new TextView(this);
+        btnOk.setText("Confirmar");
+        btnOk.setTextSize(17f);
+        btnOk.setTextColor(WHITE);
+        btnOk.setTypeface(Typeface.DEFAULT_BOLD);
+        btnOk.setLetterSpacing(0.03f);
+        btnOk.setGravity(Gravity.CENTER);
+        btnOk.setPadding(0, dp(18), 0, dp(18));
+        btnOk.setBackground(btnBg);
+        btnOk.setClickable(true);
+        btnOk.setFocusable(true);
+
+        LinearLayout.LayoutParams okP = new LinearLayout.LayoutParams(-1, -2);
+        okP.setMargins(dp(24), dp(16), dp(24), 0);
+        btnOk.setLayoutParams(okP);
+
+        btnOk.setOnClickListener(v -> {
+            int raw = vals[0]*100 + vals[1]*10 + vals[2];
+            final int totalFinal = raw == 0 ? 1 : raw;
             precioSel[0] = totalFinal;
-            btnFrame.animate().scaleX(0.96f).scaleY(0.96f).setDuration(70)
+            btnOk.animate().scaleX(0.96f).scaleY(0.96f).setDuration(70)
                     .withEndAction(() -> {
-                        btnFrame.animate().scaleX(1f).scaleY(1f).setDuration(150)
+                        btnOk.animate().scaleX(1f).scaleY(1f).setDuration(150)
                                 .setInterpolator(new android.view.animation.OvershootInterpolator(2f)).start();
                         tvPrecio.setText(totalFinal + "€");
                         tvPrecio.animate().alpha(0.2f).setDuration(60)
@@ -1647,7 +1685,7 @@ public class MainActivity extends AppCompatActivity {
                         sheet.dismiss();
                     }).start();
         });
-        root.addView(btnFrame);
+        root.addView(btnOk);
 
         sheet.setContentView(root);
         sheet.setOnShowListener(d -> {

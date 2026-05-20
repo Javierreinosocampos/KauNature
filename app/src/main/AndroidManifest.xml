@@ -35,6 +35,8 @@
         <activity android:name=".CobrosActivity"   android:exported="false"/>
         <activity android:name=".SettingsActivity" android:exported="false"/>
         <activity android:name=".AforoActivity"    android:exported="false"/>
+        <activity android:name=".LoginActivity"    android:exported="false"/>
+
 
     </application>
 

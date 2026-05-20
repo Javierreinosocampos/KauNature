@@ -16,6 +16,8 @@ public class SupabaseRepository {
         if (instance == null) instance = new SupabaseRepository();
         return instance;
     }
+    /** Llamado por SupabaseClient.reset() tras login/refresh */
+    public static void reset() { instance = null; }
     private SupabaseRepository() {
         api = SupabaseClient.get().create(SupabaseApi.class);
     }

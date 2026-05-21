@@ -28,6 +28,7 @@ public class CobrosActivity extends AppCompatActivity {
     // ── Modelo local ─────────────────────────────────────────────────
     static class Cobro {
         String id;          // UUID Supabase
+        String clienteId;   // UUID del cliente
         String cliente;
         String concepto;
         double importe;
@@ -39,8 +40,9 @@ public class CobrosActivity extends AppCompatActivity {
 
         /** Construye desde modelo de red */
         Cobro(CobroModel m) {
-            this.id       = m.id;
-            this.cliente  = m.clienteNombre != null ? m.clienteNombre : "";
+            this.id        = m.id;
+            this.clienteId = m.clienteId;
+            this.cliente   = m.clienteNombre != null ? m.clienteNombre : "";
             this.concepto = m.concepto      != null ? m.concepto      : "";
             this.importe  = m.importe;
             this.metodo   = m.metodo        != null ? m.metodo        : "Efectivo";
@@ -92,8 +94,11 @@ public class CobrosActivity extends AppCompatActivity {
     private static final String[] METODOS_KEY = {"Efectivo","Tarjeta","Bizum","Transferencia"};
 
     // ── Estado ───────────────────────────────────────────────────────
-    private final List<Cobro> todosCobros = new ArrayList<>();
-    private String filtroActual = "Todos";
+    private final List<Cobro> todosCobros    = new ArrayList<>();
+    private String filtroActual              = "Todos";
+    private String filtroClienteId           = null;
+    private String filtroClienteNom          = null;
+    private boolean abrirNuevoCobro          = false;
 
     // ── Views ────────────────────────────────────────────────────────
     private LinearLayout listaPendientes, listaHistorial;
@@ -115,7 +120,15 @@ public class CobrosActivity extends AppCompatActivity {
         setupFiltros();
         setupBotones();
         setupBottomNav();
-        cargarCobros();     // ← carga desde Supabase
+
+        // Recibir cliente desde ClientesActivity
+        if (getIntent() != null) {
+            filtroClienteId  = getIntent().getStringExtra("CLIENTE_ID");
+            filtroClienteNom = getIntent().getStringExtra("CLIENTE_NOMBRE");
+            abrirNuevoCobro  = filtroClienteId != null; // si viene con cliente, abrir directo
+        }
+
+        cargarCobros();
     }
 
     // ════════════════════════════════════════════════════════════════
@@ -155,6 +168,11 @@ public class CobrosActivity extends AppCompatActivity {
                             todosCobros.clear();
                             for (CobroModel m : data) todosCobros.add(new Cobro(m));
                             renderTodo();
+                            // Si venimos de un cliente, abrir directo el formulario
+                            if (abrirNuevoCobro) {
+                                abrirNuevoCobro = false;
+                                showNuevoCobroSheet(null);
+                            }
                         });
                     }
                     @Override public void onError(String e) {
@@ -345,16 +363,14 @@ public class CobrosActivity extends AppCompatActivity {
                 LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         rp.setMarginStart(dpToPx(8));
         rightCol.setLayoutParams(rp);
-        rightCol.setMinimumWidth(dpToPx(90)); // garantiza espacio para "20.000,00€"
 
         TextView tvImporte = new TextView(this);
         tvImporte.setText(cobro.importeFormateado());
-        tvImporte.setTextSize(15f);
+        tvImporte.setTextSize(16f);
         tvImporte.setTextColor("pendiente".equals(cobro.estado)
                 ? Color.parseColor("#F59E0B") : Color.parseColor("#12B76A"));
         tvImporte.setTypeface(getResources().getFont(R.font.outfit_bold));
         tvImporte.setGravity(Gravity.END);
-        tvImporte.setSingleLine(true);
         rightCol.addView(tvImporte);
 
         TextView tvEstado = new TextView(this);
@@ -598,17 +614,25 @@ public class CobrosActivity extends AppCompatActivity {
         androidx.cardview.widget.CardView btnGuardarCard = view.findViewById(R.id.btnGuardarCobro);
         TextView btnGuardar = (TextView) btnGuardarCard.getChildAt(0);
 
-        final String[] metodoSel = {METODOS_KEY[0]};
-        final String[] estadoSel = {"cobrado"};
+        final String[] metodoSel  = {METODOS_KEY[0]};
+        final String[] estadoSel  = {"cobrado"};
+        final String[] clienteIdSel = {null};
 
         if (cobroEditar != null) {
+            // Editar cobro existente
             tvTitulo.setText("Editar cobro");
             etCliente.setText(cobroEditar.cliente);
             etConcepto.setText(cobroEditar.concepto);
             etImporte.setText(String.format(java.util.Locale.US, "%.2f", cobroEditar.importe).replace(".", ","));
             etNotas.setText(cobroEditar.notas);
-            metodoSel[0] = cobroEditar.metodo;
-            estadoSel[0] = cobroEditar.estado;
+            metodoSel[0]  = cobroEditar.metodo;
+            estadoSel[0]  = cobroEditar.estado;
+            clienteIdSel[0] = cobroEditar.clienteId;
+        } else if (filtroClienteNom != null && !filtroClienteNom.isEmpty()) {
+            // Nuevo cobro desde ClientesActivity — prerellenar cliente
+            tvTitulo.setText("Nuevo cobro · " + filtroClienteNom);
+            etCliente.setText(filtroClienteNom);
+            clienteIdSel[0] = filtroClienteId;
         }
 
         // Chips método de pago
@@ -737,7 +761,7 @@ public class CobrosActivity extends AppCompatActivity {
                 // ── CREAR ─────────────────────────────────────────
                 final double importeFinal = importe;
                 SupabaseRepository.get().crearCobro(
-                        null, nombre, concepto, importe,
+                        clienteIdSel[0], nombre, concepto, importe,
                         metodoSel[0], estadoSel[0], notas,
                         new SupabaseRepository.Callback<CobroModel>() {
                             @Override public void onSuccess(CobroModel data) {

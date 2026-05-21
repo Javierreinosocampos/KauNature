@@ -89,8 +89,10 @@ public class GimnasioActivity extends AppCompatActivity {
     private final List<String> clientesPool = new ArrayList<>();
 
     // ── Estado UI ─────────────────────────────────────────────────────
-    private String vista          = "dia";
-    private String selectedFecha  = "";
+    private String  vista                  = "dia";
+    private String  selectedFecha          = "";
+    // Nombre preseleccionado desde ClientesActivity (solo para el buscador)
+    private String  clientePreseleccionado = null;
     private int    semanaOffset   = 0;
     private int    mesOffset      = 0;
     private int    diaIdx         = 0;
@@ -102,9 +104,6 @@ public class GimnasioActivity extends AppCompatActivity {
     private TextView            btnVistaDia, btnVistaSemana, btnVistaMes;
     private HorizontalScrollView hsvDias;
 
-    // Nombre de cliente preseleccionado desde ClientesActivity
-    private String clientePreseleccionado = null;
-
     // ════════════════════════════════════════════════════════════════
     //  onCreate
     // ════════════════════════════════════════════════════════════════
@@ -112,7 +111,6 @@ public class GimnasioActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Recibir cliente desde ClientesActivity
         if (getIntent() != null) {
             clientePreseleccionado = getIntent().getStringExtra("CLIENTE_NOMBRE");
         }
@@ -279,6 +277,8 @@ public class GimnasioActivity extends AppCompatActivity {
         runOnUiThread(() -> {
             renderDias();
             renderContenido();
+
+
         });
     }
 
@@ -833,15 +833,42 @@ public class GimnasioActivity extends AppCompatActivity {
             inner.addView(hsv);
         }
 
+        // Banner FRANJA COMPLETA cuando está llena
+        if (fl.llena()) {
+            LinearLayout bannerLleno = new LinearLayout(this);
+            bannerLleno.setOrientation(LinearLayout.HORIZONTAL);
+            bannerLleno.setGravity(Gravity.CENTER);
+            bannerLleno.setPadding(dp(14), dp(10), dp(14), dp(10));
+            android.graphics.drawable.GradientDrawable bannerBg = new android.graphics.drawable.GradientDrawable();
+            bannerBg.setColor(0x1AEF4444);
+            bannerBg.setCornerRadius(dp(12));
+            bannerBg.setStroke(dp(1), 0x44EF4444);
+            bannerLleno.setBackground(bannerBg);
+            LinearLayout.LayoutParams bannerP = new LinearLayout.LayoutParams(-1, -2);
+            bannerP.topMargin = dp(6);
+            bannerP.bottomMargin = dp(4);
+            bannerLleno.setLayoutParams(bannerP);
+
+            TextView tvLleno = new TextView(this);
+            tvLleno.setText("🔴  FRANJA COMPLETA");
+            tvLleno.setTextSize(13f);
+            tvLleno.setTextColor(RED);
+            tvLleno.setTypeface(Typeface.DEFAULT_BOLD);
+            tvLleno.setLetterSpacing(0.06f);
+            tvLleno.setGravity(Gravity.CENTER);
+            bannerLleno.addView(tvLleno);
+            inner.addView(bannerLleno);
+        }
+
         TextView tvHint = new TextView(this);
-        tvHint.setText(fl.llena() ? "🔴 Lleno · toca para gestionar"
+        tvHint.setText(fl.llena() ? "Toca para gestionar o quitar personas"
                 : fl.asistentes.isEmpty() ? "Toca para apuntar personas"
                 : "Toca para ver y gestionar ›");
         tvHint.setTextSize(10.5f);
         tvHint.setTextColor(fl.llena() ? RED : fl.asistentes.isEmpty() ? TEXT_L : BLUE);
         tvHint.setTypeface(Typeface.DEFAULT_BOLD);
         LinearLayout.LayoutParams hp = new LinearLayout.LayoutParams(-1, -2);
-        hp.topMargin = dp(4);
+        hp.topMargin = dp(2);
         tvHint.setLayoutParams(hp);
         inner.addView(tvHint);
 
@@ -1380,8 +1407,16 @@ public class GimnasioActivity extends AppCompatActivity {
     // ════════════════════════════════════════════════════════════════
     private void showListaSheet(FranjaLocal fl, String dia) {
         BottomSheetDialog sheet = mkSheet();
-        ScrollView sv = new ScrollView(this);
-        sv.setVerticalScrollBarEnabled(false);
+
+        // NestedScrollView permite scroll dentro del BottomSheet sin conflicto
+        androidx.core.widget.NestedScrollView sv = new androidx.core.widget.NestedScrollView(this);
+        sv.setFillViewport(true);
+        sv.setNestedScrollingEnabled(true);
+
+        // Altura fija para que el sheet tenga espacio real de scroll
+        int alturaSheet = (int)(getResources().getDisplayMetrics().heightPixels * 0.88f);
+        sv.setLayoutParams(new android.view.ViewGroup.LayoutParams(-1, alturaSheet));
+
         LinearLayout root = mkSheetRoot();
         sv.addView(root);
         root.addView(mkHandle());
@@ -1491,14 +1526,30 @@ public class GimnasioActivity extends AppCompatActivity {
             accionRow.addView(btnVac);
         }
 
-        // Lista personas
+        // Lista personas — contenedor separado para poder actualizarla sin cerrar el sheet
+        LinearLayout listaPersonas = new LinearLayout(this);
+        listaPersonas.setOrientation(LinearLayout.VERTICAL);
+        root.addView(listaPersonas);
+
         int[] avColors = {BLUE,0xFFEC4899,GREEN,YELLOW,0xFF8B5CF6,RED,0xFF06B6D4,0xFF64748B,0xFF0EA5E9,0xFFD97706,0xFF7C3AED,0xFF059669};
-        if (fl.asistentes.isEmpty()) {
-            root.addView(buildEmpty("Sin personas apuntadas", "Toca Apuntar para añadir"));
-        } else {
+
+        // Runnable que re-renderiza la lista SIN cerrar el sheet
+        Runnable[] refRender = {null};
+        Runnable renderPersonas = () -> {
+            listaPersonas.removeAllViews();
+
+            // Actualizar el círculo del header con el nuevo conteo
+            tvCN.setText(String.valueOf(fl.ocupacion()));
+            tvCM.setText("/" + fl.aforoMax);
+
+            if (fl.asistentes.isEmpty()) {
+                listaPersonas.addView(buildEmpty("Sin personas apuntadas", "Toca Apuntar para añadir"));
+                return;
+            }
             for (int i = 0; i < fl.asistentes.size(); i++) {
                 final AsistenciaModel a = fl.asistentes.get(i);
                 final int ca = avColors[i % avColors.length];
+                final int plazaNum = i + 1;
 
                 LinearLayout fila = new LinearLayout(this);
                 fila.setOrientation(LinearLayout.HORIZONTAL);
@@ -1528,7 +1579,7 @@ public class GimnasioActivity extends AppCompatActivity {
                 tvN.setTypeface(Typeface.DEFAULT_BOLD);
                 nc.addView(tvN);
                 TextView tvPos = new TextView(this);
-                tvPos.setText("Plaza #" + (i + 1));
+                tvPos.setText("Plaza #" + plazaNum);
                 tvPos.setTextSize(10f);
                 tvPos.setTextColor(TEXT_L);
                 nc.addView(tvPos);
@@ -1546,13 +1597,18 @@ public class GimnasioActivity extends AppCompatActivity {
                 btnQ.setBackground(qBg);
                 btnQ.setOnClickListener(v -> {
                     btnQ.setEnabled(false);
+                    btnQ.setText("…");
                     SupabaseRepository.get().quitarPersona(dia, fl.id, a.clienteNombre,
                             new SupabaseRepository.Callback<Void>() {
                                 @Override public void onSuccess(Void data) {
                                     runOnUiThread(() -> {
                                         fl.asistentes.remove(a);
-                                        sheet.dismiss();
-                                        renderDias(); renderContenido(); updateKpis();
+                                        // Re-renderizar la lista SIN cerrar el sheet
+                                        refRender[0].run();
+                                        // Actualizar también el fondo y los KPIs
+                                        renderDias();
+                                        renderContenido();
+                                        updateKpis();
                                         Toast.makeText(GimnasioActivity.this,
                                                 a.clienteNombre.split(" ")[0] + " eliminado/a",
                                                 Toast.LENGTH_SHORT).show();
@@ -1561,6 +1617,7 @@ public class GimnasioActivity extends AppCompatActivity {
                                 @Override public void onError(String e) {
                                     runOnUiThread(() -> {
                                         btnQ.setEnabled(true);
+                                        btnQ.setText("✕");
                                         Toast.makeText(GimnasioActivity.this,
                                                 "Error: " + e, Toast.LENGTH_SHORT).show();
                                     });
@@ -1568,10 +1625,19 @@ public class GimnasioActivity extends AppCompatActivity {
                             });
                 });
                 fila.addView(btnQ);
-                root.addView(fila);
+                listaPersonas.addView(fila);
             }
-        }
+        };
+        refRender[0] = renderPersonas;
+        renderPersonas.run();
         sheet.setContentView(sv);
+        sheet.setOnShowListener(d -> {
+            com.google.android.material.bottomsheet.BottomSheetBehavior<?> beh =
+                    com.google.android.material.bottomsheet.BottomSheetBehavior.from(
+                            (android.view.View) sv.getParent());
+            beh.setState(com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED);
+            beh.setSkipCollapsed(true);
+        });
         sheet.show();
     }
 
@@ -1580,8 +1646,13 @@ public class GimnasioActivity extends AppCompatActivity {
     // ════════════════════════════════════════════════════════════════
     private void showApuntarSheet(FranjaLocal fl, String dia) {
         BottomSheetDialog sheet = mkSheet();
-        ScrollView sv = new ScrollView(this);
-        sv.setVerticalScrollBarEnabled(false);
+
+        androidx.core.widget.NestedScrollView sv = new androidx.core.widget.NestedScrollView(this);
+        sv.setFillViewport(true);
+        sv.setNestedScrollingEnabled(true);
+        int alturaSheet = (int)(getResources().getDisplayMetrics().heightPixels * 0.92f);
+        sv.setLayoutParams(new android.view.ViewGroup.LayoutParams(-1, alturaSheet));
+
         LinearLayout root = mkSheetRoot();
         sv.addView(root);
         root.addView(mkHandle());
@@ -1622,23 +1693,26 @@ public class GimnasioActivity extends AppCompatActivity {
         tvPlazas.setBackground(plBg);
         hdr.addView(tvPlazas);
 
-        // Buscador
+        // Buscador — prerellenar con el cliente si venimos de ClientesActivity
         root.addView(mkSheetLabel("BUSCAR CLIENTE"));
         EditText etBuscar = mkEditText("Escribe un nombre...");
         setMB(etBuscar, 10);
-        // Si venimos desde ClientesActivity, prerellenar el nombre
         if (clientePreseleccionado != null && !clientePreseleccionado.isEmpty()) {
             etBuscar.setText(clientePreseleccionado);
+            etBuscar.setSelection(clientePreseleccionado.length());
         }
         root.addView(etBuscar);
 
-        // Lista de clientes disponibles
-        ScrollView svLista = new ScrollView(this);
-        svLista.setVerticalScrollBarEnabled(false);
+        // Lista de clientes — scroll independiente del sheet principal
+        androidx.core.widget.NestedScrollView svLista = new androidx.core.widget.NestedScrollView(this);
+        svLista.setNestedScrollingEnabled(true);
+        svLista.setFillViewport(true);
         LinearLayout listaView = new LinearLayout(this);
         listaView.setOrientation(LinearLayout.VERTICAL);
         svLista.addView(listaView);
-        svLista.setLayoutParams(new LinearLayout.LayoutParams(-1, dp(200)));
+        LinearLayout.LayoutParams svListaP = new LinearLayout.LayoutParams(-1, dp(260));
+        svListaP.bottomMargin = dp(8);
+        svLista.setLayoutParams(svListaP);
         root.addView(svLista);
 
         // Separador o
@@ -1660,6 +1734,52 @@ public class GimnasioActivity extends AppCompatActivity {
 
         Runnable renderLista = () -> {
             listaView.removeAllViews();
+            // Actualizar contador de plazas en el header
+            tvPlazas.setText((fl.aforoMax - fl.ocupacion()) + " plazas libres");
+            tvPlazas.setTextColor(fl.llena() ? RED : WHITE);
+
+            // Si la franja está llena, mostrar aviso en lugar de la lista
+            if (fl.llena()) {
+                LinearLayout bannerLleno2 = new LinearLayout(this);
+                bannerLleno2.setOrientation(LinearLayout.VERTICAL);
+                bannerLleno2.setGravity(Gravity.CENTER);
+                bannerLleno2.setPadding(dp(20), dp(24), dp(20), dp(24));
+                android.graphics.drawable.GradientDrawable bBg2 = new android.graphics.drawable.GradientDrawable();
+                bBg2.setColor(0x1AEF4444); bBg2.setCornerRadius(dp(16));
+                bBg2.setStroke(dp(1), 0x44EF4444);
+                bannerLleno2.setBackground(bBg2);
+                LinearLayout.LayoutParams bbP2 = new LinearLayout.LayoutParams(-1, -2);
+                bbP2.bottomMargin = dp(12);
+                bannerLleno2.setLayoutParams(bbP2);
+                TextView tvLleno2 = new TextView(this);
+                tvLleno2.setText("🔴");
+                tvLleno2.setTextSize(36f);
+                tvLleno2.setGravity(Gravity.CENTER);
+                bannerLleno2.addView(tvLleno2);
+                TextView tvLleno3 = new TextView(this);
+                tvLleno3.setText("FRANJA COMPLETA");
+                tvLleno3.setTextSize(16f);
+                tvLleno3.setTextColor(RED);
+                tvLleno3.setTypeface(Typeface.DEFAULT_BOLD);
+                tvLleno3.setLetterSpacing(0.08f);
+                tvLleno3.setGravity(Gravity.CENTER);
+                LinearLayout.LayoutParams ll3P = new LinearLayout.LayoutParams(-1, -2);
+                ll3P.topMargin = dp(8);
+                tvLleno3.setLayoutParams(ll3P);
+                bannerLleno2.addView(tvLleno3);
+                TextView tvLleno4 = new TextView(this);
+                tvLleno4.setText("No hay más plazas disponibles");
+                tvLleno4.setTextSize(11f);
+                tvLleno4.setTextColor(TEXT_L);
+                tvLleno4.setGravity(Gravity.CENTER);
+                LinearLayout.LayoutParams ll4P = new LinearLayout.LayoutParams(-1, -2);
+                ll4P.topMargin = dp(4);
+                tvLleno4.setLayoutParams(ll4P);
+                bannerLleno2.addView(tvLleno4);
+                listaView.addView(bannerLleno2);
+                return;
+            }
+
             String q = etBuscar.getText().toString().toLowerCase().trim();
             List<String> yaApuntados = new ArrayList<>();
             for (AsistenciaModel a : fl.asistentes) yaApuntados.add(a.clienteNombre);
@@ -1680,11 +1800,22 @@ public class GimnasioActivity extends AppCompatActivity {
                                     nueva.horarioSemanalId = fl.id;
                                     fl.asistentes.add(nueva);
                                     runOnUiThread(() -> {
-                                        renderContenido(); renderDias(); updateKpis();
+                                        renderContenido();
+                                        renderDias();
+                                        updateKpis();
+                                        // Limpiar el buscador → muestra todos los clientes
+                                        etBuscar.setText("");
+                                        clientePreseleccionado = null;
                                         renderListaRef[0].run();
-                                        Toast.makeText(GimnasioActivity.this,
-                                                "✓ " + nomFinal.split(" ")[0] + " apuntado/a",
-                                                Toast.LENGTH_SHORT).show();
+                                        if (fl.llena()) {
+                                            Toast.makeText(GimnasioActivity.this,
+                                                    "✓ " + nomFinal.split(" ")[0] + " apuntado/a · Franja completa 🔴",
+                                                    Toast.LENGTH_LONG).show();
+                                        } else {
+                                            Toast.makeText(GimnasioActivity.this,
+                                                    "✓ " + nomFinal.split(" ")[0] + " apuntado/a",
+                                                    Toast.LENGTH_SHORT).show();
+                                        }
                                     });
                                 }
                                 @Override public void onError(String e) {
@@ -1758,6 +1889,13 @@ public class GimnasioActivity extends AppCompatActivity {
         root.addView(btnCerrar);
 
         sheet.setContentView(sv);
+        sheet.setOnShowListener(d -> {
+            com.google.android.material.bottomsheet.BottomSheetBehavior<?> beh =
+                    com.google.android.material.bottomsheet.BottomSheetBehavior.from(
+                            (android.view.View) sv.getParent());
+            beh.setState(com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED);
+            beh.setSkipCollapsed(true);
+        });
         sheet.show();
     }
 

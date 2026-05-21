@@ -68,9 +68,12 @@ public class ClientesActivity extends AppCompatActivity {
                     ? nombre + " " + apellidos : nombre;
         }
 
-        double deudaReal = 0; // calculada desde cobros pendientes
+        double  deudaReal   = 0;   // suma cobros pendientes
+        int     citasReales = -1;  // -1 = aún no cargadas
+        int     citasProx   = 0;   // citas pendiente/confirmadas
+
         boolean tieneDeuda() { return deudaReal > 0 || saldo < 0; }
-        double deudaTotal()  { return deudaReal > 0 ? deudaReal : Math.abs(Math.min(saldo, 0)); }
+        double  deudaTotal() { return deudaReal > 0 ? deudaReal : Math.abs(Math.min(saldo, 0)); }
     }
 
     // ── Estado ───────────────────────────────────────────────────────
@@ -129,8 +132,7 @@ public class ClientesActivity extends AppCompatActivity {
                             todosLosClientes.clear();
                             for (ClienteModel m : data) todosLosClientes.add(new Cliente(m));
                             renderLista();
-                            // Cargar cobros pendientes para calcular deuda real
-                            cargarDeudasReales();
+                            cargarDeudasYCitasReales();
                         });
                     }
                     @Override public void onError(String e) {
@@ -140,34 +142,6 @@ public class ClientesActivity extends AppCompatActivity {
                             renderLista();
                         });
                     }
-                });
-    }
-
-    /** Carga cobros pendientes y asigna deuda real a cada cliente */
-    private void cargarDeudasReales() {
-        SupabaseRepository.get().getCobros("eq.pendiente",
-                new SupabaseRepository.Callback<List<CobroModel>>() {
-                    @Override public void onSuccess(List<CobroModel> cobros) {
-                        // Sumar deuda por clienteId
-                        java.util.Map<String, Double> deudas = new java.util.HashMap<>();
-                        for (CobroModel c : cobros) {
-                            if (c.clienteId == null) continue;
-                            deudas.put(c.clienteId,
-                                    deudas.getOrDefault(c.clienteId, 0.0) + c.importe);
-                        }
-                        // Asignar a cada cliente
-                        boolean hayDeudas = false;
-                        for (Cliente cl : todosLosClientes) {
-                            if (cl.id != null && deudas.containsKey(cl.id)) {
-                                cl.deudaReal = deudas.get(cl.id);
-                                hayDeudas = true;
-                            }
-                        }
-                        if (hayDeudas) {
-                            runOnUiThread(() -> renderLista());
-                        }
-                    }
-                    @Override public void onError(String e) {}
                 });
     }
 
@@ -367,11 +341,19 @@ public class ClientesActivity extends AppCompatActivity {
 
         TextView tvSaldo = view.findViewById(R.id.tvDetalleSaldo);
         if (cliente.tieneDeuda()) {
-            tvSaldo.setText(String.format("−%.2f€", Math.abs(cliente.saldo)).replace(".", ","));
+            tvSaldo.setText(String.format(java.util.Locale.US, "%.2f", cliente.deudaTotal()).replace(".", ",") + "€ pendiente");
             tvSaldo.setTextColor(Color.parseColor("#EF4444"));
         } else {
-            tvSaldo.setText("Al día");
+            tvSaldo.setText("Al día ✅");
             tvSaldo.setTextColor(Color.parseColor("#12B76A"));
+        }
+        // Citas reales (cargadas en segundo plano)
+        TextView tvCitasD = view.findViewById(R.id.tvDetalleCitas);
+        if (tvCitasD != null) {
+            if (cliente.citasReales >= 0)
+                tvCitasD.setText(cliente.citasReales + (cliente.citasProx > 0 ? " (" + cliente.citasProx + " próx.)" : ""));
+            else
+                tvCitasD.setText(String.valueOf(cliente.citas));
         }
 
         TextView tvEstado = view.findViewById(R.id.tvDetalleEstado);
@@ -414,7 +396,8 @@ public class ClientesActivity extends AppCompatActivity {
                     });
         });
 
-        // Botones con paso de contexto del cliente
+        // Botones existentes en el XML
+        // ── COBRAR: abre CobrosActivity con el cliente preseleccionado ──
         view.findViewById(R.id.btnDetalleCobrar).setOnClickListener(v -> {
             sheet.dismiss();
             Intent iCobros = new Intent(this, CobrosActivity.class);
@@ -422,18 +405,23 @@ public class ClientesActivity extends AppCompatActivity {
             iCobros.putExtra("CLIENTE_NOMBRE", cliente.nombreCompleto());
             startActivity(iCobros);
         });
+
+        // ── CITA: abre AgendaActivity y abre directamente el form con cliente relleno ──
         view.findViewById(R.id.btnDetalleCita).setOnClickListener(v -> {
             sheet.dismiss();
             Intent iAgenda = new Intent(this, AgendaActivity.class);
-            iAgenda.putExtra("CLIENTE_ID",     cliente.id);
-            iAgenda.putExtra("CLIENTE_NOMBRE", cliente.nombreCompleto());
-            iAgenda.putExtra("ABRIR_NUEVA_CITA", true); // abrir sheet directamente
+            iAgenda.putExtra("CLIENTE_ID",       cliente.id);
+            iAgenda.putExtra("CLIENTE_NOMBRE",   cliente.nombreCompleto());
+            iAgenda.putExtra("ABRIR_NUEVA_CITA", true);
             startActivity(iAgenda);
         });
+
+        // ── GYM: abre GimnasioActivity y abre directamente el sheet de apuntar ──
         view.findViewById(R.id.btnDetalleCheckin).setOnClickListener(v -> {
             sheet.dismiss();
             Intent iGym = new Intent(this, GimnasioActivity.class);
-            iGym.putExtra("CLIENTE_NOMBRE", cliente.nombreCompleto());
+            iGym.putExtra("CLIENTE_NOMBRE",   cliente.nombreCompleto());
+            iGym.putExtra("ABRIR_APUNTAR",    true);
             startActivity(iGym);
         });
 
@@ -472,56 +460,6 @@ public class ClientesActivity extends AppCompatActivity {
                         @Override public void onSuccess(List<MembresiaModel> mems) {
                             runOnUiThread(() -> {
                                 if (!mems.isEmpty()) mostrarBannerMembresia(view, mems.get(0), sheet);
-                            });
-                        }
-                        @Override public void onError(String e) {}
-                    });
-        }
-
-        // Cargar cobros y citas reales del cliente
-        if (cliente.id != null) {
-            // Cobros pendientes
-            SupabaseRepository.get().getCobros(null,
-                    new SupabaseRepository.Callback<List<CobroModel>>() {
-                        @Override public void onSuccess(List<CobroModel> data) {
-                            double pendiente = 0;
-                            for (CobroModel c : data) {
-                                if (cliente.id.equals(c.clienteId) && "pendiente".equals(c.estado))
-                                    pendiente += c.importe;
-                            }
-                            final double deuda = pendiente;
-                            runOnUiThread(() -> {
-                                TextView tvSaldo = view.findViewById(R.id.tvDetalleSaldo);
-                                if (tvSaldo == null) return;
-                                if (deuda > 0) {
-                                    tvSaldo.setText(String.format("%.2f€ pendiente", deuda).replace(".", ","));
-                                    tvSaldo.setTextColor(Color.parseColor("#EF4444"));
-                                } else {
-                                    tvSaldo.setText("Al día ✅");
-                                    tvSaldo.setTextColor(Color.parseColor("#12B76A"));
-                                }
-                            });
-                        }
-                        @Override public void onError(String e) {}
-                    });
-
-            // Citas totales y próximas
-            SupabaseRepository.get().getCitasRango("2020-01-01", "2030-12-31",
-                    new SupabaseRepository.Callback<List<CitaModel>>() {
-                        @Override public void onSuccess(List<CitaModel> data) {
-                            int total = 0, proximas = 0;
-                            for (CitaModel c : data) {
-                                if (cliente.id.equals(c.clienteId)) {
-                                    total++;
-                                    if ("pendiente".equals(c.estado) || "confirmada".equals(c.estado))
-                                        proximas++;
-                                }
-                            }
-                            final int t = total, p = proximas;
-                            runOnUiThread(() -> {
-                                TextView tvCitas = view.findViewById(R.id.tvDetalleCitas);
-                                if (tvCitas != null)
-                                    tvCitas.setText(t + (p > 0 ? " (" + p + " próx.)" : ""));
                             });
                         }
                         @Override public void onError(String e) {}
@@ -740,10 +678,11 @@ public class ClientesActivity extends AppCompatActivity {
         View view = getLayoutInflater().inflate(R.layout.sheet_nuevo_cliente, null);
         sheet.setContentView(view);
 
-        EditText etNombre   = view.findViewById(R.id.etNuevoNombre);
-        EditText etTelefono = view.findViewById(R.id.etNuevoTelefono);
-        EditText etEmail    = view.findViewById(R.id.etNuevoEmail);
-        EditText etNotas    = view.findViewById(R.id.etNuevoNotas);
+        EditText etNombre    = view.findViewById(R.id.etNuevoNombre);
+        EditText etApellidos = view.findViewById(R.id.etNuevoApellidos);
+        EditText etTelefono  = view.findViewById(R.id.etNuevoTelefono);
+        EditText etEmail     = view.findViewById(R.id.etNuevoEmail);
+        EditText etNotas     = view.findViewById(R.id.etNuevoNotas);
 
         // btnGuardarCliente es un CardView en el XML; el texto está en el TextView hijo
         androidx.cardview.widget.CardView btnGuardarCard = view.findViewById(R.id.btnGuardarCliente);
@@ -753,6 +692,7 @@ public class ClientesActivity extends AppCompatActivity {
 
         if (esEdicion) {
             etNombre.setText(clienteEditar.nombre);
+            etApellidos.setText(clienteEditar.apellidos);
             etTelefono.setText(clienteEditar.telefono);
             etEmail.setText(clienteEditar.email);
             etNotas.setText(clienteEditar.notas);
@@ -760,12 +700,13 @@ public class ClientesActivity extends AppCompatActivity {
         }
 
         btnGuardarCard.setOnClickListener(v -> {
-            String nombre = etNombre.getText().toString().trim();
+            String nombre    = etNombre.getText().toString().trim();
             if (nombre.isEmpty()) { etNombre.setError("Obligatorio"); return; }
 
-            String telefono = etTelefono.getText().toString().trim();
-            String email    = etEmail.getText().toString().trim();
-            String notas    = etNotas.getText().toString().trim();
+            String apellidos = etApellidos.getText().toString().trim();
+            String telefono  = etTelefono.getText().toString().trim();
+            String email     = etEmail.getText().toString().trim();
+            String notas     = etNotas.getText().toString().trim();
 
             btnGuardarCard.setEnabled(false);
             btnGuardarTv.setText("Guardando...");
@@ -773,19 +714,21 @@ public class ClientesActivity extends AppCompatActivity {
             if (esEdicion && clienteEditar.id != null) {
                 // ── EDITAR ────────────────────────────────────────
                 Map<String, Object> campos = new HashMap<>();
-                campos.put("nombre",   nombre);
-                campos.put("telefono", telefono);
-                campos.put("email",    email);
-                campos.put("notas",    notas);
+                campos.put("nombre",    nombre);
+                campos.put("apellidos", apellidos);
+                campos.put("telefono",  telefono);
+                campos.put("email",     email);
+                campos.put("notas",     notas);
 
                 SupabaseRepository.get().actualizarCliente(clienteEditar.id, campos,
                         new SupabaseRepository.Callback<Void>() {
                             @Override public void onSuccess(Void data) {
                                 runOnUiThread(() -> {
-                                    clienteEditar.nombre   = nombre;
-                                    clienteEditar.telefono = telefono;
-                                    clienteEditar.email    = email;
-                                    clienteEditar.notas    = notas;
+                                    clienteEditar.nombre    = nombre;
+                                    clienteEditar.apellidos = apellidos;
+                                    clienteEditar.telefono  = telefono;
+                                    clienteEditar.email     = email;
+                                    clienteEditar.notas     = notas;
                                     sheet.dismiss();
                                     ocultarTeclado();
                                     renderLista();
@@ -806,7 +749,7 @@ public class ClientesActivity extends AppCompatActivity {
                 // ── CREAR ─────────────────────────────────────────
                 ClienteModel modelo = new ClienteModel();
                 modelo.nombre    = nombre;
-                modelo.apellidos = "";
+                modelo.apellidos = apellidos;
                 modelo.telefono  = telefono;
                 modelo.email     = email;
                 modelo.notas     = notas;
@@ -997,4 +940,51 @@ public class ClientesActivity extends AppCompatActivity {
             imm.hideSoftInputFromWindow(focus.getWindowToken(), 0);
         }
     }
+    // ════════════════════════════════════════════════════════════════
+    //  CARGA REAL DE DEUDAS Y CITAS DESDE SUPABASE
+    // ════════════════════════════════════════════════════════════════
+    private void cargarDeudasYCitasReales() {
+        // Cobros pendientes → deuda real por cliente
+        SupabaseRepository.get().getCobros("eq.pendiente",
+                new SupabaseRepository.Callback<List<CobroModel>>() {
+                    @Override public void onSuccess(List<CobroModel> cobros) {
+                        java.util.Map<String, Double> deudas = new java.util.HashMap<>();
+                        for (CobroModel c : cobros) {
+                            if (c.clienteId == null) continue;
+                            deudas.put(c.clienteId,
+                                    deudas.getOrDefault(c.clienteId, 0.0) + c.importe);
+                        }
+                        boolean cambio = false;
+                        for (Cliente cl : todosLosClientes) {
+                            double d = deudas.getOrDefault(cl.id, 0.0);
+                            if (cl.deudaReal != d) { cl.deudaReal = d; cambio = true; }
+                        }
+                        if (cambio) runOnUiThread(() -> renderLista());
+                    }
+                    @Override public void onError(String e) {}
+                });
+
+        // Citas: total y próximas por cliente
+        SupabaseRepository.get().getCitasRango("2020-01-01", "2030-12-31",
+                new SupabaseRepository.Callback<List<CitaModel>>() {
+                    @Override public void onSuccess(List<CitaModel> citas) {
+                        java.util.Map<String, int[]> mapa = new java.util.HashMap<>();
+                        for (CitaModel c : citas) {
+                            if (c.clienteId == null) continue;
+                            int[] v = mapa.getOrDefault(c.clienteId, new int[]{0, 0});
+                            v[0]++;
+                            if ("pendiente".equals(c.estado) || "confirmada".equals(c.estado)) v[1]++;
+                            mapa.put(c.clienteId, v);
+                        }
+                        for (Cliente cl : todosLosClientes) {
+                            int[] v = mapa.getOrDefault(cl.id, new int[]{0, 0});
+                            cl.citasReales = v[0];
+                            cl.citasProx   = v[1];
+                        }
+                        runOnUiThread(() -> renderLista());
+                    }
+                    @Override public void onError(String e) {}
+                });
+    }
+
 }

@@ -986,7 +986,7 @@ public class MainActivity extends AppCompatActivity {
                             String concepto = "Membresía " + tipo + " - " + clienteNom;
                             SupabaseRepository.get().crearCobro(
                                     clienteId, clienteNom, concepto,
-                                    precio, "Transferencia", "pendiente", notas,
+                                    precio, "Efectivo", "pendiente", notas,
                                     new SupabaseRepository.Callback<CobroModel>() {
                                         @Override public void onSuccess(CobroModel cobro) {
                                             runOnUiThread(() -> {

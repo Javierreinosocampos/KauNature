@@ -1,6 +1,7 @@
 package com.example.kaunatureapplication;
 
 import android.content.Intent;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -116,6 +117,21 @@ public class AgendaActivity extends AppCompatActivity {
     private TextView    tabDiaria, tabSemanal, tabMensual;
     private TextView    tvSubtitle;
 
+    // ── Receptor de eventos de cobros (CobrosActivity → AgendaActivity) ────
+    private final android.content.BroadcastReceiver cobroCambiadoReceiver =
+            new android.content.BroadcastReceiver() {
+                @Override public void onReceive(android.content.Context ctx, android.content.Intent intent) {
+                    // Un cobro cambió externamente → recargar citas para reflejar precios actualizados
+                    if (!cargando) cargarCitas();
+                }
+            };
+
+    /** Notifica a CobrosActivity que una cita ha cambiado */
+    private void notificarCambioCita() {
+        LocalBroadcastManager.getInstance(this)
+                .sendBroadcast(new android.content.Intent(NavHelper.CITA_CAMBIADA));
+    }
+
     // ════════════════════════════════════════════════════════════════
     //  onCreate
     // ════════════════════════════════════════════════════════════════
@@ -159,6 +175,9 @@ public class AgendaActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                cobroCambiadoReceiver,
+                new android.content.IntentFilter(NavHelper.COBRO_CAMBIADO));
         if (primeraVez) {
             primeraVez = false;
             return;
@@ -923,6 +942,7 @@ public class AgendaActivity extends AppCompatActivity {
                         runOnUiThread(() -> {
                             sheet.dismiss();
                             renderVista();
+                            notificarCambioCita();
                             Toast.makeText(AgendaActivity.this,
                                     mensajeCita(nuevoEstado), Toast.LENGTH_SHORT).show();
                         });
@@ -1346,6 +1366,7 @@ public class AgendaActivity extends AppCompatActivity {
                                     sheet.dismiss();
                                     ocultarTeclado();
                                     renderVista();
+                                    notificarCambioCita();
                                     Toast.makeText(AgendaActivity.this,
                                             "✅ Cita actualizada", Toast.LENGTH_SHORT).show();
                                 });
@@ -1825,6 +1846,12 @@ public class AgendaActivity extends AppCompatActivity {
 
     private void setupBottomNav() {
         NavHelper.setup(this, "agenda");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(cobroCambiadoReceiver);
     }
 
     // ════════════════════════════════════════════════════════════════

@@ -14,6 +14,8 @@ import android.widget.TextView;
  * Keys: "home" | "clientes" | "gimnasio" | "agenda" | "cobros"
  */
 public class NavHelper {
+    public static final String COBRO_CAMBIADO = "com.example.kaunatureapplication.COBRO_CAMBIADO";
+    public static final String CITA_CAMBIADA  = "com.example.kaunatureapplication.CITA_CAMBIADA";
 
     public static void setup(Activity activity, String activeKey) {
         LinearLayout navHome     = activity.findViewById(R.id.nav_home);

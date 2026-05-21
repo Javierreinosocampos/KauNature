@@ -19,7 +19,7 @@ public class SessionManager {
     private static String accessToken;
     private static String refreshToken;
     private static String userId;
-    private static long   expiresAt; // epoch segundos
+    private static long   expiresAt;
 
     // ── Guardar sesión completa ───────────────────────────────────
     public static void saveSession(Context context, String token,
@@ -38,7 +38,7 @@ public class SessionManager {
                 .apply();
     }
 
-    // ── Cargar sesión al arrancar ─────────────────────────────────
+    // ── Cargar sesión al arrancar la app ──────────────────────────
     public static void loadSession(Context context) {
         SharedPreferences p = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         accessToken  = p.getString(KEY_TOKEN,   "");

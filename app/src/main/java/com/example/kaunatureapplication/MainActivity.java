@@ -107,45 +107,15 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle b) {
         super.onCreate(b);
         setContentView(R.layout.activity_main);
-
-        // CRÍTICO: cargar sesión en memoria antes de cualquier petición
-        // Si el proceso fue matado por Android, los campos estáticos se pierden
-        SessionManager.loadSession(this);
-
-        // Si no hay sesión → volver al login
-        if (!SessionManager.isLoggedIn()) {
-            startActivity(new android.content.Intent(this, LoginActivity.class));
-            finish();
-            return;
-        }
-
-        // Si el token expiró → refrescarlo antes de cargar datos
-        if (SessionManager.isTokenExpired()) {
-            new AuthRepository().refreshToken(this, new AuthRepository.AuthCallback() {
-                @Override public void onSuccess() {
-                    runOnUiThread(() -> iniciarUI(b));
-                }
-                @Override public void onError(String error) {
-                    // Sesión inválida → login
-                    SessionManager.clear(MainActivity.this);
-                    startActivity(new android.content.Intent(
-                            MainActivity.this, LoginActivity.class));
-                    finish();
-                }
-            });
-            return;
-        }
-
-        iniciarUI(b);
-    }
-
-    private void iniciarUI(Bundle b) {
         bind();
         setupGreeting();
         setupFecha();
         NavHelper.setup(this, "home");
         bindButtons();
+
+        // Cargar estado persistente de notificaciones
         cargarPrefs();
+        // KPIs y listas: mostrar placeholders y cargar de Supabase
         mostrarKpisVacios();
         cargarDatos();
     }
@@ -196,15 +166,7 @@ public class MainActivity extends AppCompatActivity {
                         });
                     }
                     @Override public void onError(String e) {
-                        android.util.Log.e("MAIN", "Error citas: " + e);
-                        if (e != null && (e.contains("401") || e.contains("403"))) {
-                            runOnUiThread(() -> {
-                                SessionManager.clear(MainActivity.this);
-                                startActivity(new android.content.Intent(
-                                        MainActivity.this, LoginActivity.class));
-                                finish();
-                            });
-                        }
+                        // Mantener placeholders si falla
                     }
                 });
     }
@@ -292,7 +254,7 @@ public class MainActivity extends AppCompatActivity {
         double totalDeuda = 0;
         for (CobroModel c : cobrosPendientes) totalDeuda += c.importe;
         // Mostrar como "X€ pendiente"
-        tvKpiIngresos.setText(String.format("%.0f€", totalDeuda));
+        tvKpiIngresos.setText(String.format(java.util.Locale.US, "%.2f", totalDeuda).replace(".", ",") + "€");
     }
 
     // ════════════════════════════════════════════════════════════════
@@ -302,10 +264,11 @@ public class MainActivity extends AppCompatActivity {
         if (listaCitas == null) return;
         listaCitas.removeAllViews();
 
-        // Filtrar canceladas
+        // Filtrar canceladas y cobradas — el dashboard solo muestra pendientes/confirmadas
         List<CitaModel> visibles = new ArrayList<>();
         for (CitaModel c : citasHoy) {
-            if (!"cancelada".equals(c.estado)) visibles.add(c);
+            if (!"cancelada".equals(c.estado) && !"cobrada".equals(c.estado))
+                visibles.add(c);
         }
 
         if (visibles.isEmpty()) {
@@ -1023,7 +986,7 @@ public class MainActivity extends AppCompatActivity {
                             String concepto = "Membresía " + tipo + " - " + clienteNom;
                             SupabaseRepository.get().crearCobro(
                                     clienteId, clienteNom, concepto,
-                                    precio, "Efectivo", "pendiente", notas,
+                                    precio, "Transferencia", "pendiente", notas,
                                     new SupabaseRepository.Callback<CobroModel>() {
                                         @Override public void onSuccess(CobroModel cobro) {
                                             runOnUiThread(() -> {
@@ -1304,7 +1267,7 @@ public class MainActivity extends AppCompatActivity {
     private void mostrarDialogoRenovacion(MembresiaModel mem) {
         // Nombre del cliente — intentar obtenerlo del id
         String tipo    = mem.tipo != null ? mem.tipo : "mensual";
-        String precio  = String.format("%.0f€", mem.precio);
+        String precio  = String.format(java.util.Locale.US, "%.2f", mem.precio).replace(".", ",") + "€";
         String tipoMay = tipo.substring(0, 1).toUpperCase() + tipo.substring(1);
 
         android.app.AlertDialog.Builder b = new android.app.AlertDialog.Builder(this);

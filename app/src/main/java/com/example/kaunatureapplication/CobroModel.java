@@ -20,6 +20,6 @@ public class CobroModel {
                 ? String.valueOf(clienteNombre.charAt(0)).toUpperCase() : "?";
     }
     public String importeFormateado() {
-        return String.format("%.2f€", importe).replace(".", ",");
+        return String.format(java.util.Locale.US, "%.2f", importe).replace(".", ",") + "€";
     }
 }

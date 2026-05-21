@@ -33,8 +33,8 @@ public class AgendaActivity extends AppCompatActivity {
 
     // ── Modelo local Cita ────────────────────────────────────────────
     static class Cita {
-        String id;           // UUID de Supabase (null si aún no guardada)
-        String clienteId;    // UUID del cliente (para vincular cobros)
+        String id;
+        String clienteId;    // UUID cliente (para vincular cobros)
         String cliente;
         String servicio;
         String fecha;        // dd/MM/yyyy  (display)
@@ -120,9 +120,7 @@ public class AgendaActivity extends AppCompatActivity {
     //  onCreate
     // ════════════════════════════════════════════════════════════════
     // ID de cita a abrir automáticamente (viene del MainActivity)
-    private String citaIdPendiente   = null;
-    private String clienteFiltroId   = null;  // viene de ClientesActivity
-    private String clienteFiltroNom  = null;
+    private String citaIdPendiente = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,14 +129,12 @@ public class AgendaActivity extends AppCompatActivity {
 
         fechaSeleccionada = Calendar.getInstance();
 
-        // Recibir extras de MainActivity (cita concreta) o ClientesActivity (cliente)
+        // Si venimos del MainActivity con una cita concreta
         if (getIntent() != null) {
-            citaIdPendiente  = getIntent().getStringExtra("CITA_ID");
-            clienteFiltroId  = getIntent().getStringExtra("CLIENTE_ID");
-            clienteFiltroNom = getIntent().getStringExtra("CLIENTE_NOMBRE");
-
+            citaIdPendiente = getIntent().getStringExtra("CITA_ID");
             String citaFecha = getIntent().getStringExtra("CITA_FECHA");
             if (citaFecha != null && citaFecha.length() >= 10) {
+                // Navegar a la fecha de esa cita
                 try {
                     int anio = Integer.parseInt(citaFecha.substring(0, 4));
                     int mes  = Integer.parseInt(citaFecha.substring(5, 7)) - 1;
@@ -838,6 +834,9 @@ public class AgendaActivity extends AppCompatActivity {
     // ════════════════════════════════════════════════════════════════
     //  SHEET: DETALLE CITA
     // ════════════════════════════════════════════════════════════════
+    // ════════════════════════════════════════════════════════════════
+    //  DETALLE CITA — botones con sincronización total de cobros
+    // ════════════════════════════════════════════════════════════════
     private void showDetalleCita(Cita cita) {
         BottomSheetDialog sheet = new BottomSheetDialog(
                 this, com.google.android.material.R.style.Theme_Material3_Light_BottomSheetDialog);
@@ -856,94 +855,308 @@ public class AgendaActivity extends AppCompatActivity {
         tvBadge.setText(cita.estado.substring(0, 1).toUpperCase() + cita.estado.substring(1));
         tvBadge.getBackground().setTint(getEstadoColor(cita.estado));
 
+        // ── CONFIRMAR ─────────────────────────────────────────────────
+        // → Estado cita: confirmada
+        // → Cobros: eliminar cobrado (si existe), crear/mantener pendiente
         view.findViewById(R.id.btnCitaConfirmar).setOnClickListener(v ->
-                cambiarEstado(cita, "confirmada", sheet, "✅ Cita confirmada"));
+                accionCita(cita, "confirmada", sheet));
 
         view.findViewById(R.id.btnCitaEditar).setOnClickListener(v -> {
             sheet.dismiss();
             showNuevaCitaSheet(cita);
         });
 
+        // ── COBRAR ────────────────────────────────────────────────────
+        // → Estado cita: cobrada
+        // → Cobros: eliminar pendiente (si existe), crear/mantener cobrado
+        // → No aparece en citas de hoy del dashboard (cobrada = procesada)
         view.findViewById(R.id.btnCitaCobrar).setOnClickListener(v ->
-                cambiarEstado(cita, "cobrada", sheet, "💰 Cobrado: " + cita.precio));
+                accionCita(cita, "cobrada", sheet));
 
+        // ── CANCELAR ──────────────────────────────────────────────────
+        // → Estado cita: cancelada
+        // → Cobros: eliminar TODOS los cobros asociados
+        // → Desaparece del dashboard (buildListaCitas filtra canceladas)
         view.findViewById(R.id.btnCitaCancelar).setOnClickListener(v ->
-                cambiarEstado(cita, "cancelada", sheet, "❌ Cita cancelada"));
+                accionCita(cita, "cancelada", sheet));
 
         sheet.show();
     }
 
-    /** Cambia el estado de una cita en Supabase y actualiza la UI.
-     *  Si el nuevo estado es "cobrada", crea automáticamente un cobro. */
-    private void cambiarEstado(Cita cita, String nuevoEstado,
-                               BottomSheetDialog sheet, String msgOk) {
+    /**
+     * Punto central de todas las acciones sobre una cita.
+     * 1. Cambia el estado en Supabase
+     * 2. Gestiona los cobros según la transición de estado
+     * 3. Actualiza la UI
+     *
+     * Tabla de comportamiento:
+     *  CONFIRMAR → crea cobro PENDIENTE si no existe ninguno;
+     *              si había cobrado → lo elimina y crea pendiente
+     *  COBRAR    → si hay pendiente → lo marca cobrado (no duplica);
+     *              si no hay ninguno → crea cobrado;
+     *              si ya había cobrado → no hace nada
+     *  CANCELAR  → elimina TODOS los cobros asociados (pendientes y cobrados)
+     */
+    private void accionCita(Cita cita, String nuevoEstado, BottomSheetDialog sheet) {
         if (cita.id == null) {
             cita.estado = nuevoEstado;
             sheet.dismiss();
             renderVista();
-            Toast.makeText(this, msgOk, Toast.LENGTH_SHORT).show();
             return;
         }
+
+        // Calcular importe una sola vez
+        double imp = 0;
+        try { imp = Double.parseDouble(cita.precio.replace("€","").replace(",",".").trim()); }
+        catch (Exception ignored) {}
+        final double importe = imp;
+        final String concepto = (cita.servicio != null && !cita.servicio.isEmpty()
+                ? cita.servicio : "Servicio") + " · " + cita.fecha;
+        final String estadoAnterior = cita.estado;
+
+        // Paso 1: cambiar estado de la cita en Supabase
         SupabaseRepository.get().cambiarEstadoCita(cita.id, nuevoEstado,
                 new SupabaseRepository.Callback<Void>() {
                     @Override public void onSuccess(Void data) {
+                        // Actualizar en memoria y UI
+                        cita.estado = nuevoEstado;
                         runOnUiThread(() -> {
-                            cita.estado = nuevoEstado;
                             sheet.dismiss();
                             renderVista();
-                            Toast.makeText(AgendaActivity.this, msgOk, Toast.LENGTH_SHORT).show();
-
-                            // ── Si se marca como COBRADA → crear cobro automático ──
-                            if ("cobrada".equals(nuevoEstado)) {
-                                crearCobroDesdeCita(cita);
-                            }
+                            Toast.makeText(AgendaActivity.this,
+                                    mensajeCita(nuevoEstado), Toast.LENGTH_SHORT).show();
                         });
+
+                        if (importe <= 0) return;
+
+                        // Paso 2: gestionar cobros según el nuevo estado
+                        gestionarCobros(cita, nuevoEstado, estadoAnterior, concepto, importe);
                     }
                     @Override public void onError(String e) {
-                        runOnUiThread(() ->
-                                Toast.makeText(AgendaActivity.this,
-                                        "Error: " + e, Toast.LENGTH_SHORT).show());
+                        runOnUiThread(() -> Toast.makeText(AgendaActivity.this,
+                                "Error: " + e, Toast.LENGTH_SHORT).show());
                     }
                 });
     }
 
-    /** Crea un cobro en la tabla cobros cuando una cita se marca como cobrada */
-    private void crearCobroDesdeCita(Cita cita) {
-        // Extraer el precio numérico del string "35€"
-        double importe = 0;
-        try {
-            String precioStr = cita.precio.replace("€", "").replace(",", ".").trim();
-            importe = Double.parseDouble(precioStr);
-        } catch (Exception ignored) {}
+    /**
+     * Gestiona los cobros según la transición de estado.
+     * Usa cita_id para localizar cobros de forma fiable (sin heurística frágil).
+     * Si la BD no tiene cita_id, cae en la heurística de cliente+servicio+importe.
+     */
+    private void gestionarCobros(Cita cita, String nuevoEstado, String estadoAnterior,
+                                 String concepto, double importe) {
+        if (cita.id == null) return;
 
-        if (importe <= 0) return; // no crear cobro de 0€
-
-        String concepto = (cita.servicio != null && !cita.servicio.isEmpty()
-                ? cita.servicio : "Servicio") + " · " + cita.fecha;
-
-        final double importeFinal = importe;
-
-        SupabaseRepository.get().crearCobro(
-                cita.clienteId,   // puede ser null si la cita no tiene cliente vinculado
-                cita.cliente,     // nombre del cliente
-                concepto,
-                importeFinal,
-                "Efectivo",       // método por defecto
-                "cobrado",        // ya está cobrado
-                "",               // notas vacías
-                new SupabaseRepository.Callback<CobroModel>() {
-                    @Override public void onSuccess(CobroModel cobro) {
-                        runOnUiThread(() ->
-                                Toast.makeText(AgendaActivity.this,
-                                        "💰 Cobro de " + String.format("%.0f€", importeFinal) +
-                                                " registrado en Cobros",
-                                        Toast.LENGTH_LONG).show());
+        // Intentar buscar por cita_id primero (más fiable)
+        SupabaseRepository.get().getCobrosPorCita(cita.id,
+                new SupabaseRepository.Callback<List<CobroModel>>() {
+                    @Override public void onSuccess(List<CobroModel> cobrosDirectos) {
+                        if (!cobrosDirectos.isEmpty()) {
+                            // Tenemos cobros vinculados por cita_id → usarlos directamente
+                            procesarGestionCobros(cita, nuevoEstado, concepto, importe, cobrosDirectos);
+                        } else {
+                            // Fallback: buscar todos y filtrar por heurística
+                            SupabaseRepository.get().getCobros(null,
+                                    new SupabaseRepository.Callback<List<CobroModel>>() {
+                                        @Override public void onSuccess(List<CobroModel> todos) {
+                                            // Filtrar por heurística
+                                            List<CobroModel> filtrados = new ArrayList<>();
+                                            for (CobroModel c : todos) {
+                                                if (esMismaCita(c, cita, importe)) filtrados.add(c);
+                                            }
+                                            procesarGestionCobros(cita, nuevoEstado, concepto, importe, filtrados);
+                                        }
+                                        @Override public void onError(String e) {
+                                            android.util.Log.e("AGENDA", "Error leyendo cobros: " + e);
+                                        }
+                                    });
+                        }
                     }
                     @Override public void onError(String e) {
-                        // No bloquear la UI si falla el cobro — la cita ya está marcada
-                        android.util.Log.e("AGENDA", "Error creando cobro: " + e);
+                        // cita_id no soportado o error → fallback heurística
+                        SupabaseRepository.get().getCobros(null,
+                                new SupabaseRepository.Callback<List<CobroModel>>() {
+                                    @Override public void onSuccess(List<CobroModel> todos) {
+                                        List<CobroModel> filtrados = new ArrayList<>();
+                                        for (CobroModel c : todos) {
+                                            if (esMismaCita(c, cita, importe)) filtrados.add(c);
+                                        }
+                                        procesarGestionCobros(cita, nuevoEstado, concepto, importe, filtrados);
+                                    }
+                                    @Override public void onError(String e2) {
+                                        android.util.Log.e("AGENDA", "Error leyendo cobros: " + e2);
+                                    }
+                                });
                     }
                 });
+    }
+
+    /**
+     * Procesa la gestión de cobros una vez que ya tenemos la lista filtrada.
+     */
+    private void procesarGestionCobros(Cita cita, String nuevoEstado,
+                                       String concepto, double importe,
+                                       List<CobroModel> cobros) {
+        String idPendiente = null;
+        String idCobrado   = null;
+        for (CobroModel c : cobros) {
+            if ("pendiente".equals(c.estado) && idPendiente == null) idPendiente = c.id;
+            else if ("cobrado".equals(c.estado) && idCobrado == null) idCobrado = c.id;
+        }
+
+        final String pId = idPendiente;
+        final String cId = idCobrado;
+
+        switch (nuevoEstado) {
+            case "confirmada":
+                if (cId != null) {
+                    // Eliminar cobrado → crear pendiente
+                    SupabaseRepository.get().eliminarCobro(cId,
+                            new SupabaseRepository.Callback<Void>() {
+                                @Override public void onSuccess(Void d) {
+                                    if (pId == null)
+                                        crearCobroAsync(cita, concepto, importe, "pendiente");
+                                }
+                                @Override public void onError(String e) {}
+                            });
+                } else if (pId == null) {
+                    crearCobroAsync(cita, concepto, importe, "pendiente");
+                }
+                // Si ya hay pendiente y no hay cobrado → no hacer nada
+                break;
+
+            case "cobrada":
+                if (pId != null) {
+                    // Marcar el pendiente como cobrado, actualizando también importe y concepto
+                    Map<String, Object> body = new HashMap<>();
+                    body.put("estado",   "cobrado");
+                    body.put("importe",  importe);
+                    body.put("concepto", concepto);
+                    SupabaseRepository.get().actualizarCobro(pId, body,
+                            new SupabaseRepository.Callback<Void>() {
+                                @Override public void onSuccess(Void d) {
+                                    runOnUiThread(() -> Toast.makeText(
+                                            AgendaActivity.this,
+                                            "💰 Cobro de " + String.format(java.util.Locale.US, "%.2f", importe).replace(".", ",") + "€ cobrado",
+                                            Toast.LENGTH_SHORT).show());
+                                }
+                                @Override public void onError(String e) {}
+                            });
+                    // Eliminar posibles duplicados cobrados
+                    if (cId != null) SupabaseRepository.get().eliminarCobro(cId, new SupabaseRepository.Callback<Void>() {
+                        @Override public void onSuccess(Void d) {}
+                        @Override public void onError(String e) {}
+                    });
+                } else if (cId == null) {
+                    crearCobroAsync(cita, concepto, importe, "cobrado");
+                } else {
+                    // Ya hay cobrado — actualizar importe/concepto por si la cita se editó
+                    Map<String, Object> body = new HashMap<>();
+                    body.put("importe",  importe);
+                    body.put("concepto", concepto);
+                    SupabaseRepository.get().actualizarCobro(cId, body,
+                            new SupabaseRepository.Callback<Void>() {
+                                @Override public void onSuccess(Void d) {}
+                                @Override public void onError(String e) {}
+                            });
+                }
+                break;
+
+            case "cancelada":
+                List<String> aEliminar = new ArrayList<>();
+                for (CobroModel c : cobros) {
+                    if (c.id != null && !aEliminar.contains(c.id)) aEliminar.add(c.id);
+                }
+                eliminarCobrosEnCadena(aEliminar, 0, () ->
+                        runOnUiThread(() -> Toast.makeText(
+                                AgendaActivity.this,
+                                "🗑 Cobros eliminados automáticamente",
+                                Toast.LENGTH_SHORT).show()));
+                break;
+        }
+    }
+
+    /**
+     * Actualiza todos los cobros vinculados a una cita (por cita_id).
+     * Se llama cuando se edita el precio, cliente o servicio de una cita.
+     */
+    private void actualizarCobrosDeCita(String citaId, String clienteNombre,
+                                        String concepto, double importe) {
+        SupabaseRepository.get().getCobrosPorCita(citaId,
+                new SupabaseRepository.Callback<List<CobroModel>>() {
+                    @Override public void onSuccess(List<CobroModel> cobros) {
+                        for (CobroModel c : cobros) {
+                            if (c.id == null) continue;
+                            Map<String, Object> upd = new HashMap<>();
+                            upd.put("importe",        importe);
+                            upd.put("concepto",       concepto);
+                            upd.put("cliente_nombre", clienteNombre);
+                            SupabaseRepository.get().actualizarCobro(c.id, upd,
+                                    new SupabaseRepository.Callback<Void>() {
+                                        @Override public void onSuccess(Void d) {}
+                                        @Override public void onError(String e) {
+                                            android.util.Log.e("AGENDA", "Error actualizando cobro: " + e);
+                                        }
+                                    });
+                        }
+                    }
+                    @Override public void onError(String e) {
+                        android.util.Log.e("AGENDA", "No se pudieron actualizar cobros de la cita: " + e);
+                    }
+                });
+    }
+
+    /** ¿Este CobroModel pertenece a esta cita? Criterio: cliente + servicio en concepto + importe */
+    private boolean esMismaCita(CobroModel c, Cita cita, double importe) {
+        boolean mismoCliente = cita.clienteId != null && c.clienteId != null
+                ? cita.clienteId.equals(c.clienteId)
+                : (cita.cliente != null && cita.cliente.equals(c.clienteNombre));
+        String servLower = cita.servicio != null ? cita.servicio.toLowerCase() : "";
+        boolean mismoServicio = !servLower.isEmpty() && c.concepto != null
+                && c.concepto.toLowerCase().contains(servLower);
+        boolean mismoImporte = Math.abs(c.importe - importe) < 0.01;
+        return mismoCliente && mismoServicio && mismoImporte;
+    }
+
+    /** Crea un cobro asíncronamente vinculado a la cita y muestra Toast al terminar */
+    private void crearCobroAsync(Cita cita, String concepto, double importe, String estado) {
+        SupabaseRepository.get().crearCobro(
+                cita.id, cita.clienteId, cita.cliente, concepto, importe,
+                "Efectivo", estado, "",
+                new SupabaseRepository.Callback<CobroModel>() {
+                    @Override public void onSuccess(CobroModel cobro) {
+                        String msg = "pendiente".equals(estado)
+                                ? "⏳ Pago pendiente de " + String.format(java.util.Locale.US, "%.2f", importe).replace(".", ",") + "€" + " creado"
+                                : "💰 Cobro de " + String.format(java.util.Locale.US, "%.2f", importe).replace(".", ",") + "€" + " registrado";
+                        runOnUiThread(() -> Toast.makeText(AgendaActivity.this, msg, Toast.LENGTH_SHORT).show());
+                    }
+                    @Override public void onError(String e) {
+                        android.util.Log.e("AGENDA", "Error creando cobro (" + estado + "): " + e);
+                    }
+                });
+    }
+
+    /** Elimina una lista de cobros en cadena; llama onDone al terminar todos */
+    private void eliminarCobrosEnCadena(List<String> ids, int idx, Runnable onDone) {
+        if (idx >= ids.size()) {
+            if (onDone != null) onDone.run();
+            return;
+        }
+        SupabaseRepository.get().eliminarCobro(ids.get(idx),
+                new SupabaseRepository.Callback<Void>() {
+                    @Override public void onSuccess(Void d) { eliminarCobrosEnCadena(ids, idx + 1, onDone); }
+                    @Override public void onError(String e)  { eliminarCobrosEnCadena(ids, idx + 1, onDone); }
+                });
+    }
+
+    private String mensajeCita(String estado) {
+        switch (estado) {
+            case "confirmada": return "✅ Cita confirmada · pago pendiente creado";
+            case "cobrada":    return "💰 Cita cobrada";
+            case "cancelada":  return "❌ Cita cancelada";
+            default:           return "Estado actualizado";
+        }
     }
 
     // ════════════════════════════════════════════════════════════════
@@ -985,12 +1198,6 @@ public class AgendaActivity extends AppCompatActivity {
         } else {
             tvFecha.setText("📅 " + fechaSelStr[0]);
             tvHora.setText("🕐 " + horaSelStr[0]);
-            // Si venimos de ClientesActivity, prerellenar el cliente
-            if (clienteFiltroNom != null && !clienteFiltroNom.isEmpty()) {
-                etCliente.setText(clienteFiltroNom);
-                clienteIdSel[0] = clienteFiltroId;
-                tvTitulo.setText("Nueva cita · " + clienteFiltroNom);
-            }
         }
 
         // ── Lista de sugerencias de clientes ──────────────────────
@@ -1131,7 +1338,7 @@ public class AgendaActivity extends AppCompatActivity {
                                     citaEditar.fecha    = fechaSelStr[0];
                                     citaEditar.fechaBD  = fechaBD;
                                     citaEditar.hora     = horaFinal;
-                                    citaEditar.precio   = precioStr.isEmpty() ? "0€" : precioStr + "€";
+                                    citaEditar.precio   = String.format(java.util.Locale.US, "%.2f", precioFinal).replace(".", ",") + "€";
                                     citaEditar.notas    = notasFinal;
                                     citaEditar.diaMes   = dia;
                                     citaEditar.mes      = mes;
@@ -1142,6 +1349,13 @@ public class AgendaActivity extends AppCompatActivity {
                                     Toast.makeText(AgendaActivity.this,
                                             "✅ Cita actualizada", Toast.LENGTH_SHORT).show();
                                 });
+
+                                // Actualizar cobros vinculados si el precio o nombre cambiaron
+                                if (precioFinal > 0) {
+                                    final String nuevoConcept = (servicioFinal != null && !servicioFinal.isEmpty()
+                                            ? servicioFinal : "Servicio") + " · " + fechaSelStr[0];
+                                    actualizarCobrosDeCita(citaEditar.id, nombreFinal, nuevoConcept, precioFinal);
+                                }
                             }
                             @Override public void onError(String e) {
                                 runOnUiThread(() -> {

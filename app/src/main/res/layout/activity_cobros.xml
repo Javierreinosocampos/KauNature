@@ -144,12 +144,15 @@
                             android:orientation="vertical">
                             <TextView
                                 android:id="@+id/tvKpiEfectivo"
-                                android:layout_width="wrap_content"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="0€"
-                                android:textSize="16sp"
+                                android:text="0,00€"
+                                android:textSize="14sp"
                                 android:textColor="@color/white"
-                                android:fontFamily="@font/outfit_bold"/>
+                                android:fontFamily="@font/outfit_bold"
+                                android:maxLines="1"
+                                android:adjustViewBounds="true"
+                                android:ellipsize="none"/>
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -167,12 +170,15 @@
                             android:orientation="vertical">
                             <TextView
                                 android:id="@+id/tvKpiTarjeta"
-                                android:layout_width="wrap_content"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="0€"
-                                android:textSize="16sp"
+                                android:text="0,00€"
+                                android:textSize="14sp"
                                 android:textColor="@color/white"
-                                android:fontFamily="@font/outfit_bold"/>
+                                android:fontFamily="@font/outfit_bold"
+                                android:maxLines="1"
+                                android:adjustViewBounds="true"
+                                android:ellipsize="none"/>
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -190,12 +196,15 @@
                             android:orientation="vertical">
                             <TextView
                                 android:id="@+id/tvKpiBizumTransfer"
-                                android:layout_width="wrap_content"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="0€"
-                                android:textSize="16sp"
+                                android:text="0,00€"
+                                android:textSize="14sp"
                                 android:textColor="@color/white"
-                                android:fontFamily="@font/outfit_bold"/>
+                                android:fontFamily="@font/outfit_bold"
+                                android:maxLines="1"
+                                android:adjustViewBounds="true"
+                                android:ellipsize="none"/>
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"

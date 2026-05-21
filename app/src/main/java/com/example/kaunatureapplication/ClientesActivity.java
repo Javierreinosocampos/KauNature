@@ -427,6 +427,7 @@ public class ClientesActivity extends AppCompatActivity {
             Intent iAgenda = new Intent(this, AgendaActivity.class);
             iAgenda.putExtra("CLIENTE_ID",     cliente.id);
             iAgenda.putExtra("CLIENTE_NOMBRE", cliente.nombreCompleto());
+            iAgenda.putExtra("ABRIR_NUEVA_CITA", true); // abrir sheet directamente
             startActivity(iAgenda);
         });
         view.findViewById(R.id.btnDetalleCheckin).setOnClickListener(v -> {

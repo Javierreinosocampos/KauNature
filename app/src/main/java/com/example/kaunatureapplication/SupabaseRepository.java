@@ -16,7 +16,6 @@ public class SupabaseRepository {
         if (instance == null) instance = new SupabaseRepository();
         return instance;
     }
-    /** Llamado por SupabaseClient.reset() tras login/refresh */
     public static void reset() { instance = null; }
     private SupabaseRepository() {
         api = SupabaseClient.get().create(SupabaseApi.class);
@@ -189,11 +188,31 @@ public class SupabaseRepository {
                 });
     }
 
+    /** Obtiene todos los cobros asociados a una cita concreta */
+    public void getCobrosPorCita(String citaId, Callback<List<CobroModel>> cb) {
+        api.getCobrosPorCita("eq." + citaId)
+                .enqueue(new retrofit2.Callback<List<CobroModel>>() {
+                    public void onResponse(Call<List<CobroModel>> call, Response<List<CobroModel>> r) {
+                        if (r.isSuccessful() && r.body() != null) cb.onSuccess(r.body());
+                        else cb.onError("Error " + r.code());
+                    }
+                    public void onFailure(Call<List<CobroModel>> call, Throwable t) { cb.onError(t.getMessage()); }
+                });
+    }
+
     public void crearCobro(String clienteId, String clienteNombre,
                            String concepto, double importe,
                            String metodo, String estado,
                            String notas, Callback<CobroModel> cb) {
+        crearCobro(null, clienteId, clienteNombre, concepto, importe, metodo, estado, notas, cb);
+    }
+
+    public void crearCobro(String citaId, String clienteId, String clienteNombre,
+                           String concepto, double importe,
+                           String metodo, String estado,
+                           String notas, Callback<CobroModel> cb) {
         Map<String, Object> body = new HashMap<>();
+        if (citaId   != null) body.put("cita_id",   citaId);
         if (clienteId != null) body.put("cliente_id", clienteId);
         body.put("cliente_nombre", clienteNombre);
         body.put("concepto",       concepto);
@@ -205,8 +224,20 @@ public class SupabaseRepository {
         api.crearCobro(body).enqueue(new retrofit2.Callback<List<CobroModel>>() {
             public void onResponse(Call<List<CobroModel>> call, Response<List<CobroModel>> r) {
                 if (r.isSuccessful()) {
-                    if (r.body() != null && !r.body().isEmpty()) cb.onSuccess(r.body().get(0));
-                    else cb.onSuccess(new CobroModel());
+                    if (r.body() != null && !r.body().isEmpty()) {
+                        cb.onSuccess(r.body().get(0));
+                    } else {
+                        // Dummy con datos reales para que la UI muestre bien el importe
+                        CobroModel dummy = new CobroModel();
+                        dummy.citaId         = citaId;
+                        dummy.clienteNombre = clienteNombre;
+                        dummy.concepto      = concepto;
+                        dummy.importe       = importe;
+                        dummy.metodo        = metodo;
+                        dummy.estado        = estado;
+                        dummy.clienteId     = clienteId;
+                        cb.onSuccess(dummy);
+                    }
                 } else cb.onError("Error " + r.code());
             }
             public void onFailure(Call<List<CobroModel>> call, Throwable t) { cb.onError(t.getMessage()); }

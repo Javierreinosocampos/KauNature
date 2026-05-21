@@ -82,6 +82,11 @@ public interface SupabaseApi {
             @Query("estado") String estadoFiltro  // "eq.pendiente" | null
     );
 
+    @GET("cobros")
+    Call<List<CobroModel>> getCobrosPorCita(
+            @Query("cita_id") String citaIdFiltro  // "eq.UUID"
+    );
+
     @GET("v_kpis_cobros_mes")
     Call<List<KpiCobrosMes>> getKpisCobrosMes();
 

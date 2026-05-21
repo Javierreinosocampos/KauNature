@@ -41,6 +41,6 @@ public class CitaModel {
     }
 
     public String precioDisplay() {
-        return String.format("%.0f€", getPrecio());
+        return String.format(java.util.Locale.US, "%.2f", getPrecio()).replace(".", ",") + "€";
     }
 }

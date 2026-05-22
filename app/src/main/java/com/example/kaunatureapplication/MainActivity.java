@@ -102,7 +102,18 @@ public class MainActivity extends AppCompatActivity {
 
     // ════════════════════════════════════════════════════════════════
     //  Lifecycle
-    // ════════════════════════════════════════════════════════════════
+    // ══════════════════════════════════════════════════════════════════
+// MainActivity.java - CAMBIOS APLICADOS
+// ══════════════════════════════════════════════════════════════════
+//
+// CAMBIO 1: Agregar en onCreate() después de cargarDatos()
+// CAMBIO 2: Agregar método showInscribirSheetConDatos()
+//
+// ══════════════════════════════════════════════════════════════════
+
+// DENTRO DEL MÉTODO onCreate(), después de la línea cargarDatos();
+// Agregar esto:
+
     @Override
     protected void onCreate(Bundle b) {
         super.onCreate(b);
@@ -112,12 +123,275 @@ public class MainActivity extends AppCompatActivity {
         setupFecha();
         NavHelper.setup(this, "home");
         bindButtons();
-
-        // Cargar estado persistente de notificaciones
         cargarPrefs();
-        // KPIs y listas: mostrar placeholders y cargar de Supabase
         mostrarKpisVacios();
         cargarDatos();
+
+        // ══════ NUEVO: Manejar Intent de inscripción desde ClientesActivity ══════
+        Intent intent = getIntent();
+        if (intent != null && intent.getBooleanExtra("ABRIR_INSCRIPCION", false)) {
+            final String clienteId = intent.getStringExtra("CLIENTE_ID");
+            final String clienteNombre = intent.getStringExtra("CLIENTE_NOMBRE");
+
+            // Delay para que la UI cargue primero
+            new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                showInscribirSheetConDatos(clienteId, clienteNombre);
+            }, 300);
+
+            // Limpiar el intent para que no se reabra al rotar pantalla
+            getIntent().removeExtra("ABRIR_INSCRIPCION");
+        }
+    }
+
+// ══════════════════════════════════════════════════════════════════
+// NUEVO MÉTODO: showInscribirSheetConDatos
+// Agregar DESPUÉS del método showInscribirSheet() existente
+// ══════════════════════════════════════════════════════════════════
+
+    /**
+     * Abre el sheet de inscripción con el cliente ya pre-seleccionado.
+     * Llamado desde ClientesActivity cuando el usuario pulsa "Inscribir membresía".
+     */
+    private void showInscribirSheetConDatos(final String clienteIdPreseleccionado,
+                                            final String clienteNombrePreseleccionado) {
+        if (clienteIdPreseleccionado == null || clienteNombrePreseleccionado == null) {
+            showInscribirSheet();
+            return;
+        }
+
+        BottomSheetDialog sheet = new BottomSheetDialog(this,
+                com.google.android.material.R.style.Theme_Material3_Light_BottomSheetDialog);
+
+        LinearLayout raiz = new LinearLayout(this);
+        raiz.setOrientation(LinearLayout.VERTICAL);
+        raiz.setBackgroundColor(WHITE);
+        int alturaSheet = (int)(getResources().getDisplayMetrics().heightPixels * 0.85f);
+        raiz.setLayoutParams(new LinearLayout.LayoutParams(-1, alturaSheet));
+
+        // Handle
+        LinearLayout hw = new LinearLayout(this);
+        hw.setGravity(android.view.Gravity.CENTER_HORIZONTAL);
+        LinearLayout.LayoutParams hwP = new LinearLayout.LayoutParams(-1, -2);
+        hwP.topMargin = dp(10); hwP.bottomMargin = dp(4);
+        hw.setLayoutParams(hwP);
+        android.view.View handle = new android.view.View(this);
+        android.graphics.drawable.GradientDrawable hBg = new android.graphics.drawable.GradientDrawable();
+        hBg.setColor(BORDER); hBg.setCornerRadius(dp(3));
+        handle.setBackground(hBg);
+        handle.setLayoutParams(new LinearLayout.LayoutParams(dp(40), dp(4)));
+        hw.addView(handle); raiz.addView(hw);
+
+        // Título
+        TextView tvTitulo = new TextView(this);
+        tvTitulo.setText("Inscribir cliente");
+        tvTitulo.setTextSize(20f); tvTitulo.setTextColor(TEXT_D);
+        tvTitulo.setTypeface(Typeface.DEFAULT_BOLD);
+        LinearLayout.LayoutParams titP = new LinearLayout.LayoutParams(-1, -2);
+        titP.setMargins(dp(20), dp(12), dp(20), dp(4));
+        tvTitulo.setLayoutParams(titP);
+        raiz.addView(tvTitulo);
+
+        TextView tvSub = new TextView(this);
+        tvSub.setText("Crea una membresía mensual y genera el cobro automáticamente");
+        tvSub.setTextSize(12f); tvSub.setTextColor(TEXT_L);
+        LinearLayout.LayoutParams subP = new LinearLayout.LayoutParams(-1, -2);
+        subP.setMargins(dp(20), 0, dp(20), dp(16));
+        tvSub.setLayoutParams(subP);
+        raiz.addView(tvSub);
+
+        android.view.View div0 = new android.view.View(this);
+        div0.setLayoutParams(new LinearLayout.LayoutParams(-1, dp(1)));
+        div0.setBackgroundColor(BORDER);
+        raiz.addView(div0);
+
+        androidx.core.widget.NestedScrollView nsv = new androidx.core.widget.NestedScrollView(this);
+        nsv.setLayoutParams(new LinearLayout.LayoutParams(-1, 0, 1f));
+        nsv.setFillViewport(true);
+
+        LinearLayout form = new LinearLayout(this);
+        form.setOrientation(LinearLayout.VERTICAL);
+        form.setPadding(dp(20), dp(16), dp(20), dp(40));
+        nsv.addView(form);
+        raiz.addView(nsv);
+
+        // Estado compartido - Cliente YA ESTÁ SELECCIONADO
+        final String[] clienteIdSel   = {clienteIdPreseleccionado};
+        final String[] clienteNomSel  = {clienteNombrePreseleccionado};
+        final double[] precioSel      = {30.0};
+
+        // ── Campo cliente (deshabilitado, solo muestra el nombre) ────────
+        lbl(form, "Cliente *");
+        TextView tvClienteSeleccionado = new TextView(this);
+        tvClienteSeleccionado.setText("✅ " + clienteNombrePreseleccionado);
+        tvClienteSeleccionado.setTextSize(14f);
+        tvClienteSeleccionado.setTextColor(Color.parseColor("#059669"));
+        tvClienteSeleccionado.setTypeface(Typeface.DEFAULT_BOLD);
+        tvClienteSeleccionado.setBackground(cardBg());
+        tvClienteSeleccionado.setPadding(dp(14), dp(14), dp(14), dp(14));
+        LinearLayout.LayoutParams tvP = new LinearLayout.LayoutParams(-1, -2);
+        tvP.bottomMargin = dp(16);
+        tvClienteSeleccionado.setLayoutParams(tvP);
+        form.addView(tvClienteSeleccionado);
+
+        // ── Tipo de membresía ────────────────────────────────────
+        lbl(form, "Tipo");
+        LinearLayout rowTipo = new LinearLayout(this);
+        rowTipo.setOrientation(LinearLayout.HORIZONTAL);
+        rowTipo.setLayoutParams(new LinearLayout.LayoutParams(-1, -2));
+        form.addView(rowTipo);
+
+        final String[] tipoSel = {"mensual"};
+        String[] tipos = {"mensual", "trimestral", "semestral", "anual"};
+        for (String t : tipos) {
+            TextView chip = chipTv(t, t.equals(tipoSel[0]));
+            LinearLayout.LayoutParams cp = new LinearLayout.LayoutParams(0, dp(40), 1f);
+            cp.setMarginEnd(dp(6));
+            chip.setLayoutParams(cp);
+            chip.setOnClickListener(v -> {
+                tipoSel[0] = t;
+                for (int i = 0; i < rowTipo.getChildCount(); i++) {
+                    TextView c = (TextView) rowTipo.getChildAt(i);
+                    boolean sel = c.getText().toString().equals(t);
+                    c.setBackground(sel ? chipActiveBg() : chipInactiveBg());
+                    c.setTextColor(sel ? WHITE : TEXT_M);
+                }
+            });
+            rowTipo.addView(chip);
+        }
+
+        // ── Precio mensual ───────────────────────────────────────
+        lbl(form, "Cuota mensual (€)");
+        LinearLayout rowPrecio = new LinearLayout(this);
+        rowPrecio.setOrientation(LinearLayout.HORIZONTAL);
+        rowPrecio.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        LinearLayout.LayoutParams rpP = new LinearLayout.LayoutParams(-1, -2);
+        rpP.bottomMargin = dp(16);
+        rowPrecio.setLayoutParams(rpP);
+        form.addView(rowPrecio);
+
+        TextView btnMenos = spinBtn("−");
+        final TextView tvPrecio = new TextView(this);
+        tvPrecio.setText("30€");
+        tvPrecio.setTextSize(32f); tvPrecio.setTextColor(BLUE);
+        tvPrecio.setTypeface(Typeface.DEFAULT_BOLD);
+        tvPrecio.setGravity(android.view.Gravity.CENTER);
+        tvPrecio.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1f));
+        tvPrecio.setClickable(true); tvPrecio.setFocusable(true);
+        android.graphics.drawable.GradientDrawable precioBg = new android.graphics.drawable.GradientDrawable();
+        precioBg.setColor(BLUE_XL); precioBg.setCornerRadius(dp(12));
+        precioBg.setStroke(dp(1), adjustAlpha(BLUE, 0.3f));
+        tvPrecio.setBackground(precioBg);
+        tvPrecio.setPadding(dp(12), dp(8), dp(12), dp(8));
+        TextView btnMas = spinBtn("+");
+
+        btnMenos.setOnClickListener(v -> {
+            if (precioSel[0] > 1) {
+                precioSel[0] = Math.max(1, precioSel[0] - 5);
+                tvPrecio.setText((int)precioSel[0] + "€");
+            }
+        });
+        btnMas.setOnClickListener(v -> {
+            if (precioSel[0] < 9999) {
+                precioSel[0] = Math.min(9999, precioSel[0] + 5);
+                tvPrecio.setText((int)precioSel[0] + "€");
+            }
+        });
+        tvPrecio.setOnClickListener(v -> showPrecioPicker(precioSel, tvPrecio));
+
+        rowPrecio.addView(btnMenos);
+        rowPrecio.addView(tvPrecio);
+        rowPrecio.addView(btnMas);
+
+        // ── Notas ────────────────────────────────────────────────
+        lbl(form, "Notas (opcional)");
+        android.widget.EditText etNotas = new android.widget.EditText(this);
+        etNotas.setHint("Observaciones...");
+        etNotas.setTextSize(13f); etNotas.setTextColor(TEXT_D);
+        etNotas.setBackground(cardBg());
+        etNotas.setPadding(dp(14), dp(14), dp(14), dp(14));
+        etNotas.setMinLines(2); etNotas.setGravity(android.view.Gravity.TOP);
+        etNotas.setInputType(android.text.InputType.TYPE_CLASS_TEXT
+                | android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+        LinearLayout.LayoutParams notasP = new LinearLayout.LayoutParams(-1, -2);
+        notasP.bottomMargin = dp(24);
+        etNotas.setLayoutParams(notasP);
+        form.addView(etNotas);
+
+        // ── Botón guardar ────────────────────────────────────────
+        android.graphics.drawable.GradientDrawable btnSaveBg = new android.graphics.drawable.GradientDrawable();
+        btnSaveBg.setColor(BLUE); btnSaveBg.setCornerRadius(dp(16));
+        TextView btnGuardar = new TextView(this);
+        btnGuardar.setText("🎫 Inscribir y generar cobro");
+        btnGuardar.setTextSize(15f); btnGuardar.setTextColor(WHITE);
+        btnGuardar.setTypeface(Typeface.DEFAULT_BOLD);
+        btnGuardar.setGravity(android.view.Gravity.CENTER);
+        btnGuardar.setPadding(0, dp(18), 0, dp(18));
+        btnGuardar.setBackground(btnSaveBg);
+        btnGuardar.setLayoutParams(new LinearLayout.LayoutParams(-1, -2));
+        btnGuardar.setClickable(true);
+        form.addView(btnGuardar);
+
+        // ── Lógica de guardar ─────────────────────────────────────
+        btnGuardar.setOnClickListener(v -> {
+            btnGuardar.setEnabled(false);
+            btnGuardar.setText("Guardando...");
+
+            String hoy = new java.text.SimpleDateFormat("yyyy-MM-dd",
+                    java.util.Locale.getDefault()).format(new java.util.Date());
+            final String clienteId  = clienteIdSel[0];
+            final String clienteNom = clienteNomSel[0];
+            final double precio     = precioSel[0];
+            final String tipo       = tipoSel[0];
+            final String notas      = etNotas.getText().toString().trim();
+
+            SupabaseRepository.get().crearMembresia(clienteId, tipo, precio, hoy, notas,
+                    new SupabaseRepository.Callback<MembresiaModel>() {
+                        @Override public void onSuccess(MembresiaModel mem) {
+                            String concepto = "Membresía " + tipo + " - " + clienteNom;
+                            SupabaseRepository.get().crearCobro(
+                                    clienteId, clienteNom, concepto,
+                                    precio, "Efectivo", "pendiente", notas,
+                                    new SupabaseRepository.Callback<CobroModel>() {
+                                        @Override public void onSuccess(CobroModel cobro) {
+                                            runOnUiThread(() -> {
+                                                sheet.dismiss();
+                                                android.widget.Toast.makeText(MainActivity.this,
+                                                        "✅ " + clienteNom + " inscrito · cobro de "
+                                                                + (int)precio + "€ generado",
+                                                        android.widget.Toast.LENGTH_LONG).show();
+                                                cargarDatos();
+                                            });
+                                        }
+                                        @Override public void onError(String e) {
+                                            runOnUiThread(() -> {
+                                                sheet.dismiss();
+                                                android.widget.Toast.makeText(MainActivity.this,
+                                                        "Inscrito, pero error al generar cobro: " + e,
+                                                        android.widget.Toast.LENGTH_LONG).show();
+                                            });
+                                        }
+                                    });
+                        }
+                        @Override public void onError(String e) {
+                            runOnUiThread(() -> {
+                                btnGuardar.setEnabled(true);
+                                btnGuardar.setText("🎫 Inscribir y generar cobro");
+                                android.widget.Toast.makeText(MainActivity.this,
+                                        "Error: " + e, android.widget.Toast.LENGTH_SHORT).show();
+                            });
+                        }
+                    });
+        });
+
+        sheet.setContentView(raiz);
+        sheet.setOnShowListener(d -> {
+            com.google.android.material.bottomsheet.BottomSheetBehavior<?> beh =
+                    com.google.android.material.bottomsheet.BottomSheetBehavior.from(
+                            (android.view.View) raiz.getParent());
+            beh.setState(com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED);
+            beh.setSkipCollapsed(true);
+        });
+        sheet.show();
     }
 
     @Override

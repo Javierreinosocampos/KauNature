@@ -497,4 +497,135 @@ public class SupabaseRepository {
                     public void onFailure(Call<List<MembresiaModel>> call, Throwable t) { cb.onError(t.getMessage()); }
                 });
     }
+
+    /**
+     * Obtiene todos los cobros de un cliente específico.
+     * Útil para verificar si ya existe un cobro de membresía del mes actual.
+     */
+    public void getCobrosPorCliente(String clienteId, Callback<List<CobroModel>> cb) {
+        api.getCobrosPorClienteId("eq." + clienteId, "fecha.desc")
+                .enqueue(new retrofit2.Callback<List<CobroModel>>() {
+                    public void onResponse(Call<List<CobroModel>> call, Response<List<CobroModel>> r) {
+                        if (r.isSuccessful() && r.body() != null) cb.onSuccess(r.body());
+                        else cb.onError("Error " + r.code());
+                    }
+                    public void onFailure(Call<List<CobroModel>> call, Throwable t) {
+                        cb.onError(t.getMessage());
+                    }
+                });
+    }
+
+    /**
+     * Genera automáticamente el cobro mensual de una membresía si no existe ya
+     * para el mes actual.
+     *
+     * LÓGICA:
+     * 1. Verifica si ya existe un cobro de membresía para este cliente en el mes actual
+     * 2. Si NO existe, crea un cobro "pendiente" por el importe de la membresía
+     * 3. Si ya existe, no hace nada
+     *
+     * @param membresia La membresía activa del cliente
+     * @param nombreCliente El nombre completo del cliente
+     * @param cb Callback que retorna TRUE si se generó un nuevo cobro, FALSE si ya existía
+     */
+    public void generarCobroMensualSiProcede(MembresiaModel membresia, String nombreCliente,
+                                             Callback<Boolean> cb) {
+        if (membresia == null || !membresia.activa || membresia.clienteId == null) {
+            cb.onSuccess(false);
+            return;
+        }
+
+        // Obtener el mes actual en formato yyyy-MM
+        java.text.SimpleDateFormat sdfMes = new java.text.SimpleDateFormat("yyyy-MM",
+                java.util.Locale.getDefault());
+        final String mesActual = sdfMes.format(new java.util.Date());
+
+        // Verificar si ya existe un cobro de membresía este mes para este cliente
+        getCobrosPorCliente(membresia.clienteId, new Callback<List<CobroModel>>() {
+            @Override
+            public void onSuccess(List<CobroModel> cobros) {
+                boolean yaExiste = false;
+
+                for (CobroModel cobro : cobros) {
+                    // Verificar si es un cobro del mes actual
+                    boolean fechaCoincide = false;
+                    if (cobro.fecha != null && cobro.fecha.startsWith(mesActual)) {
+                        fechaCoincide = true;
+                    } else if (cobro.createdAt != null && cobro.createdAt.startsWith(mesActual)) {
+                        fechaCoincide = true;
+                    }
+
+                    // Verificar si es un cobro de membresía
+                    boolean esMembresia = cobro.concepto != null &&
+                            cobro.concepto.toLowerCase().contains("membresía");
+
+                    if (fechaCoincide && esMembresia) {
+                        yaExiste = true;
+                        break;
+                    }
+                }
+
+                if (yaExiste) {
+                    // Ya existe cobro de este mes, no generar otro
+                    cb.onSuccess(false);
+                } else {
+                    // No existe, generar cobro pendiente
+                    String concepto = "Membresía mensual · " + nombreCliente;
+                    String notas = "Cobro automático generado el " +
+                            new java.text.SimpleDateFormat("dd/MM/yyyy",
+                                    java.util.Locale.getDefault()).format(new java.util.Date());
+
+                    crearCobro(
+                            membresia.clienteId,
+                            nombreCliente,
+                            concepto,
+                            membresia.precio,
+                            "Efectivo",
+                            "pendiente",
+                            notas,
+                            new Callback<CobroModel>() {
+                                @Override
+                                public void onSuccess(CobroModel data) {
+                                    cb.onSuccess(true); // Cobro generado
+                                }
+                                @Override
+                                public void onError(String mensaje) {
+                                    cb.onError(mensaje);
+                                }
+                            }
+                    );
+                }
+            }
+
+            @Override
+            public void onError(String mensaje) {
+                cb.onError(mensaje);
+            }
+        });
+    }
+
+    /**
+     * Genera el cobro del mes actual cuando se cancela una membresía.
+     * Este cobro queda como "pendiente" y debe ser cobrado aunque la membresía
+     * se haya cancelado.
+     */
+    public void generarCobroCancelacion(MembresiaModel membresia, String nombreCliente,
+                                        Callback<CobroModel> cb) {
+        String concepto = "Membresía mensual (cancelación) · " + nombreCliente;
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy",
+                java.util.Locale.getDefault());
+        String notas = "Generado automáticamente al cancelar membresía el " +
+                sdf.format(new java.util.Date());
+
+        crearCobro(
+                membresia.clienteId,
+                nombreCliente,
+                concepto,
+                membresia.precio,
+                "Efectivo",
+                "pendiente",
+                notas,
+                cb
+        );
+    }
 }

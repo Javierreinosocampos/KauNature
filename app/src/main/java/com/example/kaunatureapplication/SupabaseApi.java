@@ -173,4 +173,10 @@ public interface SupabaseApi {
 
     @DELETE("membresias")
     Call<Void> eliminarMembresia(@Query("id") String idFiltro);
+
+    @GET("cobros")
+    Call<List<CobroModel>> getCobrosPorClienteId(
+            @Query("cliente_id") String clienteIdFiltro,  // "eq.UUID"
+            @Query("order") String order
+    );
 }

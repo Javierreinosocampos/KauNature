@@ -1944,3 +1944,9 @@ public class AgendaActivity extends AppCompatActivity {
     }
 
 }
+
+/*
+Evitar duplicidad en el codigo con cobros.
+
+
+ */

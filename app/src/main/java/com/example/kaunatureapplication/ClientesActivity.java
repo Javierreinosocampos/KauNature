@@ -1104,7 +1104,7 @@ public class ClientesActivity extends AppCompatActivity {
 
         // Paso 1: Cancelar en Supabase
         SupabaseRepository.get().cancelarMembresia(mem.id, fechaFin,
-                new SupabaseRepository.Callback<Void>() {
+               new SupabaseRepository.Callback<Void>() {
                     @Override public void onSuccess(Void d) {
                         // Paso 2: Actualizar objeto de membresía local
                         mem.activa = false;
@@ -1153,9 +1153,9 @@ public class ClientesActivity extends AppCompatActivity {
                                                     "Generado automáticamente al cancelar membresía el " + fechaFin,
                                                     new SupabaseRepository.Callback<CobroModel>() {
                                                         @Override public void onSuccess(CobroModel c) {
-                                                            finalizarCancelacionConCobro(cliente, mem, dlgConfirm, sheetPadre,
-                                                                    "✅ Membresía cancelada · cobro de " +
-                                                                            (int)mem.precio + "€ generado como pendiente");
+                                                            //finalizarCancelacionConCobro(cliente, mem, dlgConfirm, sheetPadre,
+                                                                   // "✅ Membresía cancelada · cobro de " +
+                                                                          //  (int)mem.precio + "€ generado como pendiente");
                                                         }
                                                         @Override public void onError(String e) {
                                                             finalizarCancelacionConCobro(cliente, mem, dlgConfirm, sheetPadre,

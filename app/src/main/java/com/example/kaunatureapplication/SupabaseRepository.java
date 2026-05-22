@@ -555,7 +555,8 @@ public class SupabaseRepository {
                         fechaCoincide = true;
                     }
 
-                    // Verificar si es un cobro de membresía
+                    // Detectar cualquier cobro de membresía de este cliente en el mes,
+                    // incluye cobros normales Y cobros de cancelación
                     boolean esMembresia = cobro.concepto != null &&
                             cobro.concepto.toLowerCase().contains("membresía");
 
@@ -570,7 +571,9 @@ public class SupabaseRepository {
                     cb.onSuccess(false);
                 } else {
                     // No existe, generar cobro pendiente
-                    String concepto = "Membresía mensual · " + nombreCliente;
+                    String tipoAuto = (membresia.tipo != null && !membresia.tipo.isEmpty())
+                            ? membresia.tipo.toLowerCase() : "mensual";
+                    String concepto = "Membresía " + tipoAuto + " · " + nombreCliente;
                     String notas = "Cobro automático generado el " +
                             new java.text.SimpleDateFormat("dd/MM/yyyy",
                                     java.util.Locale.getDefault()).format(new java.util.Date());
@@ -611,7 +614,9 @@ public class SupabaseRepository {
      */
     public void generarCobroCancelacion(MembresiaModel membresia, String nombreCliente,
                                         Callback<CobroModel> cb) {
-        String concepto = "Membresía mensual (cancelación) · " + nombreCliente;
+        String tipoCanc = (membresia.tipo != null && !membresia.tipo.isEmpty())
+                ? membresia.tipo.toLowerCase() : "mensual";
+        String concepto = "Membresía " + tipoCanc + " (cancelación) · " + nombreCliente;
         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy",
                 java.util.Locale.getDefault());
         String notas = "Generado automáticamente al cancelar membresía el " +
@@ -628,4 +633,6 @@ public class SupabaseRepository {
                 cb
         );
     }
+
+
 }

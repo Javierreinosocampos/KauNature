@@ -99,6 +99,7 @@ public class CobrosActivity extends AppCompatActivity {
     private String filtroClienteId           = null;
     private String filtroClienteNom          = null;
     private boolean abrirNuevoCobro          = false;
+    private boolean yaCargado                  = false;
 
     // ── Views ────────────────────────────────────────────────────────
     private LinearLayout listaPendientes, listaHistorial;
@@ -128,6 +129,14 @@ public class CobrosActivity extends AppCompatActivity {
             abrirNuevoCobro  = filtroClienteId != null; // si viene con cliente, abrir directo
         }
 
+        // cargarCobros() se llama desde onResume la primera vez
+    }
+
+    // Recargar al volver a esta pantalla (tras cancelar membresía, etc.)
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Siempre recargar desde Supabase: primera carga y cada vez que se vuelve
         cargarCobros();
     }
 

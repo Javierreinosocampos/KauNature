@@ -82,6 +82,8 @@ public class ClientesActivity extends AppCompatActivity {
     private final List<Cliente> clientesFiltrados = new ArrayList<>();
     private String filtroActual   = "todos";
     private String busquedaActual = "";
+    private boolean cancelandoMembresia = false;
+    private boolean sincronizandoMembresias = false;
 
     // ══════════════════════════════════════════════════════════════════
     //  VIEWS
@@ -109,15 +111,26 @@ public class ClientesActivity extends AppCompatActivity {
         cargarClientes();
     }
 
-    // CAMBIO 1: REEMPLAZAR onResume() completo
     @Override
     protected void onResume() {
         super.onResume();
-        // NO recargar clientes si ya están cargados - solo refrescar membresías y deudas
+        android.util.Log.d("LIFECYCLE", "onResume - clientes: " + todosLosClientes.size());
         if (!todosLosClientes.isEmpty()) {
-            cargarDeudasYCitasReales();
-            cargarMembresiasEnBackground();
+            sincronizarDatosCompleto();
         }
+    }
+
+    private void sincronizarDatosCompleto() {
+        if (sincronizandoMembresias) {
+            android.util.Log.w("SYNC", "Sincronización ya en curso - ignorando");
+            return;
+        }
+        sincronizandoMembresias = true;
+        android.util.Log.d("SYNC", "Iniciando sincronización completa...");
+        cargarDeudasYCitasReales();
+        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+            cargarMembresiasEnBackground();
+        }, 300);
     }
     // ══════════════════════════════════════════════════════════════════
     //  BIND VIEWS
@@ -256,13 +269,19 @@ public class ClientesActivity extends AppCompatActivity {
                         }
 
                         // PASO 2: Cargar historial para clientes sin membresía activa
-                        cargarMembresiasHistorial();
+                        cargarMembresiasHistorial(() -> {
+                            // PASO 3: Generar cobros automáticos SOLO si NO estamos cancelando
+                            if (!cancelandoMembresia) {
+                                generarCobrosMensualesAutomaticos(activas);
+                            }
 
-                        // PASO 3: Re-renderizar la lista
-                        runOnUiThread(() -> renderLista());
-
-                        // PASO 4: Generar cobros mensuales automáticos
-                        generarCobrosMensualesAutomaticos(activas);
+                            // PASO 4: Re-renderizar lista
+                            runOnUiThread(() -> {
+                                renderLista();
+                                sincronizandoMembresias = false;
+                                android.util.Log.d("SYNC", "✅ Sincronización completa terminada");
+                            });
+                        });
                     }
                     @Override public void onError(String e) {
                         android.util.Log.e("MEMBRESIAS", "Error cargando activas: " + e);
@@ -277,7 +296,19 @@ public class ClientesActivity extends AppCompatActivity {
     /**
      * Carga el historial de membresías para aplicar la regla de 30 días
      */
-    private void cargarMembresiasHistorial() {
+    private void cargarMembresiasHistorial(Runnable onComplete) {
+        final int[] pendientes = {0};
+        for (Cliente c : todosLosClientes) {
+            if (c.id != null && !c.tieneMembresia) {
+                pendientes[0]++;
+            }
+        }
+
+        if (pendientes[0] == 0) {
+            if (onComplete != null) onComplete.run();
+            return;
+        }
+
         for (Cliente c : todosLosClientes) {
             if (c.id == null) {
                 c.membresiasCargadas = true;
@@ -306,12 +337,26 @@ public class ClientesActivity extends AppCompatActivity {
                                                 " tiene membresía cancelada el " + ultima.fechaFin);
                             }
 
-                            runOnUiThread(() -> renderLista());
+                            synchronized (ClientesActivity.this) {
+                                pendientes[0]--;
+                                if (pendientes[0] <= 0) {
+                                    runOnUiThread(() -> {
+                                        renderLista();
+                                        if (onComplete != null) onComplete.run();
+                                    });
+                                }
+                            }
                         }
                         @Override public void onError(String e) {
                             c.membresiasCargadas = true;
                             android.util.Log.e("MEMBRESIAS_HISTORIAL",
                                     "Error para cliente " + c.nombreCompleto() + ": " + e);
+                            synchronized (ClientesActivity.this) {
+                                pendientes[0]--;
+                                if (pendientes[0] <= 0 && onComplete != null) {
+                                    runOnUiThread(onComplete);
+                                }
+                            }
                         }
                     });
         }
@@ -323,6 +368,7 @@ public class ClientesActivity extends AppCompatActivity {
      * Se ejecuta en background silenciosamente.
      */
     private void generarCobrosMensualesAutomaticos(List<MembresiaModel> mems) {
+        if (cancelandoMembresia) return; // no generar cobros automáticos durante una cancelación
         for (MembresiaModel mem : mems) {
             if (!mem.activa || mem.clienteId == null) continue;
 
@@ -1053,6 +1099,9 @@ public class ClientesActivity extends AppCompatActivity {
                                               String fechaFin,
                                               BottomSheetDialog dlgConfirm,
                                               BottomSheetDialog sheetPadre) {
+        // Bloquear generación automática mientras cancelamos
+        cancelandoMembresia = true;
+
         // Paso 1: Cancelar en Supabase
         SupabaseRepository.get().cancelarMembresia(mem.id, fechaFin,
                 new SupabaseRepository.Callback<Void>() {
@@ -1061,30 +1110,39 @@ public class ClientesActivity extends AppCompatActivity {
                         mem.activa = false;
                         mem.fechaFin = fechaFin;
 
-                        // Paso 3: Verificar cobro mensual del mes en curso
-                        String mesActual = fechaFin.substring(0, 7);
+                        // Paso 3: Verificar si ya existe un cobro PENDIENTE de membresía
                         SupabaseRepository.get().getCobrosPorCliente(mem.clienteId,
                                 new SupabaseRepository.Callback<List<CobroModel>>() {
                                     @Override public void onSuccess(List<CobroModel> cobros) {
-                                        String tipoReal2 = (mem.tipo != null && !mem.tipo.isEmpty()) ? mem.tipo.toLowerCase() : "mensual";
-                                        boolean yaExiste = false;
+                                        String tipoReal = (mem.tipo != null && !mem.tipo.isEmpty())
+                                                ? mem.tipo.toLowerCase() : "mensual";
+
+                                        // Buscar CUALQUIER cobro pendiente de membresía (sin importar la fecha)
+                                        boolean yaExistePendiente = false;
                                         for (CobroModel co : cobros) {
-                                            boolean fechaOk = (co.fecha != null && co.fecha.startsWith(mesActual))
-                                                    || (co.createdAt != null && co.createdAt.startsWith(mesActual));
+                                            // Solo considerar cobros PENDIENTES
+                                            if (!"pendiente".equals(co.estado)) continue;
+
+                                            // Verificar si es un cobro de membresía del tipo correcto
                                             boolean esMembresia = co.concepto != null
                                                     && co.concepto.toLowerCase().contains("membresía")
-                                                    && co.concepto.toLowerCase().contains(tipoReal2);
-                                            if (fechaOk && esMembresia) {
-                                                yaExiste = true;
+                                                    && co.concepto.toLowerCase().contains(tipoReal);
+
+                                            if (esMembresia) {
+                                                yaExistePendiente = true;
+                                                android.util.Log.d("CANCELACION",
+                                                        "✓ Ya existe cobro pendiente: " + co.concepto +
+                                                                " (" + co.importe + "€) - NO se creará duplicado");
                                                 break;
                                             }
                                         }
 
-                                        if (!yaExiste) {
-                                            // Crear cobro pendiente al cancelar — usar el tipo real de la membresía
-                                            String tipoReal = (mem.tipo != null && !mem.tipo.isEmpty())
-                                                    ? mem.tipo.toLowerCase() : "mensual";
+                                        if (!yaExistePendiente) {
+                                            // NO existe cobro pendiente → crear uno nuevo
                                             String concepto = "Membresía " + tipoReal + " (cancelación) · " + cliente.nombreCompleto();
+                                            android.util.Log.d("CANCELACION",
+                                                    "✓ No hay cobro pendiente - creando: " + concepto);
+
                                             SupabaseRepository.get().crearCobro(
                                                     mem.clienteId,
                                                     cliente.nombreCompleto(),
@@ -1105,8 +1163,9 @@ public class ClientesActivity extends AppCompatActivity {
                                                         }
                                                     });
                                         } else {
+                                            // Ya existe cobro pendiente → NO crear duplicado
                                             finalizarCancelacionConCobro(cliente, mem, dlgConfirm, sheetPadre,
-                                                    "✅ Membresía cancelada · cobro de este mes ya existía");
+                                                    "✅ Membresía cancelada · ya tenía cobro pendiente");
                                         }
                                     }
                                     @Override public void onError(String e) {
@@ -1154,6 +1213,9 @@ public class ClientesActivity extends AppCompatActivity {
 
             // Refrescar deudas (incluye el cobro recién creado)
             cargarDeudasYCitasReales();
+
+            // Permitir generación automática de nuevo antes de refrescar
+            cancelandoMembresia = false;
 
             // CRÍTICO: Refrescar membresías de TODOS los clientes
             refrescarMembresiasCompleto();

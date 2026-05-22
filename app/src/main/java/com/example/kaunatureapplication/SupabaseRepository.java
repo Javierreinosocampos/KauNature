@@ -272,6 +272,263 @@ public class SupabaseRepository {
     }
 
     // ════════════════════════════════════════════════════════════════
+    //  SINCRONIZACIÓN BIDIRECCIONAL CITAS ↔ COBROS
+    // ════════════════════════════════════════════════════════════════
+
+    /**
+     * Marca un cobro como COBRADO y sincroniza la cita asociada (si existe)
+     * FLUJO: Usuario marca cobro como cobrado → Cita pasa a "cobrada"
+     */
+    public void marcarCobroCobradoConSync(String cobroId, String citaId, Callback<Void> cb) {
+        android.util.Log.d("SYNC", "marcarCobroCobrado: cobro=" + cobroId + ", cita=" + citaId);
+
+        // 1. Actualizar cobro
+        Map<String, Object> body = new HashMap<>();
+        body.put("estado", "cobrado");
+
+        api.actualizarCobro("eq." + cobroId, body)
+                .enqueue(new retrofit2.Callback<List<CobroModel>>() {
+                    public void onResponse(Call<List<CobroModel>> call, Response<List<CobroModel>> r) {
+                        if (r.isSuccessful()) {
+                            android.util.Log.d("SYNC", "✓ Cobro actualizado a cobrado");
+
+                            // 2. Si tiene cita asociada, actualizarla también
+                            if (citaId != null && !citaId.isEmpty()) {
+                                Map<String, Object> citaBody = new HashMap<>();
+                                citaBody.put("estado", "cobrada");
+
+                                api.actualizarCita("eq." + citaId, citaBody)
+                                        .enqueue(new retrofit2.Callback<List<CitaModel>>() {
+                                            public void onResponse(Call<List<CitaModel>> call2, Response<List<CitaModel>> r2) {
+                                                if (r2.isSuccessful()) {
+                                                    android.util.Log.d("SYNC", "✓ Cita sincronizada a cobrada");
+                                                    cb.onSuccess(null);
+                                                } else {
+                                                    android.util.Log.w("SYNC", "⚠ Error al actualizar cita: " + r2.code());
+                                                    cb.onError("Cobro actualizado pero error al sincronizar cita");
+                                                }
+                                            }
+                                            public void onFailure(Call<List<CitaModel>> call2, Throwable t) {
+                                                android.util.Log.w("SYNC", "⚠ Error al actualizar cita: " + t.getMessage());
+                                                cb.onError("Cobro actualizado pero error al sincronizar cita");
+                                            }
+                                        });
+                            } else {
+                                // No tiene cita asociada, solo actualizamos cobro
+                                android.util.Log.d("SYNC", "✓ Cobro sin cita asociada");
+                                cb.onSuccess(null);
+                            }
+                        } else {
+                            cb.onError("Error " + r.code());
+                        }
+                    }
+                    public void onFailure(Call<List<CobroModel>> call, Throwable t) {
+                        cb.onError(t.getMessage());
+                    }
+                });
+    }
+
+    /**
+     * Marca un cobro como PENDIENTE y sincroniza la cita asociada (si existe)
+     * FLUJO: Usuario desmarca cobro → Cita pasa a "confirmada"
+     */
+    public void marcarCobroPendienteConSync(String cobroId, String citaId, Callback<Void> cb) {
+        android.util.Log.d("SYNC", "marcarCobroPendiente: cobro=" + cobroId + ", cita=" + citaId);
+
+        // 1. Actualizar cobro
+        Map<String, Object> body = new HashMap<>();
+        body.put("estado", "pendiente");
+
+        api.actualizarCobro("eq." + cobroId, body)
+                .enqueue(new retrofit2.Callback<List<CobroModel>>() {
+                    public void onResponse(Call<List<CobroModel>> call, Response<List<CobroModel>> r) {
+                        if (r.isSuccessful()) {
+                            android.util.Log.d("SYNC", "✓ Cobro actualizado a pendiente");
+
+                            // 2. Si tiene cita asociada, actualizarla también
+                            if (citaId != null && !citaId.isEmpty()) {
+                                Map<String, Object> citaBody = new HashMap<>();
+                                citaBody.put("estado", "confirmada");
+
+                                api.actualizarCita("eq." + citaId, citaBody)
+                                        .enqueue(new retrofit2.Callback<List<CitaModel>>() {
+                                            public void onResponse(Call<List<CitaModel>> call2, Response<List<CitaModel>> r2) {
+                                                if (r2.isSuccessful()) {
+                                                    android.util.Log.d("SYNC", "✓ Cita sincronizada a confirmada");
+                                                    cb.onSuccess(null);
+                                                } else {
+                                                    android.util.Log.w("SYNC", "⚠ Error al actualizar cita: " + r2.code());
+                                                    cb.onError("Cobro actualizado pero error al sincronizar cita");
+                                                }
+                                            }
+                                            public void onFailure(Call<List<CitaModel>> call2, Throwable t) {
+                                                android.util.Log.w("SYNC", "⚠ Error al actualizar cita: " + t.getMessage());
+                                                cb.onError("Cobro actualizado pero error al sincronizar cita");
+                                            }
+                                        });
+                            } else {
+                                android.util.Log.d("SYNC", "✓ Cobro sin cita asociada");
+                                cb.onSuccess(null);
+                            }
+                        } else {
+                            cb.onError("Error " + r.code());
+                        }
+                    }
+                    public void onFailure(Call<List<CobroModel>> call, Throwable t) {
+                        cb.onError(t.getMessage());
+                    }
+                });
+    }
+
+    /**
+     * Marca una cita como COBRADA y sincroniza el cobro asociado (si existe)
+     * FLUJO: Usuario marca cita como cobrada → Cobro pasa a "cobrado"
+     */
+    public void marcarCitaCobradaConSync(String citaId, Callback<Void> cb) {
+        android.util.Log.d("SYNC", "marcarCitaCobrada: cita=" + citaId);
+
+        // 1. Actualizar cita
+        Map<String, Object> citaBody = new HashMap<>();
+        citaBody.put("estado", "cobrada");
+
+        api.actualizarCita("eq." + citaId, citaBody)
+                .enqueue(new retrofit2.Callback<List<CitaModel>>() {
+                    public void onResponse(Call<List<CitaModel>> call, Response<List<CitaModel>> r) {
+                        if (r.isSuccessful()) {
+                            android.util.Log.d("SYNC", "✓ Cita actualizada a cobrada");
+
+                            // 2. Buscar cobro asociado y actualizarlo
+                            getCobrosPorCita(citaId, new Callback<List<CobroModel>>() {
+                                @Override
+                                public void onSuccess(List<CobroModel> cobros) {
+                                    if (cobros != null && !cobros.isEmpty()) {
+                                        CobroModel cobro = cobros.get(0);
+                                        android.util.Log.d("SYNC", "✓ Cobro encontrado: " + cobro.id);
+
+                                        Map<String, Object> cobroBody = new HashMap<>();
+                                        cobroBody.put("estado", "cobrado");
+
+                                        api.actualizarCobro("eq." + cobro.id, cobroBody)
+                                                .enqueue(new retrofit2.Callback<List<CobroModel>>() {
+                                                    public void onResponse(Call<List<CobroModel>> call2, Response<List<CobroModel>> r2) {
+                                                        if (r2.isSuccessful()) {
+                                                            android.util.Log.d("SYNC", "✓ Cobro sincronizado a cobrado");
+                                                            cb.onSuccess(null);
+                                                        } else {
+                                                            android.util.Log.w("SYNC", "⚠ Error al actualizar cobro");
+                                                            cb.onError("Cita actualizada pero error al sincronizar cobro");
+                                                        }
+                                                    }
+                                                    public void onFailure(Call<List<CobroModel>> call2, Throwable t) {
+                                                        android.util.Log.w("SYNC", "⚠ Error al actualizar cobro");
+                                                        cb.onError("Cita actualizada pero error al sincronizar cobro");
+                                                    }
+                                                });
+                                    } else {
+                                        android.util.Log.d("SYNC", "✓ Cita sin cobro asociado");
+                                        cb.onSuccess(null);
+                                    }
+                                }
+                                @Override
+                                public void onError(String mensaje) {
+                                    android.util.Log.w("SYNC", "⚠ Error buscando cobro: " + mensaje);
+                                    cb.onSuccess(null); // Cita ya está actualizada
+                                }
+                            });
+                        } else {
+                            cb.onError("Error " + r.code());
+                        }
+                    }
+                    public void onFailure(Call<List<CitaModel>> call, Throwable t) {
+                        cb.onError(t.getMessage());
+                    }
+                });
+    }
+
+    /**
+     * Cambia estado de cita y sincroniza cobro asociado
+     * FLUJO: Usuario cambia cita a confirmada/pendiente → Cobro pasa a "pendiente"
+     */
+    public void cambiarEstadoCitaConSync(String citaId, String nuevoEstado, Callback<Void> cb) {
+        android.util.Log.d("SYNC", "cambiarEstadoCita: cita=" + citaId + ", estado=" + nuevoEstado);
+
+        // 1. Actualizar cita
+        Map<String, Object> citaBody = new HashMap<>();
+        citaBody.put("estado", nuevoEstado);
+
+        api.actualizarCita("eq." + citaId, citaBody)
+                .enqueue(new retrofit2.Callback<List<CitaModel>>() {
+                    public void onResponse(Call<List<CitaModel>> call, Response<List<CitaModel>> r) {
+                        if (r.isSuccessful()) {
+                            android.util.Log.d("SYNC", "✓ Cita actualizada a " + nuevoEstado);
+
+                            // 2. Buscar cobro asociado y actualizar según el estado de la cita
+                            getCobrosPorCita(citaId, new Callback<List<CobroModel>>() {
+                                @Override
+                                public void onSuccess(List<CobroModel> cobros) {
+                                    if (cobros != null && !cobros.isEmpty()) {
+                                        CobroModel cobro = cobros.get(0);
+                                        android.util.Log.d("SYNC", "✓ Cobro encontrado: " + cobro.id);
+
+                                        String estadoCobro;
+                                        switch (nuevoEstado) {
+                                            case "cobrada":
+                                                estadoCobro = "cobrado";
+                                                break;
+                                            case "confirmada":
+                                            case "pendiente":
+                                                estadoCobro = "pendiente";
+                                                break;
+                                            case "cancelada":
+                                                // Para cancelada, dejamos el cobro como pendiente
+                                                // (el usuario puede eliminarlo manualmente si quiere)
+                                                estadoCobro = "pendiente";
+                                                break;
+                                            default:
+                                                estadoCobro = "pendiente";
+                                        }
+
+                                        Map<String, Object> cobroBody = new HashMap<>();
+                                        cobroBody.put("estado", estadoCobro);
+
+                                        api.actualizarCobro("eq." + cobro.id, cobroBody)
+                                                .enqueue(new retrofit2.Callback<List<CobroModel>>() {
+                                                    public void onResponse(Call<List<CobroModel>> call2, Response<List<CobroModel>> r2) {
+                                                        if (r2.isSuccessful()) {
+                                                            android.util.Log.d("SYNC", "✓ Cobro sincronizado a " + estadoCobro);
+                                                            cb.onSuccess(null);
+                                                        } else {
+                                                            android.util.Log.w("SYNC", "⚠ Error al actualizar cobro");
+                                                            cb.onSuccess(null); // Cita ya está actualizada
+                                                        }
+                                                    }
+                                                    public void onFailure(Call<List<CobroModel>> call2, Throwable t) {
+                                                        android.util.Log.w("SYNC", "⚠ Error al actualizar cobro");
+                                                        cb.onSuccess(null); // Cita ya está actualizada
+                                                    }
+                                                });
+                                    } else {
+                                        android.util.Log.d("SYNC", "✓ Cita sin cobro asociado");
+                                        cb.onSuccess(null);
+                                    }
+                                }
+                                @Override
+                                public void onError(String mensaje) {
+                                    android.util.Log.w("SYNC", "⚠ Error buscando cobro: " + mensaje);
+                                    cb.onSuccess(null); // Cita ya está actualizada
+                                }
+                            });
+                        } else {
+                            cb.onError("Error " + r.code());
+                        }
+                    }
+                    public void onFailure(Call<List<CitaModel>> call, Throwable t) {
+                        cb.onError(t.getMessage());
+                    }
+                });
+    }
+
+    // ════════════════════════════════════════════════════════════════
     //  SERVICIOS
     // ════════════════════════════════════════════════════════════════
 

@@ -29,6 +29,7 @@ public class CobrosActivity extends AppCompatActivity {
     static class Cobro {
         String id;          // UUID Supabase
         String clienteId;   // UUID del cliente
+        String citaId;      // UUID de la cita asociada (puede ser null)
         String cliente;
         String concepto;
         double importe;
@@ -42,6 +43,7 @@ public class CobrosActivity extends AppCompatActivity {
         Cobro(CobroModel m) {
             this.id        = m.id;
             this.clienteId = m.clienteId;
+            this.citaId    = m.citaId;      // ← NUEVO: vincular con cita
             this.cliente   = m.clienteNombre != null ? m.clienteNombre : "";
             this.concepto = m.concepto      != null ? m.concepto      : "";
             this.importe  = m.importe;
@@ -99,7 +101,8 @@ public class CobrosActivity extends AppCompatActivity {
     private String filtroClienteId           = null;
     private String filtroClienteNom          = null;
     private boolean abrirNuevoCobro          = false;
-    private boolean yaCargado                  = false;
+    private boolean yaCargado                = false;
+    private boolean sincronizando            = false; // ← NUEVO: evitar loops infinitos
 
     // ── Views ────────────────────────────────────────────────────────
     private LinearLayout listaPendientes, listaHistorial;
@@ -498,23 +501,39 @@ public class CobrosActivity extends AppCompatActivity {
                     renderTodo();
                     return;
                 }
+
+                if (sincronizando) {
+                    Toast.makeText(CobrosActivity.this,
+                            "⏳ Sincronización en curso...", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 ((TextView) btnCobrar.getChildAt(0)).setText("Guardando...");
                 btnCobrar.setClickable(false);
+                sincronizando = true;
 
-                SupabaseRepository.get().marcarCobrado(cobro.id,
+                // Usar método con sincronización bidireccional
+                SupabaseRepository.get().marcarCobroCobradoConSync(
+                        cobro.id,
+                        cobro.citaId, // puede ser null si es membresía
                         new SupabaseRepository.Callback<Void>() {
                             @Override public void onSuccess(Void data) {
                                 runOnUiThread(() -> {
                                     cobro.estado = "cobrado";
+                                    sincronizando = false;
                                     sheet.dismiss();
                                     renderTodo();
-                                    Toast.makeText(CobrosActivity.this,
-                                            "✅ Cobro registrado: " + cobro.importeFormateado(),
-                                            Toast.LENGTH_SHORT).show();
+
+                                    String mensaje = "✅ Cobro registrado: " + cobro.importeFormateado();
+                                    if (cobro.citaId != null && !cobro.citaId.isEmpty()) {
+                                        mensaje += " (cita sincronizada)";
+                                    }
+                                    Toast.makeText(CobrosActivity.this, mensaje, Toast.LENGTH_SHORT).show();
                                 });
                             }
                             @Override public void onError(String e) {
                                 runOnUiThread(() -> {
+                                    sincronizando = false;
                                     ((TextView) btnCobrar.getChildAt(0)).setText("💰 Marcar como cobrado");
                                     btnCobrar.setClickable(true);
                                     Toast.makeText(CobrosActivity.this,
@@ -524,6 +543,61 @@ public class CobrosActivity extends AppCompatActivity {
                         });
             });
             layout.addView(btnCobrar);
+        }
+
+        // ── Botón: desmarcar cobrado (solo si cobrado) ──────────────
+        if ("cobrado".equals(cobro.estado)) {
+            CardView btnDesmarcar = buildAccionBtn("↩️ Marcar como pendiente", "#FFF8ED", false);
+            ((TextView) btnDesmarcar.getChildAt(0)).setTextColor(Color.parseColor("#F59E0B"));
+            btnDesmarcar.setOnClickListener(v -> {
+                if (cobro.id == null) {
+                    cobro.estado = "pendiente";
+                    sheet.dismiss();
+                    renderTodo();
+                    return;
+                }
+
+                if (sincronizando) {
+                    Toast.makeText(CobrosActivity.this,
+                            "⏳ Sincronización en curso...", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                ((TextView) btnDesmarcar.getChildAt(0)).setText("Guardando...");
+                btnDesmarcar.setClickable(false);
+                sincronizando = true;
+
+                // Usar método con sincronización bidireccional
+                SupabaseRepository.get().marcarCobroPendienteConSync(
+                        cobro.id,
+                        cobro.citaId,
+                        new SupabaseRepository.Callback<Void>() {
+                            @Override public void onSuccess(Void data) {
+                                runOnUiThread(() -> {
+                                    cobro.estado = "pendiente";
+                                    sincronizando = false;
+                                    sheet.dismiss();
+                                    renderTodo();
+
+                                    String mensaje = "↩️ Cobro marcado como pendiente";
+                                    if (cobro.citaId != null && !cobro.citaId.isEmpty()) {
+                                        mensaje += " (cita sincronizada)";
+                                    }
+                                    Toast.makeText(CobrosActivity.this, mensaje, Toast.LENGTH_SHORT).show();
+                                });
+                            }
+                            @Override public void onError(String e) {
+                                runOnUiThread(() -> {
+                                    sincronizando = false;
+                                    ((TextView) btnDesmarcar.getChildAt(0)).setText("↩️ Marcar como pendiente");
+                                    btnDesmarcar.setClickable(true);
+                                    Toast.makeText(CobrosActivity.this,
+                                            "Error: " + e, Toast.LENGTH_SHORT).show();
+                                });
+                            }
+                        });
+            });
+            layout.addView(btnDesmarcar);
         }
 
         // ── Botón: editar ──────────────────────────────────────────

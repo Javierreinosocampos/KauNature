@@ -854,6 +854,19 @@ public class AgendaActivity extends AppCompatActivity {
                 this, com.google.android.material.R.style.Theme_Material3_Light_BottomSheetDialog);
         View view = getLayoutInflater().inflate(R.layout.sheet_detalle_cita, null);
         sheet.setContentView(view);
+        sheet.setOnShowListener(d -> {
+            android.view.View bottomSheet = sheet.getDelegate()
+                    .findViewById(com.google.android.material.R.id.design_bottom_sheet);
+            if (bottomSheet != null) {
+                com.google.android.material.bottomsheet.BottomSheetBehavior<android.view.View> behavior =
+                        com.google.android.material.bottomsheet.BottomSheetBehavior.from(bottomSheet);
+                bottomSheet.getLayoutParams().height =
+                        getResources().getDisplayMetrics().heightPixels;
+                behavior.setPeekHeight(getResources().getDisplayMetrics().heightPixels);
+                behavior.setState(com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED);
+                behavior.setSkipCollapsed(true);
+            }
+        });
 
         ((TextView) view.findViewById(R.id.tvCitaInicial)).setText(cita.inicial());
         ((TextView) view.findViewById(R.id.tvCitaCliente)).setText(cita.cliente);
@@ -1293,9 +1306,6 @@ public class AgendaActivity extends AppCompatActivity {
             int anio = Integer.parseInt(partes[2]);
             String fechaBD = String.format("%04d-%02d-%02d", anio, mes, dia);
 
-            btnGuardarCard.setEnabled(false);
-            btnGuardar.setText("Guardando...");
-
             final double precioFinal  = precioNum;
             final String nombreFinal  = nombre;
             final String servicioFinal= servicioSel[0];
@@ -1303,6 +1313,24 @@ public class AgendaActivity extends AppCompatActivity {
             final String notasFinal   = etNotas.getText().toString().trim();
             // clienteIdSel[0] puede ser null si escribió el nombre a mano
             final String clienteId    = clienteIdSel[0];
+
+            // ── Validar hora duplicada (solo Masaje, citas no canceladas) ──
+            if ("Masaje".equals(servicioFinal)) {
+                for (Cita c : todasLasCitas) {
+                    if ("cancelada".equals(c.estado)) continue;
+                    if (citaEditar != null && citaEditar.id != null
+                            && citaEditar.id.equals(c.id)) continue;
+                    if (c.fecha.equals(fechaSelStr[0]) && c.hora.equals(horaFinal)) {
+                        Toast.makeText(AgendaActivity.this,
+                                "⚠️ Ya hay una cita de masaje a las " + horaFinal + " ese día",
+                                Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                }
+            }
+
+            btnGuardarCard.setEnabled(false);
+            btnGuardar.setText("Guardando...");
 
             if (citaEditar != null && citaEditar.id != null) {
                 // EDITAR
@@ -1382,6 +1410,13 @@ public class AgendaActivity extends AppCompatActivity {
                             }
                         });
             }
+        });
+        sheet.setOnShowListener(d -> {
+            com.google.android.material.bottomsheet.BottomSheetBehavior<?> b =
+                    com.google.android.material.bottomsheet.BottomSheetBehavior.from(
+                            (android.view.View) sheet.findViewById(R.id.btnGuardarCita).getParent().getParent());
+            b.setState(com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED);
+            b.setSkipCollapsed(true);
         });
         sheet.show();
     }
@@ -1598,6 +1633,13 @@ public class AgendaActivity extends AppCompatActivity {
         });
         root.addView(btnOk);
         sheet.setContentView(root);
+        sheet.setOnShowListener(d -> {
+            com.google.android.material.bottomsheet.BottomSheetBehavior<?> beh =
+                    com.google.android.material.bottomsheet.BottomSheetBehavior.from(
+                            (android.view.View) root.getParent());
+            beh.setState(com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED);
+            beh.setSkipCollapsed(true);
+        });
         sheet.show();
     }
 

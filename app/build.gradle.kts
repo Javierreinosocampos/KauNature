@@ -39,7 +39,6 @@ dependencies {
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
-    implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.localbroadcastmanager:localbroadcastmanager:1.1.0")
 
     // ── Retrofit + OkHttp (Supabase REST) ────────────────────

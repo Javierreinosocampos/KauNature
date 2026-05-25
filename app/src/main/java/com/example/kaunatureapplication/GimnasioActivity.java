@@ -2189,9 +2189,32 @@ public class GimnasioActivity extends AppCompatActivity {
                         }
                     });
         });
-        root.addView(btnCrear);
+        // ── Botón fijo fuera del scroll ──────────────────────────────
+        LinearLayout contenedor = new LinearLayout(this);
+        contenedor.setOrientation(LinearLayout.VERTICAL);
+        contenedor.setBackgroundColor(WHITE);
+        int alturaSheet = (int)(getResources().getDisplayMetrics().heightPixels * 0.88f);
+        contenedor.setLayoutParams(new LinearLayout.LayoutParams(-1, alturaSheet));
 
-        sheet.setContentView(sv);
+        sv.setLayoutParams(new LinearLayout.LayoutParams(-1, 0, 1f));
+        contenedor.addView(sv);
+
+        LinearLayout.LayoutParams btnP = new LinearLayout.LayoutParams(-1, -2);
+        btnP.topMargin = dp(8);
+        btnP.bottomMargin = dp(16);
+        btnP.leftMargin = dp(16);
+        btnP.rightMargin = dp(16);
+        btnCrear.setLayoutParams(btnP);
+        contenedor.addView(btnCrear);
+
+        sheet.setContentView(contenedor);
+        sheet.setOnShowListener(d -> {
+            com.google.android.material.bottomsheet.BottomSheetBehavior<?> b =
+                    com.google.android.material.bottomsheet.BottomSheetBehavior.from(
+                            (android.view.View) contenedor.getParent());
+            b.setState(com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED);
+            b.setSkipCollapsed(true);
+        });
         sheet.show();
     }
 
@@ -2235,11 +2258,16 @@ public class GimnasioActivity extends AppCompatActivity {
         btnAP2.setGravity(Gravity.CENTER);
         aforoRow.addView(btnAP2);
 
-        btnAM2.setOnClickListener(v -> { if (aforoEdit[0] > 1) { aforoEdit[0]--; tvAforoGrande.setText(String.valueOf(aforoEdit[0])); } });
+        // El mínimo permitido es el número de personas ya apuntadas (no se puede dejar a nadie fuera)
+        int minimoAforo = Math.max(1, fl.ocupacion());
+        btnAM2.setOnClickListener(v -> { if (aforoEdit[0] > minimoAforo) { aforoEdit[0]--; tvAforoGrande.setText(String.valueOf(aforoEdit[0])); } });
         btnAP2.setOnClickListener(v -> { if (aforoEdit[0] < 100) { aforoEdit[0]++; tvAforoGrande.setText(String.valueOf(aforoEdit[0])); } });
 
         TextView tvInfo = new TextView(this);
-        tvInfo.setText("Actualmente: " + fl.ocupacion() + " personas apuntadas");
+        String infoTexto = fl.ocupacion() > 0
+                ? "Actualmente: " + fl.ocupacion() + " personas apuntadas (mínimo " + fl.ocupacion() + ")"
+                : "Actualmente: sin personas apuntadas";
+        tvInfo.setText(infoTexto);
         tvInfo.setTextSize(11f);
         tvInfo.setTextColor(TEXT_L);
         tvInfo.setGravity(Gravity.CENTER);
@@ -2462,6 +2490,13 @@ public class GimnasioActivity extends AppCompatActivity {
         root.addView(btnOk);
 
         sheet.setContentView(root);
+        sheet.setOnShowListener(d -> {
+            com.google.android.material.bottomsheet.BottomSheetBehavior<?> beh =
+                    com.google.android.material.bottomsheet.BottomSheetBehavior.from(
+                            (android.view.View) root.getParent());
+            beh.setState(com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED);
+            beh.setSkipCollapsed(true);
+        });
         sheet.show();
     }
 

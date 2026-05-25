@@ -692,6 +692,22 @@ public class MainActivity extends AppCompatActivity {
         btnTodas.setBackground(btnBg2);
         btnTodas.setClickable(true);
         cabecera.addView(btnTodas);
+
+        // ── Botón ELIMINAR TODAS ──────────────────────────────────────
+        TextView btnElimTodas = new TextView(this);
+        btnElimTodas.setText("Eliminar todas");
+        btnElimTodas.setTextSize(11f);
+        btnElimTodas.setTextColor(0xFFEF4444);
+        btnElimTodas.setTypeface(Typeface.DEFAULT_BOLD);
+        btnElimTodas.setPadding(dp(12), dp(8), dp(12), dp(8));
+        LinearLayout.LayoutParams elimP = new LinearLayout.LayoutParams(-2, -2);
+        elimP.setMarginStart(dp(8));
+        btnElimTodas.setLayoutParams(elimP);
+        GradientDrawable btnBgElim = new GradientDrawable();
+        btnBgElim.setColor(0xFFFFEEEE); btnBgElim.setCornerRadius(dp(10));
+        btnElimTodas.setBackground(btnBgElim);
+        btnElimTodas.setClickable(true);
+        cabecera.addView(btnElimTodas);
         raiz.addView(cabecera);
 
         View div = new View(this);
@@ -738,6 +754,13 @@ public class MainActivity extends AppCompatActivity {
 
         btnTodas.setOnClickListener(v -> {
             for (Notif n : notificaciones) { n.leida = true; marcarLeida(n.id); }
+            refreshBadge();
+            refresh.run();
+        });
+
+        btnElimTodas.setOnClickListener(v -> {
+            for (Notif n : new ArrayList<>(notificaciones)) { marcarEliminada(n.id); }
+            notificaciones.clear();
             refreshBadge();
             refresh.run();
         });

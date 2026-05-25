@@ -1799,7 +1799,6 @@ public class AgendaActivity extends AppCompatActivity {
     private void setupBotones() {
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
         findViewById(R.id.btnAddCita).setOnClickListener(v -> showNuevaCitaSheet(null));
-        findViewById(R.id.btnFiltroServicio).setOnClickListener(v -> showFiltroServicio());
     }
 
     private void setupBottomNav() {

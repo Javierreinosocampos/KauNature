@@ -1647,14 +1647,13 @@ public class GimnasioActivity extends AppCompatActivity {
     private void showApuntarSheet(FranjaLocal fl, String dia) {
         BottomSheetDialog sheet = mkSheet();
 
-        androidx.core.widget.NestedScrollView sv = new androidx.core.widget.NestedScrollView(this);
-        sv.setFillViewport(true);
-        sv.setNestedScrollingEnabled(true);
-        int alturaSheet = (int)(getResources().getDisplayMetrics().heightPixels * 0.92f);
-        sv.setLayoutParams(new android.view.ViewGroup.LayoutParams(-1, alturaSheet));
+        // Scroll View único para todo el contenido
+        androidx.core.widget.NestedScrollView scrollView = new androidx.core.widget.NestedScrollView(this);
+        scrollView.setFillViewport(false);  // Importante: false para que el contenido marque la altura
 
+        // Sheet container
         LinearLayout root = mkSheetRoot();
-        sv.addView(root);
+        scrollView.addView(root);
         root.addView(mkHandle());
 
         // Header compacto
@@ -1703,17 +1702,13 @@ public class GimnasioActivity extends AppCompatActivity {
         }
         root.addView(etBuscar);
 
-        // Lista de clientes — scroll independiente del sheet principal
-        androidx.core.widget.NestedScrollView svLista = new androidx.core.widget.NestedScrollView(this);
-        svLista.setNestedScrollingEnabled(true);
-        svLista.setFillViewport(true);
+        // Lista de clientes — ahora sin scroll anidado, se maneja con el scroll principal
         LinearLayout listaView = new LinearLayout(this);
         listaView.setOrientation(LinearLayout.VERTICAL);
-        svLista.addView(listaView);
-        LinearLayout.LayoutParams svListaP = new LinearLayout.LayoutParams(-1, dp(260));
-        svListaP.bottomMargin = dp(8);
-        svLista.setLayoutParams(svListaP);
-        root.addView(svLista);
+        LinearLayout.LayoutParams listaP = new LinearLayout.LayoutParams(-1, -2);
+        listaP.bottomMargin = dp(8);
+        listaView.setLayoutParams(listaP);
+        root.addView(listaView);
 
         // Separador o
         root.addView(buildOrSep());
@@ -1888,11 +1883,11 @@ public class GimnasioActivity extends AppCompatActivity {
         btnCerrar.setOnClickListener(v -> { sheet.dismiss(); renderContenido(); renderDias(); updateKpis(); });
         root.addView(btnCerrar);
 
-        sheet.setContentView(sv);
+        sheet.setContentView(scrollView);
         sheet.setOnShowListener(d -> {
             com.google.android.material.bottomsheet.BottomSheetBehavior<?> beh =
                     com.google.android.material.bottomsheet.BottomSheetBehavior.from(
-                            (android.view.View) sv.getParent());
+                            (android.view.View) scrollView.getParent());
             beh.setState(com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED);
             beh.setSkipCollapsed(true);
         });
@@ -2323,116 +2318,147 @@ public class GimnasioActivity extends AppCompatActivity {
     //  TIME PICKER
     // ════════════════════════════════════════════════════════════════
     private void showTimePicker(TextView display, String[] target) {
-
-        int iH = 9, iM = 0;
+        int initH = 9, initM = 0;
         try {
             String[] p = target[0].split(":");
-            iH = Integer.parseInt(p[0]);
-            iM = Integer.parseInt(p[1]);
+            initH = Math.max(0, Math.min(23, Integer.parseInt(p[0])));
+            initM = Math.max(0, Math.min(59, Integer.parseInt(p[1])));
         } catch (Exception ignored) {}
-
-        final int[] sH = {iH}, sM = {iM};
 
         BottomSheetDialog sheet = mkSheet();
         LinearLayout root = mkSheetRoot();
 
-        // 🔥 IMPORTANTE: contenido arriba
         root.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL);
-        root.setPadding(dp(16), dp(8), dp(16), dp(16));
+        root.setPadding(dp(24), dp(16), dp(24), dp(36));
 
         root.addView(mkHandle());
 
-        TextView tvTit = mkSheetTitle("Seleccionar hora");
-        tvTit.setGravity(Gravity.CENTER);
-        setMB(tvTit, 12);
-        root.addView(tvTit);
+        TextView tvTitle = new TextView(this);
+        tvTitle.setText("Seleccionar hora");
+        tvTitle.setTextSize(18f);
+        tvTitle.setTextColor(TEXT_D);
+        tvTitle.setTypeface(Typeface.DEFAULT_BOLD);
+        tvTitle.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams titleP = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        titleP.bottomMargin = dp(24);
+        tvTitle.setLayoutParams(titleP);
+        root.addView(tvTitle);
 
-        TextView tvDisp = new TextView(this);
-        tvDisp.setText(String.format("%02d:%02d", sH[0], sM[0]));
-        tvDisp.setTextSize(56f);
-        tvDisp.setTextColor(BLUE);
-        tvDisp.setTypeface(Typeface.DEFAULT_BOLD);
-        tvDisp.setGravity(Gravity.CENTER);
-        setMB(tvDisp, 16);
-        root.addView(tvDisp);
+        final int[] selH = {initH}, selM = {initM};
+        TextView tvDisplay = new TextView(this);
+        tvDisplay.setText(String.format("%02d:%02d", selH[0], selM[0]));
+        tvDisplay.setTextSize(56f);
+        tvDisplay.setTextColor(BLUE);
+        tvDisplay.setTypeface(Typeface.DEFAULT_BOLD);
+        tvDisplay.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams dispP = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        dispP.bottomMargin = dp(32);
+        tvDisplay.setLayoutParams(dispP);
+        root.addView(tvDisplay);
 
-        LinearLayout ctrlRow = new LinearLayout(this);
-        ctrlRow.setOrientation(LinearLayout.HORIZONTAL);
-        ctrlRow.setGravity(Gravity.CENTER);
-        setMB(ctrlRow, 12);
-        root.addView(ctrlRow);
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams rowP = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        rowP.bottomMargin = dp(32);
+        row.setLayoutParams(rowP);
 
-        // ── HORAS ─────────────────────────────────────────────
-        LinearLayout hBlk = mkTimeBlock("HORAS");
+        // ══════════════════════════════════════════════════════════════
+        // HORAS - NumberPicker (igual que AgendaActivity)
+        // ══════════════════════════════════════════════════════════════
+        LinearLayout horaBlock = new LinearLayout(this);
+        horaBlock.setOrientation(LinearLayout.VERTICAL);
+        horaBlock.setGravity(Gravity.CENTER);
+        horaBlock.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
 
-        TextView bHP = mkTimBtn("＋");
-        TextView tvHV = mkTimVal(String.format("%02d", sH[0]));
-        TextView bHM = mkTimBtn("－");
+        TextView lblH = new TextView(this);
+        lblH.setText("Horas");
+        lblH.setTextSize(11f);
+        lblH.setTextColor(TEXT_L);
+        lblH.setTypeface(Typeface.DEFAULT_BOLD);
+        lblH.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams lblHP = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        lblHP.bottomMargin = dp(10);
+        lblH.setLayoutParams(lblHP);
+        horaBlock.addView(lblH);
 
-        bHP.setOnClickListener(v -> {
-            sH[0] = (sH[0] + 1) % 24;
-            tvHV.setText(String.format("%02d", sH[0]));
-            tvDisp.setText(String.format("%02d:%02d", sH[0], sM[0]));
+        android.widget.NumberPicker npH = new android.widget.NumberPicker(this);
+        npH.setMinValue(0);
+        npH.setMaxValue(23);
+        npH.setValue(selH[0]);
+        npH.setWrapSelectorWheel(true);
+        String[] horasVals = new String[24];
+        for (int i = 0; i < 24; i++) horasVals[i] = String.format("%02d", i);
+        npH.setDisplayedValues(horasVals);
+        npH.setOnValueChangedListener((p, o, n) -> {
+            selH[0] = n;
+            tvDisplay.setText(String.format("%02d:%02d", selH[0], selM[0]));
         });
+        horaBlock.addView(npH);
+        row.addView(horaBlock);
 
-        bHM.setOnClickListener(v -> {
-            sH[0] = (sH[0] + 23) % 24;
-            tvHV.setText(String.format("%02d", sH[0]));
-            tvDisp.setText(String.format("%02d:%02d", sH[0], sM[0]));
-        });
-
-        hBlk.addView(bHP);
-        hBlk.addView(tvHV);
-        hBlk.addView(bHM);
-
-        ctrlRow.addView(hBlk);
-
-        // ── SEPARADOR ─────────────────────────────────────────
+        // Separador :
         TextView sep = new TextView(this);
         sep.setText(":");
-        sep.setTextSize(34f);
+        sep.setTextSize(40f);
         sep.setTextColor(BLUE);
         sep.setTypeface(Typeface.DEFAULT_BOLD);
         sep.setGravity(Gravity.CENTER);
-        sep.setPadding(dp(8), dp(16), dp(8), dp(0));
-        ctrlRow.addView(sep);
+        sep.setPadding(dp(8), dp(24), dp(8), 0);
+        row.addView(sep);
 
-        // ── MINUTOS ───────────────────────────────────────────
-        LinearLayout mBlk = mkTimeBlock("MINUTOS");
+        // ══════════════════════════════════════════════════════════════
+        // MINUTOS - NumberPicker (igual que AgendaActivity)
+        // ══════════════════════════════════════════════════════════════
+        LinearLayout minBlock = new LinearLayout(this);
+        minBlock.setOrientation(LinearLayout.VERTICAL);
+        minBlock.setGravity(Gravity.CENTER);
+        minBlock.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
 
-        TextView bMP = mkTimBtn("＋");
-        TextView tvMV = mkTimVal(String.format("%02d", sM[0]));
-        TextView bMM = mkTimBtn("－");
+        TextView lblM = new TextView(this);
+        lblM.setText("Minutos");
+        lblM.setTextSize(11f);
+        lblM.setTextColor(TEXT_L);
+        lblM.setTypeface(Typeface.DEFAULT_BOLD);
+        lblM.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams lblMP = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        lblMP.bottomMargin = dp(10);
+        lblM.setLayoutParams(lblMP);
+        minBlock.addView(lblM);
 
-        bMP.setOnClickListener(v -> {
-            sM[0] = (sM[0] + 5) % 60;
-            tvMV.setText(String.format("%02d", sM[0]));
-            tvDisp.setText(String.format("%02d:%02d", sH[0], sM[0]));
+        android.widget.NumberPicker npM = new android.widget.NumberPicker(this);
+        npM.setMinValue(0);
+        npM.setMaxValue(11);
+        npM.setValue(selM[0] / 5);
+        npM.setWrapSelectorWheel(true);
+        String[] minVals = new String[12];
+        for (int i = 0; i < 12; i++) minVals[i] = String.format("%02d", i * 5);
+        npM.setDisplayedValues(minVals);
+        npM.setOnValueChangedListener((p, o, n) -> {
+            selM[0] = n * 5;
+            tvDisplay.setText(String.format("%02d:%02d", selH[0], selM[0]));
         });
+        minBlock.addView(npM);
+        row.addView(minBlock);
 
-        bMM.setOnClickListener(v -> {
-            sM[0] = (sM[0] + 55) % 60;
-            tvMV.setText(String.format("%02d", sM[0]));
-            tvDisp.setText(String.format("%02d:%02d", sH[0], sM[0]));
-        });
+        root.addView(row);
 
-        mBlk.addView(bMP);
-        mBlk.addView(tvMV);
-        mBlk.addView(bMM);
-
-        ctrlRow.addView(mBlk);
-
-        // ── BOTÓN CONFIRMAR (SIEMPRE VISIBLE) ─────────────────
+        // ══════════════════════════════════════════════════════════════
+        // Botón CONFIRMAR
+        // ══════════════════════════════════════════════════════════════
         TextView btnOk = mkFullBtn("CONFIRMAR", BLUE);
-
-        setMB(btnOk, 8);
-
         btnOk.setOnClickListener(v -> {
-            target[0] = String.format("%02d:%02d", sH[0], sM[0]);
+            npH.clearFocus();
+            npM.clearFocus();
+            target[0] = String.format("%02d:%02d", selH[0], selM[0]);
             display.setText(target[0]);
             sheet.dismiss();
         });
-
         root.addView(btnOk);
 
         sheet.setContentView(root);

@@ -469,7 +469,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:letterSpacing="0.05"
-                                android:text="En gym ahora"
+                                android:text="En gym hoy"
                                 android:textColor="#9CA3AF"
                                 android:textSize="10sp"
                                 android:textStyle="bold" />

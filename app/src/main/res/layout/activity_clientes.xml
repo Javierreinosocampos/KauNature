@@ -207,7 +207,7 @@
                         android:id="@+id/filtroDeuda"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Con deuda"
+                        android:text="Pendiente"
                         android:textSize="12sp"
                         android:fontFamily="@font/outfit_bold"
                         android:paddingStart="16dp"

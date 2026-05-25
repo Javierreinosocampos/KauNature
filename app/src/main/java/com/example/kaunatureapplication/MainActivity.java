@@ -1164,7 +1164,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // ── Precio mensual ───────────────────────────────────────
-        lbl(form, "Cuota mensual (€)");
+        lbl(form, "Cuota (€)");
         LinearLayout rowPrecio = new LinearLayout(this);
         rowPrecio.setOrientation(LinearLayout.HORIZONTAL);
         rowPrecio.setGravity(android.view.Gravity.CENTER_VERTICAL);

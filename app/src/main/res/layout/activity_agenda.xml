@@ -72,21 +72,6 @@
                 </LinearLayout>
 
                 <!-- Filtro servicio -->
-                <androidx.cardview.widget.CardView
-                    android:id="@+id/btnFiltroServicio"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    app:cardCornerRadius="14dp"
-                    app:cardElevation="0dp"
-                    app:cardBackgroundColor="@color/blue_pale"
-                    android:layout_marginEnd="8dp">
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:text="🔽"
-                        android:textSize="16sp"
-                        android:gravity="center"/>
-                </androidx.cardview.widget.CardView>
 
                 <!-- Añadir cita -->
                 <androidx.cardview.widget.CardView

@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@drawable/shape_sheet_bg">
 
@@ -12,239 +12,294 @@
         android:layout_width="40dp"
         android:layout_height="4dp"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="12dp"
-        android:layout_marginBottom="4dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
         android:background="@drawable/shape_handle"/>
 
-    <!-- Título -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Nuevo cliente"
-        android:textSize="18sp"
-        android:textColor="@color/text_primary"
-        android:fontFamily="@font/outfit_bold"
-        android:paddingStart="20dp"
-        android:paddingEnd="20dp"
-        android:paddingTop="14dp"
-        android:paddingBottom="14dp"/>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/border"
-        android:layout_marginStart="20dp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginBottom="14dp"/>
-
-    <!-- Nombre -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Nombre *"
-        android:textSize="11sp"
-        android:textColor="@color/text_muted"
-        android:fontFamily="@font/outfit_bold"
-        android:paddingStart="20dp"
-        android:paddingBottom="4dp"/>
-
+    <!-- Header compacto -->
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="12dp"
-        app:cardCornerRadius="14dp"
-        app:cardElevation="1dp"
-        app:cardBackgroundColor="@color/white">
+        android:layout_marginBottom="8dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="3dp">
 
-        <EditText
-            android:id="@+id/etNuevoNombre"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Ej: Lucía"
-            android:textSize="13sp"
-            android:textColor="@color/text_primary"
-            android:textColorHint="@color/text_muted"
-            android:fontFamily="@font/outfit_regular"
-            android:background="@null"
-            android:padding="14dp"
-            android:inputType="textPersonName"
-            android:maxLines="1"/>
+            android:orientation="vertical"
+            android:background="@drawable/gradient_blue_primary"
+            android:padding="12dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="👤 Nuevo cliente"
+                android:textSize="18sp"
+                android:textColor="@color/white"
+                android:fontFamily="@font/outfit_bold"/>
+
+        </LinearLayout>
 
     </androidx.cardview.widget.CardView>
 
-    <!-- Apellidos -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Apellidos (opcional)"
-        android:textSize="11sp"
-        android:textColor="@color/text_muted"
-        android:fontFamily="@font/outfit_bold"
-        android:paddingStart="20dp"
-        android:paddingBottom="4dp"/>
-
-    <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="12dp"
-        app:cardCornerRadius="14dp"
-        app:cardElevation="1dp"
-        app:cardBackgroundColor="@color/white">
-
-        <EditText
-            android:id="@+id/etNuevoApellidos"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Ej: Martín García"
-            android:textSize="13sp"
-            android:textColor="@color/text_primary"
-            android:textColorHint="@color/text_muted"
-            android:fontFamily="@font/outfit_regular"
-            android:background="@null"
-            android:padding="14dp"
-            android:inputType="textPersonName"
-            android:maxLines="1"/>
-
-    </androidx.cardview.widget.CardView>
-
-    <!-- Teléfono -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Teléfono"
-        android:textSize="11sp"
-        android:textColor="@color/text_muted"
-        android:fontFamily="@font/outfit_bold"
-        android:paddingStart="20dp"
-        android:paddingBottom="4dp"/>
-
-    <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="12dp"
-        app:cardCornerRadius="14dp"
-        app:cardElevation="1dp"
-        app:cardBackgroundColor="@color/white">
-
-        <EditText
-            android:id="@+id/etNuevoTelefono"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="+34 600 000 000"
-            android:textSize="13sp"
-            android:textColor="@color/text_primary"
-            android:textColorHint="@color/text_muted"
-            android:fontFamily="@font/outfit_regular"
-            android:background="@null"
-            android:padding="14dp"
-            android:inputType="phone"
-            android:maxLines="1"/>
-
-    </androidx.cardview.widget.CardView>
-
-    <!-- Email -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Email"
-        android:textSize="11sp"
-        android:textColor="@color/text_muted"
-        android:fontFamily="@font/outfit_bold"
-        android:paddingStart="20dp"
-        android:paddingBottom="4dp"/>
-
-    <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="12dp"
-        app:cardCornerRadius="14dp"
-        app:cardElevation="1dp"
-        app:cardBackgroundColor="@color/white">
-
-        <EditText
-            android:id="@+id/etNuevoEmail"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="correo@ejemplo.com"
-            android:textSize="13sp"
-            android:textColor="@color/text_primary"
-            android:textColorHint="@color/text_muted"
-            android:fontFamily="@font/outfit_regular"
-            android:background="@null"
-            android:padding="14dp"
-            android:inputType="textEmailAddress"
-            android:maxLines="1"/>
-
-    </androidx.cardview.widget.CardView>
-
-    <!-- Notas -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Notas"
-        android:textSize="11sp"
-        android:textColor="@color/text_muted"
-        android:fontFamily="@font/outfit_bold"
-        android:paddingStart="20dp"
-        android:paddingBottom="4dp"/>
-
-    <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="20dp"
-        app:cardCornerRadius="14dp"
-        app:cardElevation="1dp"
-        app:cardBackgroundColor="@color/white">
-
-        <EditText
-            android:id="@+id/etNuevoNotas"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Alergias, preferencias, observaciones…"
-            android:textSize="13sp"
-            android:textColor="@color/text_primary"
-            android:textColorHint="@color/text_muted"
-            android:fontFamily="@font/outfit_regular"
-            android:background="@null"
-            android:padding="14dp"
-            android:inputType="textMultiLine"
-            android:minLines="3"
-            android:maxLines="5"
-            android:gravity="top"/>
-
-    </androidx.cardview.widget.CardView>
-
-    <!-- Botón guardar -->
+    <!-- Botón ARRIBA - SIEMPRE visible -->
     <androidx.cardview.widget.CardView
         android:id="@+id/btnGuardarCliente"
         android:layout_width="match_parent"
-        android:layout_height="54dp"
+        android:layout_height="48dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="24dp"
-        app:cardCornerRadius="16dp"
+        android:layout_marginBottom="12dp"
+        app:cardCornerRadius="14dp"
         app:cardElevation="4dp"
-        app:cardBackgroundColor="@color/accent_blue">
+        app:cardBackgroundColor="#0A66FF">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="Guardar cliente"
+            android:text="✅ Guardar cliente"
             android:textSize="14sp"
             android:textColor="@color/white"
             android:fontFamily="@font/outfit_bold"
             android:gravity="center"/>
 
     </androidx.cardview.widget.CardView>
+
+    <!-- Contenido scrollable -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="16dp">
+
+            <!-- Nombre -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="8dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="1dp"
+                app:cardBackgroundColor="@color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Nombre *"
+                        android:textSize="11sp"
+                        android:textColor="#0A66FF"
+                        android:fontFamily="@font/outfit_bold"
+                        android:layout_marginBottom="4dp"/>
+
+                    <EditText
+                        android:id="@+id/etNuevoNombre"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Ej: Lucía"
+                        android:textSize="15sp"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="#9CA3AF"
+                        android:fontFamily="@font/outfit_regular"
+                        android:background="@null"
+                        android:inputType="textCapWords"
+                        android:maxLines="1"/>
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- Apellidos -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="8dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="1dp"
+                app:cardBackgroundColor="@color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Apellidos"
+                        android:textSize="11sp"
+                        android:textColor="@color/text_muted"
+                        android:fontFamily="@font/outfit_bold"
+                        android:layout_marginBottom="4dp"/>
+
+                    <EditText
+                        android:id="@+id/etNuevoApellidos"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Ej: Martín"
+                        android:textSize="15sp"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="#9CA3AF"
+                        android:fontFamily="@font/outfit_regular"
+                        android:background="@null"
+                        android:inputType="textCapWords"
+                        android:maxLines="1"/>
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- Teléfono -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="8dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="1dp"
+                app:cardBackgroundColor="@color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="📞 Teléfono"
+                        android:textSize="11sp"
+                        android:textColor="@color/text_muted"
+                        android:fontFamily="@font/outfit_bold"
+                        android:layout_marginBottom="4dp"/>
+
+                    <EditText
+                        android:id="@+id/etNuevoTelefono"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="600 000 000"
+                        android:textSize="15sp"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="#9CA3AF"
+                        android:fontFamily="@font/outfit_regular"
+                        android:background="@null"
+                        android:inputType="phone"
+                        android:maxLines="1"/>
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- Email -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="8dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="1dp"
+                app:cardBackgroundColor="@color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="✉️ Email"
+                        android:textSize="11sp"
+                        android:textColor="@color/text_muted"
+                        android:fontFamily="@font/outfit_bold"
+                        android:layout_marginBottom="4dp"/>
+
+                    <EditText
+                        android:id="@+id/etNuevoEmail"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="correo@ejemplo.com"
+                        android:textSize="15sp"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="#9CA3AF"
+                        android:fontFamily="@font/outfit_regular"
+                        android:background="@null"
+                        android:inputType="textEmailAddress"
+                        android:maxLines="1"/>
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- Notas -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="1dp"
+                app:cardBackgroundColor="@color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="📝 Notas"
+                        android:textSize="11sp"
+                        android:textColor="@color/text_muted"
+                        android:fontFamily="@font/outfit_bold"
+                        android:layout_marginBottom="4dp"/>
+
+                    <EditText
+                        android:id="@+id/etNuevoNotas"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Alergias, preferencias…"
+                        android:textSize="14sp"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="#9CA3AF"
+                        android:fontFamily="@font/outfit_regular"
+                        android:background="@null"
+                        android:inputType="textMultiLine|textCapSentences"
+                        android:minLines="2"
+                        android:maxLines="2"
+                        android:gravity="top"
+                        android:scrollbars="vertical"/>
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
 
 </LinearLayout>

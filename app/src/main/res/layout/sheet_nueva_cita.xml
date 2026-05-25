@@ -1,264 +1,421 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/shape_sheet_bg">
 
-    <LinearLayout
+    <!-- Handle -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/shape_handle"/>
+
+    <!-- Header con gradiente AZUL -->
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:background="@drawable/shape_sheet_bg">
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="20dp"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="4dp">
 
-        <View
-            android:layout_width="40dp"
-            android:layout_height="4dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="4dp"
-            android:background="@drawable/shape_handle"/>
-
-        <TextView
-            android:id="@+id/tvNuevaCitaTitulo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Nueva cita"
-            android:textSize="18sp"
-            android:textColor="@color/text_primary"
-            android:fontFamily="@font/outfit_bold"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
-            android:paddingTop="14dp"
-            android:paddingBottom="14dp"/>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/border"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp"
-            android:layout_marginBottom="14dp"/>
-
-        <!-- Cliente -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Cliente *"
-            android:textSize="11sp"
-            android:textColor="@color/text_muted"
-            android:fontFamily="@font/outfit_bold"
-            android:paddingStart="20dp"
-            android:paddingBottom="4dp"/>
-
-        <androidx.cardview.widget.CardView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="12dp"
-            app:cardCornerRadius="14dp"
-            app:cardElevation="1dp"
-            app:cardBackgroundColor="@color/white">
-            <EditText
-                android:id="@+id/etCitaCliente"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Nombre del cliente"
-                android:textSize="13sp"
-                android:textColor="@color/text_primary"
-                android:textColorHint="@color/text_muted"
-                android:fontFamily="@font/outfit_regular"
-                android:background="@null"
-                android:padding="14dp"
-                android:inputType="textPersonName"
-                android:maxLines="1"/>
-        </androidx.cardview.widget.CardView>
+            android:orientation="vertical"
+            android:background="@drawable/gradient_blue_primary"
+            android:padding="20dp">
 
-        <!-- Servicio -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Servicio *"
-            android:textSize="11sp"
-            android:textColor="@color/text_muted"
-            android:fontFamily="@font/outfit_bold"
-            android:paddingStart="20dp"
-            android:paddingBottom="4dp"/>
-
-        <!-- Chips de servicio -->
-        <HorizontalScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:scrollbars="none"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="12dp">
-
-            <LinearLayout
-                android:id="@+id/layoutServicios"
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"/>
+                android:text="NUEVA CITA"
+                android:textSize="10sp"
+                android:textColor="#99CCFF"
+                android:fontFamily="@font/outfit_bold"
+                android:letterSpacing="0.15"/>
 
-        </HorizontalScrollView>
-
-        <!-- Fecha -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fecha *"
-            android:textSize="11sp"
-            android:textColor="@color/text_muted"
-            android:fontFamily="@font/outfit_bold"
-            android:paddingStart="20dp"
-            android:paddingBottom="4dp"/>
-
-        <androidx.cardview.widget.CardView
-            android:id="@+id/cardFecha"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="12dp"
-            app:cardCornerRadius="14dp"
-            app:cardElevation="1dp"
-            app:cardBackgroundColor="@color/white">
             <TextView
-                android:id="@+id/tvCitaFecha"
-                android:layout_width="match_parent"
+                android:id="@+id/tvNuevaCitaTitulo"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="📅 Seleccionar fecha"
-                android:textSize="13sp"
-                android:textColor="@color/text_muted"
-                android:fontFamily="@font/outfit_regular"
-                android:padding="14dp"/>
-        </androidx.cardview.widget.CardView>
-
-        <!-- Hora -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hora *"
-            android:textSize="11sp"
-            android:textColor="@color/text_muted"
-            android:fontFamily="@font/outfit_bold"
-            android:paddingStart="20dp"
-            android:paddingBottom="4dp"/>
-
-        <androidx.cardview.widget.CardView
-            android:id="@+id/cardHora"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="12dp"
-            app:cardCornerRadius="14dp"
-            app:cardElevation="1dp"
-            app:cardBackgroundColor="@color/white">
-            <TextView
-                android:id="@+id/tvCitaHora"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="🕐 Seleccionar hora"
-                android:textSize="13sp"
-                android:textColor="@color/text_muted"
-                android:fontFamily="@font/outfit_regular"
-                android:padding="14dp"/>
-        </androidx.cardview.widget.CardView>
-
-        <!-- Precio -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Precio (€)"
-            android:textSize="11sp"
-            android:textColor="@color/text_muted"
-            android:fontFamily="@font/outfit_bold"
-            android:paddingStart="20dp"
-            android:paddingBottom="4dp"/>
-
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="12dp"
-            app:cardCornerRadius="14dp"
-            app:cardElevation="1dp"
-            app:cardBackgroundColor="@color/white">
-            <EditText
-                android:id="@+id/etCitaPrecio"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Ej: 35"
-                android:textSize="13sp"
-                android:textColor="@color/text_primary"
-                android:textColorHint="@color/text_muted"
-                android:fontFamily="@font/outfit_regular"
-                android:background="@null"
-                android:padding="14dp"
-                android:inputType="numberDecimal"
-                android:maxLines="1"/>
-        </androidx.cardview.widget.CardView>
-
-        <!-- Notas -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Notas"
-            android:textSize="11sp"
-            android:textColor="@color/text_muted"
-            android:fontFamily="@font/outfit_bold"
-            android:paddingStart="20dp"
-            android:paddingBottom="4dp"/>
-
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="20dp"
-            app:cardCornerRadius="14dp"
-            app:cardElevation="1dp"
-            app:cardBackgroundColor="@color/white">
-            <EditText
-                android:id="@+id/etCitaNotas"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Observaciones, preferencias…"
-                android:textSize="13sp"
-                android:textColor="@color/text_primary"
-                android:textColorHint="@color/text_muted"
-                android:fontFamily="@font/outfit_regular"
-                android:background="@null"
-                android:padding="14dp"
-                android:inputType="textMultiLine"
-                android:minLines="3"
-                android:maxLines="5"
-                android:gravity="top"/>
-        </androidx.cardview.widget.CardView>
-
-        <!-- Botón guardar -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/btnGuardarCita"
-            android:layout_width="match_parent"
-            android:layout_height="54dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="24dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="4dp"
-            app:cardBackgroundColor="@color/accent_blue">
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:text="Guardar cita"
-                android:textSize="14sp"
+                android:text="📅 Agendar servicio"
+                android:textSize="24sp"
                 android:textColor="@color/white"
                 android:fontFamily="@font/outfit_bold"
-                android:gravity="center"/>
-        </androidx.cardview.widget.CardView>
+                android:layout_marginTop="4dp"/>
 
-    </LinearLayout>
-</ScrollView>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Registra una nueva cita con el cliente"
+                android:textSize="12sp"
+                android:textColor="#CCDDFF"
+                android:fontFamily="@font/outfit_regular"
+                android:layout_marginTop="6dp"/>
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+    <!-- Botón guardar ARRIBA -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/btnGuardarCita"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="12dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="4dp"
+        app:cardBackgroundColor="#0A66FF">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="✅ Guardar cita"
+            android:textSize="15sp"
+            android:textColor="@color/white"
+            android:fontFamily="@font/outfit_bold"
+            android:gravity="center"/>
+
+    </androidx.cardview.widget.CardView>
+
+    <!-- Contenido scrollable -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="32dp">
+
+            <!-- Cliente -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="CLIENTE"
+                android:textSize="11sp"
+                android:textColor="@color/text_muted"
+                android:fontFamily="@font/outfit_bold"
+                android:letterSpacing="0.1"
+                android:paddingStart="20dp"
+                android:paddingBottom="10dp"/>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="👤 Cliente *"
+                        android:textSize="11sp"
+                        android:textColor="#0A66FF"
+                        android:fontFamily="@font/outfit_bold"
+                        android:layout_marginBottom="8dp"/>
+
+                    <EditText
+                        android:id="@+id/etCitaCliente"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Buscar o escribir nombre…"
+                        android:textSize="16sp"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="#9CA3AF"
+                        android:fontFamily="@font/outfit_regular"
+                        android:background="@null"
+                        android:inputType="textCapWords"
+                        android:maxLines="1"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="4dp"/>
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- Servicio -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SERVICIO"
+                android:textSize="11sp"
+                android:textColor="@color/text_muted"
+                android:fontFamily="@font/outfit_bold"
+                android:letterSpacing="0.1"
+                android:paddingStart="20dp"
+                android:paddingBottom="10dp"/>
+
+            <!-- Chips de servicio -->
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="16dp"
+                android:paddingVertical="4dp">
+
+                <LinearLayout
+                    android:id="@+id/layoutServicios"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"/>
+
+            </HorizontalScrollView>
+
+            <!-- Fecha y Hora en fila horizontal -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="FECHA Y HORA"
+                android:textSize="11sp"
+                android:textColor="@color/text_muted"
+                android:fontFamily="@font/outfit_bold"
+                android:letterSpacing="0.1"
+                android:paddingStart="20dp"
+                android:paddingBottom="10dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="16dp">
+
+                <!-- Fecha -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/cardFecha"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp"
+                    app:cardBackgroundColor="@color/white">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="14dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="📅 Fecha"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_muted"
+                            android:fontFamily="@font/outfit_bold"
+                            android:layout_marginBottom="6dp"/>
+
+                        <TextView
+                            android:id="@+id/tvCitaFecha"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="25/05/2026"
+                            android:textSize="15sp"
+                            android:textColor="@color/text_primary"
+                            android:fontFamily="@font/outfit_regular"
+                            android:paddingTop="2dp"
+                            android:paddingBottom="2dp"/>
+
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
+
+                <!-- Hora -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/cardHora"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp"
+                    app:cardBackgroundColor="@color/white">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="14dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="🕐 Hora"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_muted"
+                            android:fontFamily="@font/outfit_bold"
+                            android:layout_marginBottom="6dp"/>
+
+                        <TextView
+                            android:id="@+id/tvCitaHora"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="10:00"
+                            android:textSize="15sp"
+                            android:textColor="@color/text_primary"
+                            android:fontFamily="@font/outfit_regular"
+                            android:paddingTop="2dp"
+                            android:paddingBottom="2dp"/>
+
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
+
+            </LinearLayout>
+
+            <!-- Precio -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="PRECIO"
+                android:textSize="11sp"
+                android:textColor="@color/text_muted"
+                android:fontFamily="@font/outfit_bold"
+                android:letterSpacing="0.1"
+                android:paddingStart="20dp"
+                android:paddingBottom="10dp"/>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="💰 Precio del servicio"
+                        android:textSize="11sp"
+                        android:textColor="@color/text_muted"
+                        android:fontFamily="@font/outfit_bold"
+                        android:layout_marginBottom="8dp"/>
+
+                    <EditText
+                        android:id="@+id/etCitaPrecio"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="50.00"
+                        android:textSize="18sp"
+                        android:textColor="#0A66FF"
+                        android:textColorHint="#9CA3AF"
+                        android:fontFamily="@font/outfit_bold"
+                        android:background="@null"
+                        android:inputType="numberDecimal"
+                        android:maxLines="1"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="4dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="euros (€)"
+                        android:textSize="11sp"
+                        android:textColor="@color/text_muted"
+                        android:fontFamily="@font/outfit_regular"
+                        android:layout_marginTop="4dp"/>
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- Notas -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="NOTAS (OPCIONAL)"
+                android:textSize="11sp"
+                android:textColor="@color/text_muted"
+                android:fontFamily="@font/outfit_bold"
+                android:letterSpacing="0.1"
+                android:paddingStart="20dp"
+                android:paddingBottom="10dp"/>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="20dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="📝 Observaciones"
+                        android:textSize="11sp"
+                        android:textColor="@color/text_muted"
+                        android:fontFamily="@font/outfit_bold"
+                        android:layout_marginBottom="8dp"/>
+
+                    <EditText
+                        android:id="@+id/etCitaNotas"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Notas adicionales sobre la cita…"
+                        android:textSize="14sp"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="#9CA3AF"
+                        android:fontFamily="@font/outfit_regular"
+                        android:background="@null"
+                        android:inputType="textMultiLine|textCapSentences"
+                        android:minLines="2"
+                        android:maxLines="4"
+                        android:gravity="top"
+                        android:paddingTop="4dp"
+                        android:scrollbars="vertical"/>
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+</LinearLayout>

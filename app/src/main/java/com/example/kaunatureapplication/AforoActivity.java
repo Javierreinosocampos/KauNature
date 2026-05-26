@@ -734,15 +734,16 @@ public class AforoActivity extends AppCompatActivity {
             btnOk.setEnabled(false);
             btnOk.setText("Guardando...");
 
-            // clienteId null → nombre libre (sin cuenta en la app)
+            // CORRECCIÓN: 4 parámetros (fecha, franjaId, clienteId, clienteNombre)
             SupabaseRepository.get().apuntarPersona(
                     fechaHoy(), fl.modelo.id, null, nombre,
                     new SupabaseRepository.Callback<Void>() {
-                        @Override public void onSuccess(Void data) {
+                        @Override
+                        public void onSuccess(Void data) {
                             // Añadir localmente para no recargar toda la lista
                             AsistenciaModel nueva = new AsistenciaModel();
                             nueva.clienteNombre = nombre;
-                            nueva.fecha         = fechaHoy();
+                            nueva.fecha = fechaHoy();
                             nueva.horarioSemanalId = fl.modelo.id;
                             fl.asistentes.add(nueva);
 
@@ -757,7 +758,9 @@ public class AforoActivity extends AppCompatActivity {
                                         Toast.LENGTH_SHORT).show();
                             });
                         }
-                        @Override public void onError(String e) {
+
+                        @Override
+                        public void onError(String e) {
                             runOnUiThread(() -> {
                                 btnOk.setEnabled(true);
                                 btnOk.setText("Añadir persona");

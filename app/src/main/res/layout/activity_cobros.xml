@@ -45,7 +45,7 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:text="←"
+                            android:text="&#8592;"
                             android:textSize="20sp"
                             android:textColor="@color/accent_blue"
                             android:fontFamily="@font/outfit_bold"
@@ -85,13 +85,57 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:text="＋"
-                            android:textSize="20sp"
+                            android:text="+"
+                            android:textSize="22sp"
                             android:textColor="@color/white"
                             android:fontFamily="@font/outfit_bold"
                             android:gravity="center"/>
                     </androidx.cardview.widget.CardView>
 
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- ── BUSCADOR POR NOMBRE ── -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/white">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp">
+                    <EditText
+                        android:id="@+id/etBuscarNombre"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:hint="Buscar por nombre..."
+                        android:textSize="13sp"
+                        android:textColor="@color/text_primary"
+                        android:fontFamily="@font/outfit_regular"
+                        android:background="@null"
+                        android:inputType="textPersonName"
+                        android:imeOptions="actionSearch"
+                        android:maxLines="1"/>
+                    <TextView
+                        android:id="@+id/btnLimpiarBusqueda"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="&#10005;"
+                        android:textSize="14sp"
+                        android:textColor="@color/text_muted"
+                        android:fontFamily="@font/outfit_bold"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="4dp"
+                        android:visibility="gone"
+                        android:clickable="true"
+                        android:focusable="true"/>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
@@ -110,20 +154,61 @@
                     android:orientation="vertical"
                     android:padding="20dp">
 
-                    <TextView
-                        android:id="@+id/tvMesLabel"
-                        android:layout_width="wrap_content"
+                    <!-- Navegacion de mes -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Marzo 2026"
-                        android:textSize="11sp"
-                        android:textColor="#AACCFF"
-                        android:fontFamily="@font/outfit_regular"/>
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="2dp">
+
+                        <TextView
+                            android:id="@+id/btnMesAnterior"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:text="&#8249;"
+                            android:textSize="20sp"
+                            android:textColor="#FFFFFF"
+                            android:fontFamily="@font/outfit_bold"
+                            android:gravity="center"
+                            android:background="@drawable/shape_chip_blue"
+                            android:backgroundTint="#1A3A7A"
+                            android:clickable="true"
+                            android:focusable="true"/>
+
+                        <TextView
+                            android:id="@+id/tvMesLabel"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Mayo 2026"
+                            android:textSize="12sp"
+                            android:textColor="#AACCFF"
+                            android:fontFamily="@font/outfit_bold"
+                            android:gravity="center"/>
+
+                        <TextView
+                            android:id="@+id/btnMesSiguiente"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:text="&#8250;"
+                            android:textSize="20sp"
+                            android:textColor="#FFFFFF"
+                            android:fontFamily="@font/outfit_bold"
+                            android:gravity="center"
+                            android:background="@drawable/shape_chip_blue"
+                            android:backgroundTint="#1A3A7A"
+                            android:alpha="0.35"
+                            android:clickable="false"
+                            android:focusable="false"/>
+
+                    </LinearLayout>
 
                     <TextView
                         android:id="@+id/tvTotalMes"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="0,00€"
+                        android:text="0,00&#8364;"
                         android:textSize="34sp"
                         android:textColor="@color/white"
                         android:fontFamily="@font/outfit_bold"
@@ -146,17 +231,16 @@
                                 android:id="@+id/tvKpiEfectivo"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="0,00€"
+                                android:text="0,00&#8364;"
                                 android:textSize="14sp"
                                 android:textColor="@color/white"
                                 android:fontFamily="@font/outfit_bold"
                                 android:maxLines="1"
-                                android:adjustViewBounds="true"
                                 android:ellipsize="none"/>
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="💵 Efectivo"
+                                android:text="Efectivo"
                                 android:textSize="10sp"
                                 android:textColor="#AACCFF"
                                 android:fontFamily="@font/outfit_regular"
@@ -172,17 +256,16 @@
                                 android:id="@+id/tvKpiTarjeta"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="0,00€"
+                                android:text="0,00&#8364;"
                                 android:textSize="14sp"
                                 android:textColor="@color/white"
                                 android:fontFamily="@font/outfit_bold"
                                 android:maxLines="1"
-                                android:adjustViewBounds="true"
                                 android:ellipsize="none"/>
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="💳 Tarjeta"
+                                android:text="Tarjeta"
                                 android:textSize="10sp"
                                 android:textColor="#AACCFF"
                                 android:fontFamily="@font/outfit_regular"
@@ -198,17 +281,16 @@
                                 android:id="@+id/tvKpiBizumTransfer"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="0,00€"
+                                android:text="0,00&#8364;"
                                 android:textSize="14sp"
                                 android:textColor="@color/white"
                                 android:fontFamily="@font/outfit_bold"
                                 android:maxLines="1"
-                                android:adjustViewBounds="true"
                                 android:ellipsize="none"/>
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="📱 Bizum/Trans."
+                                android:text="Bizum/Trans."
                                 android:textSize="10sp"
                                 android:textColor="#AACCFF"
                                 android:fontFamily="@font/outfit_regular"
@@ -260,7 +342,7 @@
 
                     <TextView android:id="@+id/filtroEfectivo"
                         android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="💵 Efectivo" android:textSize="12sp" android:fontFamily="@font/outfit_bold"
+                        android:text="Efectivo" android:textSize="12sp" android:fontFamily="@font/outfit_bold"
                         android:paddingStart="16dp" android:paddingEnd="16dp"
                         android:paddingTop="8dp" android:paddingBottom="8dp"
                         android:layout_marginEnd="8dp"
@@ -269,7 +351,7 @@
 
                     <TextView android:id="@+id/filtroTarjeta"
                         android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="💳 Tarjeta" android:textSize="12sp" android:fontFamily="@font/outfit_bold"
+                        android:text="Tarjeta" android:textSize="12sp" android:fontFamily="@font/outfit_bold"
                         android:paddingStart="16dp" android:paddingEnd="16dp"
                         android:paddingTop="8dp" android:paddingBottom="8dp"
                         android:layout_marginEnd="8dp"
@@ -278,7 +360,7 @@
 
                     <TextView android:id="@+id/filtroBizum"
                         android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="📱 Bizum" android:textSize="12sp" android:fontFamily="@font/outfit_bold"
+                        android:text="Bizum" android:textSize="12sp" android:fontFamily="@font/outfit_bold"
                         android:paddingStart="16dp" android:paddingEnd="16dp"
                         android:paddingTop="8dp" android:paddingBottom="8dp"
                         android:layout_marginEnd="8dp"
@@ -287,7 +369,7 @@
 
                     <TextView android:id="@+id/filtroTransferencia"
                         android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="🏦 Transferencia" android:textSize="12sp" android:fontFamily="@font/outfit_bold"
+                        android:text="Transferencia" android:textSize="12sp" android:fontFamily="@font/outfit_bold"
                         android:paddingStart="16dp" android:paddingEnd="16dp"
                         android:paddingTop="8dp" android:paddingBottom="8dp"
                         android:background="@drawable/shape_filter_inactive"
@@ -306,7 +388,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="⚠️ Pendientes de cobro"
+                    android:text="Pendientes de cobro"
                     android:textSize="13sp"
                     android:textColor="@color/text_primary"
                     android:fontFamily="@font/outfit_bold"
@@ -331,7 +413,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="✅ Historial de cobros"
+                    android:text="Historial de cobros"
                     android:textSize="13sp"
                     android:textColor="@color/text_primary"
                     android:fontFamily="@font/outfit_bold"
@@ -345,7 +427,7 @@
 
             </LinearLayout>
 
-            <!-- Estado vacío -->
+            <!-- Estado vacio -->
             <LinearLayout
                 android:id="@+id/layoutVacio"
                 android:layout_width="match_parent"
@@ -357,13 +439,11 @@
                 android:visibility="gone">
 
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="💰" android:textSize="48sp" android:gravity="center"/>
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                     android:text="Sin cobros" android:textSize="16sp"
                     android:textColor="@color/text_primary" android:fontFamily="@font/outfit_bold"
                     android:gravity="center" android:layout_marginTop="12dp"/>
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="Pulsa ＋ para registrar un cobro"
+                    android:text="Pulsa + para registrar un cobro"
                     android:textSize="12sp" android:textColor="@color/text_muted"
                     android:fontFamily="@font/outfit_regular"
                     android:gravity="center" android:layout_marginTop="4dp"/>
@@ -373,8 +453,7 @@
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- ── BOTTOM NAV (Inicio · Clientes · [COBROS] · Agenda · Ajustes) ── -->
-    <!-- ══ BOTTOM NAV: Inicio · Clientes · [💪Gimnasio] · Agenda · Cobros ══ -->
+    <!-- BOTTOM NAV -->
     <LinearLayout
         android:id="@+id/bottomNavCustom"
         android:layout_width="match_parent"
@@ -387,7 +466,6 @@
         android:paddingTop="6dp"
         android:paddingBottom="8dp">
 
-        <!-- INICIO -->
         <LinearLayout
             android:id="@+id/nav_home"
             android:layout_width="0dp"
@@ -400,7 +478,7 @@
                 android:id="@+id/navIconHome"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="🏠"
+                android:text="&#127968;"
                 android:textSize="17sp"
                 android:gravity="center"/>
             <TextView
@@ -413,7 +491,6 @@
                 android:gravity="center"/>
         </LinearLayout>
 
-        <!-- CLIENTES -->
         <LinearLayout
             android:id="@+id/nav_clientes"
             android:layout_width="0dp"
@@ -426,7 +503,7 @@
                 android:id="@+id/navIconClientes"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="👥"
+                android:text="&#128101;"
                 android:textSize="17sp"
                 android:gravity="center"/>
             <TextView
@@ -438,7 +515,7 @@
                 android:textColor="@color/text_muted"
                 android:gravity="center"/>
         </LinearLayout>
-        <!-- GIMNASIO -->
+
         <LinearLayout
             android:id="@+id/nav_gimnasio"
             android:layout_width="0dp"
@@ -451,7 +528,7 @@
                 android:id="@+id/navIconGimnasio"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="💪"
+                android:text="&#128170;"
                 android:textSize="17sp"
                 android:gravity="center"/>
             <TextView
@@ -464,7 +541,6 @@
                 android:gravity="center"/>
         </LinearLayout>
 
-        <!-- AGENDA -->
         <LinearLayout
             android:id="@+id/nav_agenda"
             android:layout_width="0dp"
@@ -477,7 +553,7 @@
                 android:id="@+id/navIconAgenda"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="📅"
+                android:text="&#128197;"
                 android:textSize="17sp"
                 android:gravity="center"/>
             <TextView
@@ -490,7 +566,6 @@
                 android:gravity="center"/>
         </LinearLayout>
 
-        <!-- COBROS -->
         <LinearLayout
             android:id="@+id/nav_cobros"
             android:layout_width="0dp"
@@ -503,7 +578,7 @@
                 android:id="@+id/navIconCobros"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="💰"
+                android:text="&#128176;"
                 android:textSize="17sp"
                 android:gravity="center"/>
             <TextView
@@ -517,6 +592,5 @@
         </LinearLayout>
 
     </LinearLayout>
-
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

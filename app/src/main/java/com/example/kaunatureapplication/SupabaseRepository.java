@@ -188,7 +188,6 @@ public class SupabaseRepository {
                 });
     }
 
-    /** Obtiene todos los cobros asociados a una cita concreta */
     public void getCobrosPorCita(String citaId, Callback<List<CobroModel>> cb) {
         api.getCobrosPorCita("eq." + citaId)
                 .enqueue(new retrofit2.Callback<List<CobroModel>>() {
@@ -227,7 +226,6 @@ public class SupabaseRepository {
                     if (r.body() != null && !r.body().isEmpty()) {
                         cb.onSuccess(r.body().get(0));
                     } else {
-                        // Dummy con datos reales para que la UI muestre bien el importe
                         CobroModel dummy = new CobroModel();
                         dummy.citaId         = citaId;
                         dummy.clienteNombre = clienteNombre;
@@ -271,8 +269,6 @@ public class SupabaseRepository {
         });
     }
 
-
-
     // ════════════════════════════════════════════════════════════════
     //  SINCRONIZACIÓN BIDIRECCIONAL CITAS ↔ COBROS
     // ════════════════════════════════════════════════════════════════
@@ -284,7 +280,6 @@ public class SupabaseRepository {
     public void marcarCobroCobradoConSync(String cobroId, String citaId, Callback<Void> cb) {
         android.util.Log.d("SYNC", "marcarCobroCobrado: cobro=" + cobroId + ", cita=" + citaId);
 
-        // 1. Actualizar cobro
         Map<String, Object> body = new HashMap<>();
         body.put("estado", "cobrado");
 
@@ -294,7 +289,6 @@ public class SupabaseRepository {
                         if (r.isSuccessful()) {
                             android.util.Log.d("SYNC", "✓ Cobro actualizado a cobrado");
 
-                            // 2. Si tiene cita asociada, actualizarla también
                             if (citaId != null && !citaId.isEmpty()) {
                                 Map<String, Object> citaBody = new HashMap<>();
                                 citaBody.put("estado", "cobrada");
@@ -316,7 +310,6 @@ public class SupabaseRepository {
                                             }
                                         });
                             } else {
-                                // No tiene cita asociada, solo actualizamos cobro
                                 android.util.Log.d("SYNC", "✓ Cobro sin cita asociada");
                                 cb.onSuccess(null);
                             }
@@ -337,7 +330,6 @@ public class SupabaseRepository {
     public void marcarCobroPendienteConSync(String cobroId, String citaId, Callback<Void> cb) {
         android.util.Log.d("SYNC", "marcarCobroPendiente: cobro=" + cobroId + ", cita=" + citaId);
 
-        // 1. Actualizar cobro
         Map<String, Object> body = new HashMap<>();
         body.put("estado", "pendiente");
 
@@ -347,7 +339,6 @@ public class SupabaseRepository {
                         if (r.isSuccessful()) {
                             android.util.Log.d("SYNC", "✓ Cobro actualizado a pendiente");
 
-                            // 2. Si tiene cita asociada, actualizarla también
                             if (citaId != null && !citaId.isEmpty()) {
                                 Map<String, Object> citaBody = new HashMap<>();
                                 citaBody.put("estado", "confirmada");
@@ -383,13 +374,57 @@ public class SupabaseRepository {
     }
 
     /**
+     * ELIMINA un cobro y CANCELA la cita asociada (si existe)
+     * FLUJO: Usuario elimina cobro → Cita pasa a "cancelada"
+     */
+    public void eliminarCobroConSync(String cobroId, String citaId, Callback<Void> cb) {
+        android.util.Log.d("SYNC", "eliminarCobro: cobro=" + cobroId + ", cita=" + citaId);
+
+        api.eliminarCobro("eq." + cobroId).enqueue(new retrofit2.Callback<Void>() {
+            public void onResponse(Call<Void> call, Response<Void> r) {
+                if (r.isSuccessful()) {
+                    android.util.Log.d("SYNC", "✓ Cobro eliminado");
+
+                    if (citaId != null && !citaId.isEmpty()) {
+                        Map<String, Object> citaBody = new HashMap<>();
+                        citaBody.put("estado", "cancelada");
+
+                        api.actualizarCita("eq." + citaId, citaBody)
+                                .enqueue(new retrofit2.Callback<List<CitaModel>>() {
+                                    public void onResponse(Call<List<CitaModel>> call2, Response<List<CitaModel>> r2) {
+                                        if (r2.isSuccessful()) {
+                                            android.util.Log.d("SYNC", "✓ Cita cancelada");
+                                            cb.onSuccess(null);
+                                        } else {
+                                            android.util.Log.w("SYNC", "⚠ Error al cancelar cita: " + r2.code());
+                                            cb.onError("Cobro eliminado pero error al cancelar cita");
+                                        }
+                                    }
+                                    public void onFailure(Call<List<CitaModel>> call2, Throwable t) {
+                                        android.util.Log.w("SYNC", "⚠ Error al cancelar cita: " + t.getMessage());
+                                        cb.onError("Cobro eliminado pero error al cancelar cita");
+                                    }
+                                });
+                    } else {
+                        android.util.Log.d("SYNC", "✓ Cobro sin cita asociada");
+                        cb.onSuccess(null);
+                    }
+                } else {
+                    cb.onError("Error " + r.code());
+                }
+            }
+            public void onFailure(Call<Void> call, Throwable t) {
+                cb.onError(t.getMessage());
+            }
+        });
+    }
+
+    /**
      * Marca una cita como COBRADA y sincroniza el cobro asociado (si existe)
-     * FLUJO: Usuario marca cita como cobrada → Cobro pasa a "cobrado"
      */
     public void marcarCitaCobradaConSync(String citaId, Callback<Void> cb) {
         android.util.Log.d("SYNC", "marcarCitaCobrada: cita=" + citaId);
 
-        // 1. Actualizar cita
         Map<String, Object> citaBody = new HashMap<>();
         citaBody.put("estado", "cobrada");
 
@@ -399,7 +434,6 @@ public class SupabaseRepository {
                         if (r.isSuccessful()) {
                             android.util.Log.d("SYNC", "✓ Cita actualizada a cobrada");
 
-                            // 2. Buscar cobro asociado y actualizarlo
                             getCobrosPorCita(citaId, new Callback<List<CobroModel>>() {
                                 @Override
                                 public void onSuccess(List<CobroModel> cobros) {
@@ -434,7 +468,7 @@ public class SupabaseRepository {
                                 @Override
                                 public void onError(String mensaje) {
                                     android.util.Log.w("SYNC", "⚠ Error buscando cobro: " + mensaje);
-                                    cb.onSuccess(null); // Cita ya está actualizada
+                                    cb.onSuccess(null);
                                 }
                             });
                         } else {
@@ -449,12 +483,10 @@ public class SupabaseRepository {
 
     /**
      * Cambia estado de cita y sincroniza cobro asociado
-     * FLUJO: Usuario cambia cita a confirmada/pendiente → Cobro pasa a "pendiente"
      */
     public void cambiarEstadoCitaConSync(String citaId, String nuevoEstado, Callback<Void> cb) {
         android.util.Log.d("SYNC", "cambiarEstadoCita: cita=" + citaId + ", estado=" + nuevoEstado);
 
-        // 1. Actualizar cita
         Map<String, Object> citaBody = new HashMap<>();
         citaBody.put("estado", nuevoEstado);
 
@@ -464,7 +496,6 @@ public class SupabaseRepository {
                         if (r.isSuccessful()) {
                             android.util.Log.d("SYNC", "✓ Cita actualizada a " + nuevoEstado);
 
-                            // 2. Buscar cobro asociado y actualizar según el estado de la cita
                             getCobrosPorCita(citaId, new Callback<List<CobroModel>>() {
                                 @Override
                                 public void onSuccess(List<CobroModel> cobros) {
@@ -482,8 +513,6 @@ public class SupabaseRepository {
                                                 estadoCobro = "pendiente";
                                                 break;
                                             case "cancelada":
-                                                // Para cancelada, dejamos el cobro como pendiente
-                                                // (el usuario puede eliminarlo manualmente si quiere)
                                                 estadoCobro = "pendiente";
                                                 break;
                                             default:
@@ -501,12 +530,12 @@ public class SupabaseRepository {
                                                             cb.onSuccess(null);
                                                         } else {
                                                             android.util.Log.w("SYNC", "⚠ Error al actualizar cobro");
-                                                            cb.onSuccess(null); // Cita ya está actualizada
+                                                            cb.onSuccess(null);
                                                         }
                                                     }
                                                     public void onFailure(Call<List<CobroModel>> call2, Throwable t) {
                                                         android.util.Log.w("SYNC", "⚠ Error al actualizar cobro");
-                                                        cb.onSuccess(null); // Cita ya está actualizada
+                                                        cb.onSuccess(null);
                                                     }
                                                 });
                                     } else {
@@ -517,7 +546,7 @@ public class SupabaseRepository {
                                 @Override
                                 public void onError(String mensaje) {
                                     android.util.Log.w("SYNC", "⚠ Error buscando cobro: " + mensaje);
-                                    cb.onSuccess(null); // Cita ya está actualizada
+                                    cb.onSuccess(null);
                                 }
                             });
                         } else {
@@ -646,8 +675,6 @@ public class SupabaseRepository {
 
     // ════════════════════════════════════════════════════════════════
     //  MEMBRESÍAS
-    //  FIX 400: Boolean.TRUE/FALSE explícito, no mandar campos null,
-    //  precio como double nativo de Java.
     // ════════════════════════════════════════════════════════════════
 
     public void getMembresias(String clienteId, Boolean soloActivas,
@@ -670,10 +697,8 @@ public class SupabaseRepository {
                                Callback<MembresiaModel> cb) {
         Map<String, Object> body = new HashMap<>();
         body.put("cliente_id",   clienteId);
-        // Usar valor seguro — si el constraint tiene valores concretos en BD usamos el primero
         String tipoSeguro = tipo != null ? tipo : "mensual";
         body.put("tipo",         tipoSeguro);
-        // precio mínimo 0.01 para evitar constraint precio > 0
         body.put("precio",       Math.max(precio, 0.01));
         body.put("fecha_inicio", fechaInicio);
         body.put("activa",       Boolean.TRUE);
@@ -697,7 +722,6 @@ public class SupabaseRepository {
                         cb.onSuccess(d);
                     }
                 } else {
-                    // Leer el body del error para saber qué rechaza Supabase
                     String errorBody = "";
                     try {
                         if (r.errorBody() != null) errorBody = r.errorBody().string();
@@ -757,10 +781,6 @@ public class SupabaseRepository {
                 });
     }
 
-    /**
-     * Obtiene todos los cobros de un cliente específico.
-     * Útil para verificar si ya existe un cobro de membresía del mes actual.
-     */
     public void getCobrosPorCliente(String clienteId, Callback<List<CobroModel>> cb) {
         api.getCobrosPorClienteId("eq." + clienteId, "fecha.desc")
                 .enqueue(new retrofit2.Callback<List<CobroModel>>() {
@@ -774,19 +794,6 @@ public class SupabaseRepository {
                 });
     }
 
-    /**
-     * Genera automáticamente el cobro mensual de una membresía si no existe ya
-     * para el mes actual.
-     *
-     * LÓGICA:
-     * 1. Verifica si ya existe un cobro de membresía para este cliente en el mes actual
-     * 2. Si NO existe, crea un cobro "pendiente" por el importe de la membresía
-     * 3. Si ya existe, no hace nada
-     *
-     * @param membresia La membresía activa del cliente
-     * @param nombreCliente El nombre completo del cliente
-     * @param cb Callback que retorna TRUE si se generó un nuevo cobro, FALSE si ya existía
-     */
     public void generarCobroMensualSiProcede(MembresiaModel membresia, String nombreCliente,
                                              Callback<Boolean> cb) {
         if (membresia == null || !membresia.activa || membresia.clienteId == null) {
@@ -794,19 +801,16 @@ public class SupabaseRepository {
             return;
         }
 
-        // Obtener el mes actual en formato yyyy-MM
         java.text.SimpleDateFormat sdfMes = new java.text.SimpleDateFormat("yyyy-MM",
                 java.util.Locale.getDefault());
         final String mesActual = sdfMes.format(new java.util.Date());
 
-        // Verificar si ya existe un cobro de membresía este mes para este cliente
         getCobrosPorCliente(membresia.clienteId, new Callback<List<CobroModel>>() {
             @Override
             public void onSuccess(List<CobroModel> cobros) {
                 boolean yaExiste = false;
 
                 for (CobroModel cobro : cobros) {
-                    // Verificar si es un cobro del mes actual
                     boolean fechaCoincide = false;
                     if (cobro.fecha != null && cobro.fecha.startsWith(mesActual)) {
                         fechaCoincide = true;
@@ -814,8 +818,6 @@ public class SupabaseRepository {
                         fechaCoincide = true;
                     }
 
-                    // Detectar cualquier cobro de membresía de este cliente en el mes,
-                    // incluye cobros normales Y cobros de cancelación
                     boolean esMembresia = cobro.concepto != null &&
                             cobro.concepto.toLowerCase().contains("membresía");
 
@@ -826,10 +828,8 @@ public class SupabaseRepository {
                 }
 
                 if (yaExiste) {
-                    // Ya existe cobro de este mes, no generar otro
                     cb.onSuccess(false);
                 } else {
-                    // No existe, generar cobro pendiente
                     String tipoAuto = (membresia.tipo != null && !membresia.tipo.isEmpty())
                             ? membresia.tipo.toLowerCase() : "mensual";
                     String concepto = "Membresía " + tipoAuto + " · " + nombreCliente;
@@ -848,7 +848,7 @@ public class SupabaseRepository {
                             new Callback<CobroModel>() {
                                 @Override
                                 public void onSuccess(CobroModel data) {
-                                    cb.onSuccess(true); // Cobro generado
+                                    cb.onSuccess(true);
                                 }
                                 @Override
                                 public void onError(String mensaje) {
@@ -866,11 +866,6 @@ public class SupabaseRepository {
         });
     }
 
-    /**
-     * Genera el cobro del mes actual cuando se cancela una membresía.
-     * Este cobro queda como "pendiente" y debe ser cobrado aunque la membresía
-     * se haya cancelado.
-     */
     public void generarCobroCancelacion(MembresiaModel membresia, String nombreCliente,
                                         Callback<CobroModel> cb) {
         String tipoCanc = (membresia.tipo != null && !membresia.tipo.isEmpty())
@@ -892,6 +887,4 @@ public class SupabaseRepository {
                 cb
         );
     }
-
-
 }

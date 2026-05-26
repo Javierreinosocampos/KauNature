@@ -104,6 +104,11 @@ public class CobrosActivity extends AppCompatActivity {
     private boolean yaCargado                = false;
     private boolean sincronizando            = false;
 
+    // ── Mes seleccionado (0 = mes actual, -1 = anterior, +1 = siguiente) ──
+    private int mesOffset = 0;
+    // ── Filtro por nombre ────────────────────────────────────────────
+    private String filtroBusqueda = "";
+
     // ── Views ────────────────────────────────────────────────────────
     private LinearLayout listaPendientes, listaHistorial;
     private LinearLayout seccionPendientes, seccionHistorial, layoutVacio;
@@ -111,6 +116,9 @@ public class CobrosActivity extends AppCompatActivity {
     private TextView     tvMesLabel, tvSubtitle;
     private TextView     filtroTodos, filtroPendientes, filtroCobrados;
     private TextView     filtroEfectivo, filtroTarjeta, filtroBizum, filtroTransferencia;
+    private android.widget.EditText etBuscarNombre;
+    private TextView     btnLimpiarBusqueda;
+    private TextView     btnMesAnterior, btnMesSiguiente;
 
     // ════════════════════════════════════════════════════════════════
     //  onCreate
@@ -122,6 +130,8 @@ public class CobrosActivity extends AppCompatActivity {
 
         bindViews();
         setupFiltros();
+        setupBusqueda();
+        setupNavMes();
         setupBotones();
         setupBottomNav();
 
@@ -161,6 +171,10 @@ public class CobrosActivity extends AppCompatActivity {
         filtroTarjeta      = findViewById(R.id.filtroTarjeta);
         filtroBizum        = findViewById(R.id.filtroBizum);
         filtroTransferencia = findViewById(R.id.filtroTransferencia);
+        etBuscarNombre  = findViewById(R.id.etBuscarNombre);
+        btnLimpiarBusqueda = findViewById(R.id.btnLimpiarBusqueda);
+        btnMesAnterior  = findViewById(R.id.btnMesAnterior);
+        btnMesSiguiente = findViewById(R.id.btnMesSiguiente);
     }
 
     // ════════════════════════════════════════════════════════════════
@@ -221,8 +235,19 @@ public class CobrosActivity extends AppCompatActivity {
     //  RENDER
     // ════════════════════════════════════════════════════════════════
     private void renderTodo() {
+        String mesActivo = getMesActivo();
+
         List<Cobro> filtrados = new ArrayList<>();
         for (Cobro c : todosCobros) {
+            // Filtro de mes
+            if (!c.fechaBD.startsWith(mesActivo)) continue;
+
+            // Filtro por nombre (filtroBusqueda ya está en lowercase)
+            if (!filtroBusqueda.isEmpty()
+                    && !c.cliente.toLowerCase(java.util.Locale.getDefault()).contains(filtroBusqueda))
+                continue;
+
+            // Filtro de estado/método
             boolean pasa;
             switch (filtroActual) {
                 case "pendiente":     pasa = "pendiente".equals(c.estado);      break;
@@ -256,20 +281,31 @@ public class CobrosActivity extends AppCompatActivity {
         for (Cobro c : pendientes) listaPendientes.addView(buildCobroCard(c));
         for (Cobro c : cobrados)   listaHistorial.addView(buildCobroCard(c));
 
-        long totalPend = todosCobros.stream().filter(c -> "pendiente".equals(c.estado)).count();
+        String mesKpi = getMesActivo();
+        long totalPend = todosCobros.stream()
+                .filter(c -> "pendiente".equals(c.estado) && c.fechaBD.startsWith(mesKpi)).count();
         tvSubtitle.setText(totalPend > 0
                 ? totalPend + " cobro" + (totalPend > 1 ? "s" : "") + " pendiente" + (totalPend > 1 ? "s" : "")
                 : "Todo cobrado ✅");
     }
 
     private void actualizarKpis() {
-        String mesLabel = new SimpleDateFormat("MMMM yyyy", new Locale("es","ES")).format(new Date());
+        java.util.Calendar calLabel = java.util.Calendar.getInstance();
+        calLabel.add(java.util.Calendar.MONTH, mesOffset);
+        String mesLabel = new SimpleDateFormat("MMMM yyyy", new Locale("es","ES")).format(calLabel.getTime());
         mesLabel = Character.toUpperCase(mesLabel.charAt(0)) + mesLabel.substring(1);
         tvMesLabel.setText(mesLabel);
 
+        if (btnMesSiguiente != null) {
+            btnMesSiguiente.setAlpha(mesOffset < 0 ? 1f : 0.35f);
+            btnMesSiguiente.setClickable(mesOffset < 0);
+        }
+
+        String mesActivo = getMesActivo();
         double total = 0, efectivo = 0, tarjeta = 0, bizumTransfer = 0;
         for (Cobro c : todosCobros) {
             if (!"cobrado".equals(c.estado)) continue;
+            if (!c.fechaBD.startsWith(mesActivo)) continue;
             total += c.importe;
             switch (c.metodo) {
                 case "Efectivo":      efectivo      += c.importe; break;
@@ -622,15 +658,18 @@ public class CobrosActivity extends AppCompatActivity {
             ((TextView) btnEliminar.getChildAt(0)).setText("Eliminando...");
             btnEliminar.setClickable(false);
 
-            SupabaseRepository.get().eliminarCobro(cobro.id,
+            SupabaseRepository.get().eliminarCobroConSync(cobro.id, cobro.citaId,
                     new SupabaseRepository.Callback<Void>() {
                         @Override public void onSuccess(Void data) {
                             runOnUiThread(() -> {
                                 todosCobros.remove(cobro);
                                 sheet.dismiss();
                                 renderTodo();
-                                Toast.makeText(CobrosActivity.this,
-                                        "🗑 Cobro eliminado", Toast.LENGTH_SHORT).show();
+                                String msg = "🗑 Cobro eliminado";
+                                if (cobro.citaId != null && !cobro.citaId.isEmpty()) {
+                                    msg += " · cita cancelada";
+                                }
+                                Toast.makeText(CobrosActivity.this, msg, Toast.LENGTH_SHORT).show();
                             });
                         }
                         @Override public void onError(String e) {
@@ -1067,6 +1106,15 @@ public class CobrosActivity extends AppCompatActivity {
     // ════════════════════════════════════════════════════════════════
     //  HELPERS
     // ════════════════════════════════════════════════════════════════
+    /** Devuelve "yyyy-MM" del mes activo según mesOffset (0 = mes actual) */
+    private String getMesActivo() {
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        cal.add(java.util.Calendar.MONTH, mesOffset);
+        return String.format(java.util.Locale.US, "%04d-%02d",
+                cal.get(java.util.Calendar.YEAR),
+                cal.get(java.util.Calendar.MONTH) + 1);
+    }
+
     private String getMetodoEmoji(String metodo) {
         switch (metodo) {
             case "Efectivo":      return "💵 Efectivo";
@@ -1088,4 +1136,52 @@ public class CobrosActivity extends AppCompatActivity {
             imm.hideSoftInputFromWindow(focus.getWindowToken(), 0);
         }
     }
+    // ════════════════════════════════════════════════════════════════
+    //  BUSCADOR POR NOMBRE (en pantalla de cobros)
+    // ════════════════════════════════════════════════════════════════
+    private void setupBusqueda() {
+        if (etBuscarNombre == null) return;
+        etBuscarNombre.addTextChangedListener(new android.text.TextWatcher() {
+            public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
+            public void onTextChanged(CharSequence s, int st, int b, int c) {}
+            public void afterTextChanged(android.text.Editable s) {
+                filtroBusqueda = s.toString().trim().toLowerCase();
+                if (btnLimpiarBusqueda != null) {
+                    btnLimpiarBusqueda.setVisibility(
+                            filtroBusqueda.isEmpty() ? View.GONE : View.VISIBLE);
+                }
+                renderTodo();
+            }
+        });
+        if (btnLimpiarBusqueda != null) {
+            btnLimpiarBusqueda.setOnClickListener(v -> {
+                etBuscarNombre.setText("");
+                filtroBusqueda = "";
+                btnLimpiarBusqueda.setVisibility(View.GONE);
+                ocultarTeclado();
+            });
+        }
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    //  NAVEGACION ENTRE MESES
+    // ════════════════════════════════════════════════════════════════
+    private void setupNavMes() {
+        if (btnMesAnterior != null) {
+            btnMesAnterior.setOnClickListener(v -> {
+                mesOffset--;
+                renderTodo();
+            });
+        }
+        if (btnMesSiguiente != null) {
+            btnMesSiguiente.setOnClickListener(v -> {
+                if (mesOffset < 0) {
+                    mesOffset++;
+                    renderTodo();
+                }
+            });
+        }
+    }
+
+
 }

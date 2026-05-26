@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Gradiente diagonal azul profundo para la tarjeta de Acciones Rápidas -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient
+        android:angle="135"
+        android:startColor="#1560E0"
+        android:centerColor="#0D52CC"
+        android:endColor="#0840AA"
+        android:type="linear" />
+    <corners android:radius="28dp" />
+</shape>

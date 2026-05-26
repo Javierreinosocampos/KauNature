@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Gradiente vertical suave para los botones internos de Acciones Rápidas -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient
+        android:angle="90"
+        android:startColor="#22FFFFFF"
+        android:endColor="#00FFFFFF"
+        android:type="linear" />
+    <corners android:radius="20dp" />
+</shape>

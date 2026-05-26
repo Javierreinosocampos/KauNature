@@ -27,31 +27,29 @@ public class CobrosActivity extends AppCompatActivity {
 
     // ── Modelo local ─────────────────────────────────────────────────
     static class Cobro {
-        String id;          // UUID Supabase
-        String clienteId;   // UUID del cliente
-        String citaId;      // UUID de la cita asociada (puede ser null)
+        String id;
+        String clienteId;
+        String citaId;
         String cliente;
         String concepto;
         double importe;
-        String metodo;      // "Efectivo","Tarjeta","Bizum","Transferencia"
-        String estado;      // "pendiente","cobrado"
-        String fecha;       // dd/MM/yyyy  (display)
-        String fechaBD;     // yyyy-MM-dd  (Supabase)
+        String metodo;
+        String estado;
+        String fecha;
+        String fechaBD;
         String notas;
 
-        /** Construye desde modelo de red */
         Cobro(CobroModel m) {
             this.id        = m.id;
             this.clienteId = m.clienteId;
             this.citaId    = m.citaId;
             this.cliente   = m.clienteNombre != null ? m.clienteNombre : "";
-            this.concepto = m.concepto      != null ? m.concepto      : "";
-            this.importe  = m.importe;
-            this.metodo   = m.metodo        != null ? m.metodo        : "Efectivo";
-            this.estado   = m.estado        != null ? m.estado        : "cobrado";
-            this.notas    = m.notas         != null ? m.notas         : "";
-            this.fechaBD  = m.fecha         != null ? m.fecha         : "";
-            // Supabase devuelve "yyyy-MM-dd" → convertir a "dd/MM/yyyy" para UI
+            this.concepto  = m.concepto      != null ? m.concepto      : "";
+            this.importe   = m.importe;
+            this.metodo    = m.metodo        != null ? m.metodo        : "Efectivo";
+            this.estado    = m.estado        != null ? m.estado        : "cobrado";
+            this.notas     = m.notas         != null ? m.notas         : "";
+            this.fechaBD   = m.fecha         != null ? m.fecha         : "";
             if (fechaBD.length() >= 10) {
                 this.fecha = fechaBD.substring(8, 10) + "/" +
                         fechaBD.substring(5, 7) + "/" +
@@ -61,7 +59,6 @@ public class CobrosActivity extends AppCompatActivity {
             }
         }
 
-        /** Constructor para cobros nuevos antes de guardar */
         Cobro(String cliente, String concepto, double importe,
               String metodo, String estado, String fechaBD, String notas) {
             this.id       = null;
@@ -87,7 +84,7 @@ public class CobrosActivity extends AppCompatActivity {
         }
 
         String importeFormateado() {
-            return String.format(java.util.Locale.US, "%.2f", importe).replace(".", ",") + "€";
+            return String.format(java.util.Locale.US, "%.2f", importe).replace(".", ",") + "\u00A0€";
         }
     }
 
@@ -104,9 +101,7 @@ public class CobrosActivity extends AppCompatActivity {
     private boolean yaCargado                = false;
     private boolean sincronizando            = false;
 
-    // ── Mes seleccionado (0 = mes actual, -1 = anterior, +1 = siguiente) ──
     private int mesOffset = 0;
-    // ── Filtro por nombre ────────────────────────────────────────────
     private String filtroBusqueda = "";
 
     // ── Views ────────────────────────────────────────────────────────
@@ -135,7 +130,6 @@ public class CobrosActivity extends AppCompatActivity {
         setupBotones();
         setupBottomNav();
 
-        // Recibir cliente desde ClientesActivity
         if (getIntent() != null) {
             filtroClienteId  = getIntent().getStringExtra("CLIENTE_ID");
             filtroClienteNom = getIntent().getStringExtra("CLIENTE_NOMBRE");
@@ -171,10 +165,10 @@ public class CobrosActivity extends AppCompatActivity {
         filtroTarjeta      = findViewById(R.id.filtroTarjeta);
         filtroBizum        = findViewById(R.id.filtroBizum);
         filtroTransferencia = findViewById(R.id.filtroTransferencia);
-        etBuscarNombre  = findViewById(R.id.etBuscarNombre);
+        etBuscarNombre     = findViewById(R.id.etBuscarNombre);
         btnLimpiarBusqueda = findViewById(R.id.btnLimpiarBusqueda);
-        btnMesAnterior  = findViewById(R.id.btnMesAnterior);
-        btnMesSiguiente = findViewById(R.id.btnMesSiguiente);
+        btnMesAnterior     = findViewById(R.id.btnMesAnterior);
+        btnMesSiguiente    = findViewById(R.id.btnMesSiguiente);
     }
 
     // ════════════════════════════════════════════════════════════════
@@ -239,15 +233,10 @@ public class CobrosActivity extends AppCompatActivity {
 
         List<Cobro> filtrados = new ArrayList<>();
         for (Cobro c : todosCobros) {
-            // Filtro de mes
             if (!c.fechaBD.startsWith(mesActivo)) continue;
-
-            // Filtro por nombre (filtroBusqueda ya está en lowercase)
             if (!filtroBusqueda.isEmpty()
                     && !c.cliente.toLowerCase(java.util.Locale.getDefault()).contains(filtroBusqueda))
                 continue;
-
-            // Filtro de estado/método
             boolean pasa;
             switch (filtroActual) {
                 case "pendiente":     pasa = "pendiente".equals(c.estado);      break;
@@ -314,10 +303,10 @@ public class CobrosActivity extends AppCompatActivity {
                 case "Transferencia": bizumTransfer += c.importe; break;
             }
         }
-        tvTotalMes.setText(String.format(java.util.Locale.US, "%.2f", total).replace(".", ",") + "€");
-        tvKpiEfectivo.setText(String.format(java.util.Locale.US, "%.2f", efectivo).replace(".", ",") + "€");
-        tvKpiTarjeta.setText(String.format(java.util.Locale.US, "%.2f", tarjeta).replace(".", ",") + "€");
-        tvKpiBizumTransfer.setText(String.format(java.util.Locale.US, "%.2f", bizumTransfer).replace(".", ",") + "€");
+        tvTotalMes.setText(String.format(java.util.Locale.US, "%.2f", total).replace(".", ",") + "\u00A0€");
+        tvKpiEfectivo.setText(String.format(java.util.Locale.US, "%.2f", efectivo).replace(".", ",") + "\u00A0€");
+        tvKpiTarjeta.setText(String.format(java.util.Locale.US, "%.2f", tarjeta).replace(".", ",") + "\u00A0€");
+        tvKpiBizumTransfer.setText(String.format(java.util.Locale.US, "%.2f", bizumTransfer).replace(".", ",") + "\u00A0€");
     }
 
     // ════════════════════════════════════════════════════════════════
@@ -360,7 +349,7 @@ public class CobrosActivity extends AppCompatActivity {
         avatar.addView(tvI);
         row.addView(avatar);
 
-        // Texto
+        // Texto central (nombre, concepto, fecha)
         LinearLayout textBlock = new LinearLayout(this);
         textBlock.setOrientation(LinearLayout.VERTICAL);
         textBlock.setLayoutParams(new LinearLayout.LayoutParams(
@@ -398,12 +387,13 @@ public class CobrosActivity extends AppCompatActivity {
         textBlock.addView(tvFecha);
         row.addView(textBlock);
 
-        // Importe + estado
+        // ── Columna derecha: importe + chip estado ─────────────────
+        // CAMBIO: ancho mínimo fijo para que nunca se comprima y corte el €
         LinearLayout rightCol = new LinearLayout(this);
         rightCol.setOrientation(LinearLayout.VERTICAL);
         rightCol.setGravity(Gravity.END);
         LinearLayout.LayoutParams rp = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                dpToPx(90), LinearLayout.LayoutParams.WRAP_CONTENT); // ← ancho fijo 90dp
         rp.setMarginStart(dpToPx(8));
         rightCol.setLayoutParams(rp);
 
@@ -414,6 +404,8 @@ public class CobrosActivity extends AppCompatActivity {
                 ? Color.parseColor("#F59E0B") : Color.parseColor("#12B76A"));
         tvImporte.setTypeface(getResources().getFont(R.font.outfit_bold));
         tvImporte.setGravity(Gravity.END);
+        tvImporte.setSingleLine(true);          // ← nunca parte en dos líneas
+        tvImporte.setEllipsize(null);           // ← nunca trunca el texto
         rightCol.addView(tvImporte);
 
         TextView tvEstado = new TextView(this);
@@ -451,7 +443,6 @@ public class CobrosActivity extends AppCompatActivity {
         layout.setBackground(getDrawable(R.drawable.shape_sheet_bg));
         layout.setPadding(dpToPx(20), dpToPx(20), dpToPx(20), dpToPx(30));
 
-        // Handle
         View handle = new View(this);
         LinearLayout.LayoutParams hp = new LinearLayout.LayoutParams(dpToPx(40), dpToPx(4));
         hp.gravity = Gravity.CENTER_HORIZONTAL;
@@ -460,7 +451,6 @@ public class CobrosActivity extends AppCompatActivity {
         handle.setBackground(getDrawable(R.drawable.shape_handle));
         layout.addView(handle);
 
-        // Cabecera
         TextView tvNombre = new TextView(this);
         tvNombre.setText(cobro.cliente);
         tvNombre.setTextSize(18f);
@@ -512,7 +502,6 @@ public class CobrosActivity extends AppCompatActivity {
             layout.addView(tvNotas);
         }
 
-        // Divider
         View div = new View(this);
         LinearLayout.LayoutParams dp2 = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, dpToPx(1));
@@ -522,7 +511,6 @@ public class CobrosActivity extends AppCompatActivity {
         div.setBackgroundColor(Color.parseColor("#DDE6FF"));
         layout.addView(div);
 
-        // ── Botón: marcar cobrado (solo si pendiente) ──────────────
         if ("pendiente".equals(cobro.estado)) {
             CardView btnCobrar = buildAccionBtn("💰 Marcar como cobrado", "#0A66FF", true);
             btnCobrar.setOnClickListener(v -> {
@@ -532,20 +520,16 @@ public class CobrosActivity extends AppCompatActivity {
                     renderTodo();
                     return;
                 }
-
                 if (sincronizando) {
                     Toast.makeText(CobrosActivity.this,
                             "⏳ Sincronización en curso...", Toast.LENGTH_SHORT).show();
                     return;
                 }
-
                 ((TextView) btnCobrar.getChildAt(0)).setText("Guardando...");
                 btnCobrar.setClickable(false);
                 sincronizando = true;
-
                 SupabaseRepository.get().marcarCobroCobradoConSync(
-                        cobro.id,
-                        cobro.citaId,
+                        cobro.id, cobro.citaId,
                         new SupabaseRepository.Callback<Void>() {
                             @Override public void onSuccess(Void data) {
                                 runOnUiThread(() -> {
@@ -553,11 +537,9 @@ public class CobrosActivity extends AppCompatActivity {
                                     sincronizando = false;
                                     sheet.dismiss();
                                     renderTodo();
-
                                     String mensaje = "✅ Cobro registrado: " + cobro.importeFormateado();
-                                    if (cobro.citaId != null && !cobro.citaId.isEmpty()) {
+                                    if (cobro.citaId != null && !cobro.citaId.isEmpty())
                                         mensaje += " (cita sincronizada)";
-                                    }
                                     Toast.makeText(CobrosActivity.this, mensaje, Toast.LENGTH_SHORT).show();
                                 });
                             }
@@ -575,7 +557,6 @@ public class CobrosActivity extends AppCompatActivity {
             layout.addView(btnCobrar);
         }
 
-        // ── Botón: desmarcar cobrado (solo si cobrado) ──────────────
         if ("cobrado".equals(cobro.estado)) {
             CardView btnDesmarcar = buildAccionBtn("↩️ Marcar como pendiente", "#FFF8ED", false);
             ((TextView) btnDesmarcar.getChildAt(0)).setTextColor(Color.parseColor("#F59E0B"));
@@ -586,20 +567,16 @@ public class CobrosActivity extends AppCompatActivity {
                     renderTodo();
                     return;
                 }
-
                 if (sincronizando) {
                     Toast.makeText(CobrosActivity.this,
                             "⏳ Sincronización en curso...", Toast.LENGTH_SHORT).show();
                     return;
                 }
-
                 ((TextView) btnDesmarcar.getChildAt(0)).setText("Guardando...");
                 btnDesmarcar.setClickable(false);
                 sincronizando = true;
-
                 SupabaseRepository.get().marcarCobroPendienteConSync(
-                        cobro.id,
-                        cobro.citaId,
+                        cobro.id, cobro.citaId,
                         new SupabaseRepository.Callback<Void>() {
                             @Override public void onSuccess(Void data) {
                                 runOnUiThread(() -> {
@@ -607,11 +584,9 @@ public class CobrosActivity extends AppCompatActivity {
                                     sincronizando = false;
                                     sheet.dismiss();
                                     renderTodo();
-
                                     String mensaje = "↩️ Cobro marcado como pendiente";
-                                    if (cobro.citaId != null && !cobro.citaId.isEmpty()) {
+                                    if (cobro.citaId != null && !cobro.citaId.isEmpty())
                                         mensaje += " (cita sincronizada)";
-                                    }
                                     Toast.makeText(CobrosActivity.this, mensaje, Toast.LENGTH_SHORT).show();
                                 });
                             }
@@ -629,7 +604,6 @@ public class CobrosActivity extends AppCompatActivity {
             layout.addView(btnDesmarcar);
         }
 
-        // ── Botón: editar ──────────────────────────────────────────
         CardView btnEditar = buildAccionBtn("✏️ Editar cobro", "#E8F0FF", false);
         ((TextView) btnEditar.getChildAt(0)).setTextColor(Color.parseColor("#0A66FF"));
         LinearLayout.LayoutParams eP = new LinearLayout.LayoutParams(
@@ -642,7 +616,6 @@ public class CobrosActivity extends AppCompatActivity {
         });
         layout.addView(btnEditar);
 
-        // ── Botón: eliminar ────────────────────────────────────────
         CardView btnEliminar = buildAccionBtn("🗑 Eliminar cobro", "#FFF0F0", false);
         ((TextView) btnEliminar.getChildAt(0)).setTextColor(Color.parseColor("#EF4444"));
         LinearLayout.LayoutParams delP = new LinearLayout.LayoutParams(
@@ -657,7 +630,6 @@ public class CobrosActivity extends AppCompatActivity {
             }
             ((TextView) btnEliminar.getChildAt(0)).setText("Eliminando...");
             btnEliminar.setClickable(false);
-
             SupabaseRepository.get().eliminarCobroConSync(cobro.id, cobro.citaId,
                     new SupabaseRepository.Callback<Void>() {
                         @Override public void onSuccess(Void data) {
@@ -666,9 +638,8 @@ public class CobrosActivity extends AppCompatActivity {
                                 sheet.dismiss();
                                 renderTodo();
                                 String msg = "🗑 Cobro eliminado";
-                                if (cobro.citaId != null && !cobro.citaId.isEmpty()) {
+                                if (cobro.citaId != null && !cobro.citaId.isEmpty())
                                     msg += " · cita cancelada";
-                                }
                                 Toast.makeText(CobrosActivity.this, msg, Toast.LENGTH_SHORT).show();
                             });
                         }
@@ -728,8 +699,8 @@ public class CobrosActivity extends AppCompatActivity {
         androidx.cardview.widget.CardView btnGuardarCard = view.findViewById(R.id.btnGuardarCobro);
         TextView btnGuardar = (TextView) btnGuardarCard.getChildAt(0);
 
-        final String[] metodoSel  = {METODOS_KEY[0]};
-        final String[] estadoSel  = {"cobrado"};
+        final String[] metodoSel    = {METODOS_KEY[0]};
+        final String[] estadoSel    = {"cobrado"};
         final String[] clienteIdSel = {null};
 
         if (cobroEditar != null) {
@@ -738,8 +709,8 @@ public class CobrosActivity extends AppCompatActivity {
             etConcepto.setText(cobroEditar.concepto);
             etImporte.setText(String.format(java.util.Locale.US, "%.2f", cobroEditar.importe).replace(".", ","));
             etNotas.setText(cobroEditar.notas);
-            metodoSel[0]  = cobroEditar.metodo;
-            estadoSel[0]  = cobroEditar.estado;
+            metodoSel[0]    = cobroEditar.metodo;
+            estadoSel[0]    = cobroEditar.estado;
             clienteIdSel[0] = cobroEditar.clienteId;
         } else if (filtroClienteNom != null && !filtroClienteNom.isEmpty()) {
             tvTitulo.setText("Nuevo cobro · " + filtroClienteNom);
@@ -747,9 +718,6 @@ public class CobrosActivity extends AppCompatActivity {
             clienteIdSel[0] = filtroClienteId;
         }
 
-        // ══════════════════════════════════════════════════════════════
-        // BUSCADOR DE CLIENTES (igual que AgendaActivity)
-        // ══════════════════════════════════════════════════════════════
         LinearLayout layoutSug = new LinearLayout(this);
         layoutSug.setOrientation(LinearLayout.VERTICAL);
         layoutSug.setVisibility(View.GONE);
@@ -758,7 +726,6 @@ public class CobrosActivity extends AppCompatActivity {
         sugLP.setMargins(dpToPx(16), 0, dpToPx(16), dpToPx(8));
         layoutSug.setLayoutParams(sugLP);
 
-        // Insertar después del CardView del cliente
         android.view.ViewGroup cardCliente = (android.view.ViewGroup) etCliente.getParent();
         android.view.ViewGroup rootLayout  = (android.view.ViewGroup) cardCliente.getParent();
         int idxCard = -1;
@@ -794,7 +761,6 @@ public class CobrosActivity extends AppCompatActivity {
             }
         });
 
-        // Chips método de pago
         LinearLayout layoutMetodos = view.findViewById(R.id.layoutMetodos);
         for (int i = 0; i < METODOS.length; i++) {
             final String key = METODOS_KEY[i];
@@ -827,7 +793,6 @@ public class CobrosActivity extends AppCompatActivity {
             layoutMetodos.addView(chip);
         }
 
-        // Chips estado
         LinearLayout layoutEstados = view.findViewById(R.id.layoutEstados);
         String[][] estados = {{"cobrado","✅ Cobrado"},{"pendiente","⏳ Pendiente"}};
         for (String[] est : estados) {
@@ -861,7 +826,6 @@ public class CobrosActivity extends AppCompatActivity {
             layoutEstados.addView(chip);
         }
 
-        // ── Guardar ───────────────────────────────────────────────
         btnGuardarCard.setOnClickListener(v -> {
             String nombre   = etCliente.getText().toString().trim();
             String importeS = etImporte.getText().toString().trim();
@@ -879,7 +843,6 @@ public class CobrosActivity extends AppCompatActivity {
             btnGuardar.setText("Guardando...");
 
             if (cobroEditar != null && cobroEditar.id != null) {
-                // ── EDITAR ────────────────────────────────────────
                 Map<String, Object> body = new HashMap<>();
                 body.put("cliente_nombre", nombre);
                 body.put("concepto",       concepto);
@@ -894,13 +857,13 @@ public class CobrosActivity extends AppCompatActivity {
                         new SupabaseRepository.Callback<Void>() {
                             @Override public void onSuccess(Void data) {
                                 runOnUiThread(() -> {
-                                    cobroEditar.cliente  = nombre;
+                                    cobroEditar.cliente   = nombre;
                                     cobroEditar.clienteId = clienteIdSel[0];
-                                    cobroEditar.concepto = concepto;
-                                    cobroEditar.importe  = importeFinal;
-                                    cobroEditar.metodo   = metodoSel[0];
-                                    cobroEditar.estado   = estadoSel[0];
-                                    cobroEditar.notas    = notas;
+                                    cobroEditar.concepto  = concepto;
+                                    cobroEditar.importe   = importeFinal;
+                                    cobroEditar.metodo    = metodoSel[0];
+                                    cobroEditar.estado    = estadoSel[0];
+                                    cobroEditar.notas     = notas;
                                     sheet.dismiss();
                                     ocultarTeclado();
                                     renderTodo();
@@ -918,11 +881,10 @@ public class CobrosActivity extends AppCompatActivity {
                             }
                         });
             } else {
-                // ── CREAR ─────────────────────────────────────────
                 final double importeFinal = importe;
                 SupabaseRepository.get().crearCobro(
-                        null, // citaId (null para cobros manuales)
-                        clienteIdSel[0], // clienteId vinculado
+                        null,
+                        clienteIdSel[0],
                         nombre,
                         concepto,
                         importe,
@@ -971,10 +933,10 @@ public class CobrosActivity extends AppCompatActivity {
                             List<ClienteModel> matches = new ArrayList<>();
                             for (ClienteModel c : data) {
                                 if (matches.size() >= 6) break;
-                                String nom = c.nombre != null ? c.nombre.trim() : "";
-                                String ape = c.apellidos != null ? c.apellidos.trim() : "";
+                                String nom  = c.nombre    != null ? c.nombre.trim()    : "";
+                                String ape  = c.apellidos != null ? c.apellidos.trim() : "";
                                 String full = ape.isEmpty() ? nom : nom + " " + ape;
-                                String tel  = c.telefono != null ? c.telefono.trim() : "";
+                                String tel  = c.telefono  != null ? c.telefono.trim()  : "";
                                 if (full.toLowerCase().contains(q) || tel.contains(q))
                                     matches.add(c);
                             }
@@ -997,11 +959,11 @@ public class CobrosActivity extends AppCompatActivity {
                             contenedor.addView(lista);
 
                             for (int idx = 0; idx < matches.size(); idx++) {
-                                ClienteModel c = matches.get(idx);
-                                String nom  = c.nombre   != null ? c.nombre.trim()   : "";
-                                String ape  = c.apellidos!= null ? c.apellidos.trim(): "";
+                                ClienteModel c  = matches.get(idx);
+                                String nom  = c.nombre    != null ? c.nombre.trim()    : "";
+                                String ape  = c.apellidos != null ? c.apellidos.trim() : "";
                                 String full = ape.isEmpty() ? nom : nom + " " + ape;
-                                String tel  = c.telefono != null ? c.telefono.trim() : "";
+                                String tel  = c.telefono  != null ? c.telefono.trim()  : "";
                                 if (full.isEmpty()) full = "Cliente";
                                 String inicial = String.valueOf(full.charAt(0)).toUpperCase();
 
@@ -1058,11 +1020,11 @@ public class CobrosActivity extends AppCompatActivity {
                                 arrow.setPadding(dpToPx(8), 0, 0, 0);
                                 fila.addView(arrow);
 
-                                final String idFinal   = c.id;
-                                final String nomFinal  = full;
+                                final String idFinal  = c.id;
+                                final String nomFinal = full;
                                 fila.setOnClickListener(vv -> {
-                                    seleccionando[0]  = true;
-                                    clienteIdSel[0]   = idFinal;
+                                    seleccionando[0] = true;
+                                    clienteIdSel[0]  = idFinal;
                                     etCliente.setText(nomFinal);
                                     etCliente.setSelection(nomFinal.length());
                                     layoutSug.setVisibility(View.GONE);
@@ -1106,7 +1068,6 @@ public class CobrosActivity extends AppCompatActivity {
     // ════════════════════════════════════════════════════════════════
     //  HELPERS
     // ════════════════════════════════════════════════════════════════
-    /** Devuelve "yyyy-MM" del mes activo según mesOffset (0 = mes actual) */
     private String getMesActivo() {
         java.util.Calendar cal = java.util.Calendar.getInstance();
         cal.add(java.util.Calendar.MONTH, mesOffset);
@@ -1136,8 +1097,9 @@ public class CobrosActivity extends AppCompatActivity {
             imm.hideSoftInputFromWindow(focus.getWindowToken(), 0);
         }
     }
+
     // ════════════════════════════════════════════════════════════════
-    //  BUSCADOR POR NOMBRE (en pantalla de cobros)
+    //  BUSCADOR POR NOMBRE
     // ════════════════════════════════════════════════════════════════
     private void setupBusqueda() {
         if (etBuscarNombre == null) return;
@@ -1182,6 +1144,4 @@ public class CobrosActivity extends AppCompatActivity {
             });
         }
     }
-
-
 }

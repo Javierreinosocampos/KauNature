@@ -45,7 +45,7 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:text="&#8592;"
+                            android:text="←"
                             android:textSize="20sp"
                             android:textColor="@color/accent_blue"
                             android:fontFamily="@font/outfit_bold"
@@ -85,8 +85,8 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:text="+"
-                            android:textSize="22sp"
+                            android:text="＋"
+                            android:textSize="20sp"
                             android:textColor="@color/white"
                             android:fontFamily="@font/outfit_bold"
                             android:gravity="center"/>
@@ -123,19 +123,6 @@
                         android:inputType="textPersonName"
                         android:imeOptions="actionSearch"
                         android:maxLines="1"/>
-                    <TextView
-                        android:id="@+id/btnLimpiarBusqueda"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="&#10005;"
-                        android:textSize="14sp"
-                        android:textColor="@color/text_muted"
-                        android:fontFamily="@font/outfit_bold"
-                        android:paddingStart="8dp"
-                        android:paddingEnd="4dp"
-                        android:visibility="gone"
-                        android:clickable="true"
-                        android:focusable="true"/>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
@@ -161,12 +148,11 @@
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
                         android:layout_marginBottom="2dp">
-
                         <TextView
                             android:id="@+id/btnMesAnterior"
                             android:layout_width="32dp"
                             android:layout_height="32dp"
-                            android:text="&#8249;"
+                            android:text="‹"
                             android:textSize="20sp"
                             android:textColor="#FFFFFF"
                             android:fontFamily="@font/outfit_bold"
@@ -175,23 +161,21 @@
                             android:backgroundTint="#1A3A7A"
                             android:clickable="true"
                             android:focusable="true"/>
-
                         <TextView
                             android:id="@+id/tvMesLabel"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Mayo 2026"
+                            android:text="Marzo 2026"
                             android:textSize="12sp"
                             android:textColor="#AACCFF"
                             android:fontFamily="@font/outfit_bold"
                             android:gravity="center"/>
-
                         <TextView
                             android:id="@+id/btnMesSiguiente"
                             android:layout_width="32dp"
                             android:layout_height="32dp"
-                            android:text="&#8250;"
+                            android:text="›"
                             android:textSize="20sp"
                             android:textColor="#FFFFFF"
                             android:fontFamily="@font/outfit_bold"
@@ -201,14 +185,13 @@
                             android:alpha="0.35"
                             android:clickable="false"
                             android:focusable="false"/>
-
                     </LinearLayout>
 
                     <TextView
                         android:id="@+id/tvTotalMes"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="0,00&#8364;"
+                        android:text="0,00€"
                         android:textSize="34sp"
                         android:textColor="@color/white"
                         android:fontFamily="@font/outfit_bold"
@@ -231,16 +214,17 @@
                                 android:id="@+id/tvKpiEfectivo"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="0,00&#8364;"
+                                android:text="0,00€"
                                 android:textSize="14sp"
                                 android:textColor="@color/white"
                                 android:fontFamily="@font/outfit_bold"
                                 android:maxLines="1"
+                                android:adjustViewBounds="true"
                                 android:ellipsize="none"/>
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Efectivo"
+                                android:text="💵 Efectivo"
                                 android:textSize="10sp"
                                 android:textColor="#AACCFF"
                                 android:fontFamily="@font/outfit_regular"
@@ -256,16 +240,17 @@
                                 android:id="@+id/tvKpiTarjeta"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="0,00&#8364;"
+                                android:text="0,00€"
                                 android:textSize="14sp"
                                 android:textColor="@color/white"
                                 android:fontFamily="@font/outfit_bold"
                                 android:maxLines="1"
+                                android:adjustViewBounds="true"
                                 android:ellipsize="none"/>
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Tarjeta"
+                                android:text="💳 Tarjeta"
                                 android:textSize="10sp"
                                 android:textColor="#AACCFF"
                                 android:fontFamily="@font/outfit_regular"
@@ -281,16 +266,17 @@
                                 android:id="@+id/tvKpiBizumTransfer"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="0,00&#8364;"
+                                android:text="0,00€"
                                 android:textSize="14sp"
                                 android:textColor="@color/white"
                                 android:fontFamily="@font/outfit_bold"
                                 android:maxLines="1"
+                                android:adjustViewBounds="true"
                                 android:ellipsize="none"/>
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Bizum/Trans."
+                                android:text="📱 Bizum/Trans."
                                 android:textSize="10sp"
                                 android:textColor="#AACCFF"
                                 android:fontFamily="@font/outfit_regular"
@@ -342,7 +328,7 @@
 
                     <TextView android:id="@+id/filtroEfectivo"
                         android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="Efectivo" android:textSize="12sp" android:fontFamily="@font/outfit_bold"
+                        android:text="💵 Efectivo" android:textSize="12sp" android:fontFamily="@font/outfit_bold"
                         android:paddingStart="16dp" android:paddingEnd="16dp"
                         android:paddingTop="8dp" android:paddingBottom="8dp"
                         android:layout_marginEnd="8dp"
@@ -351,7 +337,7 @@
 
                     <TextView android:id="@+id/filtroTarjeta"
                         android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="Tarjeta" android:textSize="12sp" android:fontFamily="@font/outfit_bold"
+                        android:text="💳 Tarjeta" android:textSize="12sp" android:fontFamily="@font/outfit_bold"
                         android:paddingStart="16dp" android:paddingEnd="16dp"
                         android:paddingTop="8dp" android:paddingBottom="8dp"
                         android:layout_marginEnd="8dp"
@@ -360,7 +346,7 @@
 
                     <TextView android:id="@+id/filtroBizum"
                         android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="Bizum" android:textSize="12sp" android:fontFamily="@font/outfit_bold"
+                        android:text="📱 Bizum" android:textSize="12sp" android:fontFamily="@font/outfit_bold"
                         android:paddingStart="16dp" android:paddingEnd="16dp"
                         android:paddingTop="8dp" android:paddingBottom="8dp"
                         android:layout_marginEnd="8dp"
@@ -369,7 +355,7 @@
 
                     <TextView android:id="@+id/filtroTransferencia"
                         android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="Transferencia" android:textSize="12sp" android:fontFamily="@font/outfit_bold"
+                        android:text="🏦 Transferencia" android:textSize="12sp" android:fontFamily="@font/outfit_bold"
                         android:paddingStart="16dp" android:paddingEnd="16dp"
                         android:paddingTop="8dp" android:paddingBottom="8dp"
                         android:background="@drawable/shape_filter_inactive"
@@ -388,7 +374,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Pendientes de cobro"
+                    android:text="⚠️ Pendientes de cobro"
                     android:textSize="13sp"
                     android:textColor="@color/text_primary"
                     android:fontFamily="@font/outfit_bold"
@@ -413,7 +399,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Historial de cobros"
+                    android:text="✅ Historial de cobros"
                     android:textSize="13sp"
                     android:textColor="@color/text_primary"
                     android:fontFamily="@font/outfit_bold"
@@ -427,7 +413,7 @@
 
             </LinearLayout>
 
-            <!-- Estado vacio -->
+            <!-- Estado vacío -->
             <LinearLayout
                 android:id="@+id/layoutVacio"
                 android:layout_width="match_parent"
@@ -439,11 +425,13 @@
                 android:visibility="gone">
 
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="💰" android:textSize="48sp" android:gravity="center"/>
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                     android:text="Sin cobros" android:textSize="16sp"
                     android:textColor="@color/text_primary" android:fontFamily="@font/outfit_bold"
                     android:gravity="center" android:layout_marginTop="12dp"/>
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="Pulsa + para registrar un cobro"
+                    android:text="Pulsa ＋ para registrar un cobro"
                     android:textSize="12sp" android:textColor="@color/text_muted"
                     android:fontFamily="@font/outfit_regular"
                     android:gravity="center" android:layout_marginTop="4dp"/>
@@ -453,144 +441,177 @@
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- BOTTOM NAV -->
-    <LinearLayout
-        android:id="@+id/bottomNavCustom"
+    <!-- BOTTOM NAV FLOTANTE -->
+    <!--
+        CORRECCIÓN: CardView → FrameLayout con bg_nav_card.xml:
+          <shape>
+            <solid android:color="#FFFFFF"/>
+            <corners android:radius="30dp"/>
+          </shape>
+        elevation + outlineProvider + clipToOutline evitan el fondo blanco
+        que se filtraba fuera de los bordes redondeados.
+    -->
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="74dp"
+        android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:background="@color/white"
-        android:elevation="20dp"
-        android:orientation="horizontal"
-        android:paddingHorizontal="4dp"
-        android:paddingTop="6dp"
-        android:paddingBottom="8dp">
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/bg_nav_card"
+        android:clipToOutline="true"
+        android:elevation="24dp"
+        android:outlineProvider="none">
 
         <LinearLayout
-            android:id="@+id/nav_home"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:paddingVertical="4dp">
-            <TextView
-                android:id="@+id/navIconHome"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="&#127968;"
-                android:textSize="17sp"
-                android:gravity="center"/>
-            <TextView
-                android:id="@+id/navLabelHome"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Inicio"
-                android:textSize="9sp"
-                android:textColor="@color/text_muted"
-                android:gravity="center"/>
-        </LinearLayout>
+            android:layout_width="match_parent"
+            android:layout_height="72dp"
+            android:orientation="horizontal"
+            android:paddingStart="10dp"
+            android:paddingTop="10dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="10dp">
 
-        <LinearLayout
-            android:id="@+id/nav_clientes"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:paddingVertical="4dp">
-            <TextView
-                android:id="@+id/navIconClientes"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="&#128101;"
-                android:textSize="17sp"
-                android:gravity="center"/>
-            <TextView
-                android:id="@+id/navLabelClientes"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Clientes"
-                android:textSize="9sp"
-                android:textColor="@color/text_muted"
-                android:gravity="center"/>
-        </LinearLayout>
+            <LinearLayout
+                android:id="@+id/nav_home"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/nav_item_normal"
+                android:gravity="center"
+                android:orientation="vertical">
 
-        <LinearLayout
-            android:id="@+id/nav_gimnasio"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:paddingVertical="4dp">
-            <TextView
-                android:id="@+id/navIconGimnasio"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="&#128170;"
-                android:textSize="17sp"
-                android:gravity="center"/>
-            <TextView
-                android:id="@+id/navLabelGimnasio"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Gimnasio"
-                android:textSize="9sp"
-                android:textColor="@color/accent_blue"
-                android:gravity="center"/>
-        </LinearLayout>
+                <ImageView
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:elevation="2dp"
+                    android:src="@drawable/ic_home"
+                    android:tint="#9CA3AF" />
 
-        <LinearLayout
-            android:id="@+id/nav_agenda"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:paddingVertical="4dp">
-            <TextView
-                android:id="@+id/navIconAgenda"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="&#128197;"
-                android:textSize="17sp"
-                android:gravity="center"/>
-            <TextView
-                android:id="@+id/navLabelAgenda"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Agenda"
-                android:textSize="9sp"
-                android:textColor="@color/text_muted"
-                android:gravity="center"/>
-        </LinearLayout>
+                <TextView
+                    android:id="@+id/navLabelHome"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:fontFamily="@font/outfit_bold"
+                    android:gravity="center"
+                    android:text="Inicio"
+                    android:textColor="#9CA3AF"
+                    android:textSize="11sp" />
+            </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/nav_cobros"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:paddingVertical="4dp">
-            <TextView
-                android:id="@+id/navIconCobros"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="&#128176;"
-                android:textSize="17sp"
-                android:gravity="center"/>
-            <TextView
-                android:id="@+id/navLabelCobros"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Cobros"
-                android:textSize="9sp"
-                android:textColor="@color/text_muted"
-                android:gravity="center"/>
-        </LinearLayout>
+            <LinearLayout
+                android:id="@+id/nav_clientes"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/nav_item_normal"
+                android:gravity="center"
+                android:orientation="vertical">
 
-    </LinearLayout>
+                <ImageView
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:src="@drawable/ic_people"
+                    android:tint="#9CA3AF" />
+
+                <TextView
+                    android:id="@+id/navLabelClientes"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:fontFamily="@font/outfit_regular"
+                    android:gravity="center"
+                    android:text="Clientes"
+                    android:textColor="#9CA3AF"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/nav_gimnasio"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/nav_item_normal"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:id="@+id/navIconGimnasio"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:src="@drawable/ic_fitness"
+                    android:tint="#9CA3AF" />
+
+                <TextView
+                    android:id="@+id/navLabelGimnasio"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:fontFamily="@font/outfit_regular"
+                    android:gravity="center"
+                    android:text="Gym"
+                    android:textColor="#9CA3AF"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/nav_agenda"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/nav_item_normal"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:src="@drawable/ic_calendar_today"
+                    android:tint="#9CA3AF" />
+
+                <TextView
+                    android:id="@+id/navLabelAgenda"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:fontFamily="@font/outfit_regular"
+                    android:gravity="center"
+                    android:text="Agenda"
+                    android:textColor="#9CA3AF"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/nav_cobros"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/nav_item_selected"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:src="@drawable/ic_payments"
+                    android:tint="#0A66FF" />
+
+                <TextView
+                    android:id="@+id/navLabelCobros"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:fontFamily="@font/outfit_regular"
+                    android:gravity="center"
+                    android:text="Cobros"
+                    android:textColor="#0A66FF"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </FrameLayout>
+
+
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

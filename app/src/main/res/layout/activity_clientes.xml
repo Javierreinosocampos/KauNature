@@ -285,150 +285,176 @@
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- ── BOTTOM NAV (Inicio · Clientes · [COBROS] · Agenda · Ajustes) ── -->
-    <!-- ══ BOTTOM NAV: Inicio · Clientes · [💪Gimnasio] · Agenda · Cobros ══ -->
-    <LinearLayout
-        android:id="@+id/bottomNavCustom"
+    <!-- BOTTOM NAV FLOTANTE -->
+    <!--
+        CORRECCIÓN: CardView → FrameLayout con bg_nav_card.xml:
+          <shape>
+            <solid android:color="#FFFFFF"/>
+            <corners android:radius="30dp"/>
+          </shape>
+        elevation + outlineProvider + clipToOutline evitan el fondo blanco
+        que se filtraba fuera de los bordes redondeados.
+    -->
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="74dp"
+        android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:background="@color/white"
-        android:elevation="20dp"
-        android:orientation="horizontal"
-        android:paddingHorizontal="4dp"
-        android:paddingTop="6dp"
-        android:paddingBottom="8dp">
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/bg_nav_card"
+        android:clipToOutline="true"
+        android:elevation="24dp"
+        android:outlineProvider="none">
 
-        <!-- INICIO -->
         <LinearLayout
-            android:id="@+id/nav_home"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:paddingVertical="4dp">
-            <TextView
-                android:id="@+id/navIconHome"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="🏠"
-                android:textSize="17sp"
-                android:gravity="center"/>
-            <TextView
-                android:id="@+id/navLabelHome"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Inicio"
-                android:textSize="9sp"
-                android:textColor="@color/text_muted"
-                android:gravity="center"/>
-        </LinearLayout>
+            android:layout_width="match_parent"
+            android:layout_height="72dp"
+            android:orientation="horizontal"
+            android:paddingStart="10dp"
+            android:paddingTop="10dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="10dp">
 
-        <!-- CLIENTES -->
-        <LinearLayout
-            android:id="@+id/nav_clientes"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:paddingVertical="4dp">
-            <TextView
-                android:id="@+id/navIconClientes"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="👥"
-                android:textSize="17sp"
-                android:gravity="center"/>
-            <TextView
-                android:id="@+id/navLabelClientes"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Clientes"
-                android:textSize="9sp"
-                android:textColor="@color/text_muted"
-                android:gravity="center"/>
-        </LinearLayout>
-        <!-- GIMNASIO -->
-        <LinearLayout
-            android:id="@+id/nav_gimnasio"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:paddingVertical="4dp">
-            <TextView
-                android:id="@+id/navIconGimnasio"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="💪"
-                android:textSize="17sp"
-                android:gravity="center"/>
-            <TextView
-                android:id="@+id/navLabelGimnasio"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Gimnasio"
-                android:textSize="9sp"
-                android:textColor="@color/accent_blue"
-                android:gravity="center"/>
-        </LinearLayout>
+            <LinearLayout
+                android:id="@+id/nav_home"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/nav_item_normal"
+                android:gravity="center"
+                android:orientation="vertical">
 
-        <!-- AGENDA -->
-        <LinearLayout
-            android:id="@+id/nav_agenda"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:paddingVertical="4dp">
-            <TextView
-                android:id="@+id/navIconAgenda"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="📅"
-                android:textSize="17sp"
-                android:gravity="center"/>
-            <TextView
-                android:id="@+id/navLabelAgenda"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Agenda"
-                android:textSize="9sp"
-                android:textColor="@color/text_muted"
-                android:gravity="center"/>
-        </LinearLayout>
+                <ImageView
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:elevation="2dp"
+                    android:src="@drawable/ic_home"
+                    android:tint="#9CA3AF" />
 
-        <!-- COBROS -->
-        <LinearLayout
-            android:id="@+id/nav_cobros"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:paddingVertical="4dp">
-            <TextView
-                android:id="@+id/navIconCobros"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="💰"
-                android:textSize="17sp"
-                android:gravity="center"/>
-            <TextView
-                android:id="@+id/navLabelCobros"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Cobros"
-                android:textSize="9sp"
-                android:textColor="@color/text_muted"
-                android:gravity="center"/>
-        </LinearLayout>
+                <TextView
+                    android:id="@+id/navLabelHome"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:fontFamily="@font/outfit_bold"
+                    android:gravity="center"
+                    android:text="Inicio"
+                    android:textColor="#9CA3AF"
+                    android:textSize="11sp" />
+            </LinearLayout>
 
-    </LinearLayout>
+            <LinearLayout
+                android:id="@+id/nav_clientes"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/nav_item_selected"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:src="@drawable/ic_people"
+                    android:tint="#0A66FF" />
+
+                <TextView
+                    android:id="@+id/navLabelClientes"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:fontFamily="@font/outfit_regular"
+                    android:gravity="center"
+                    android:text="Clientes"
+                    android:textColor="#0A66FF"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/nav_gimnasio"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/nav_item_normal"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:id="@+id/navIconGimnasio"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:src="@drawable/ic_fitness"
+                    android:tint="#9CA3AF" />
+
+                <TextView
+                    android:id="@+id/navLabelGimnasio"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:fontFamily="@font/outfit_regular"
+                    android:gravity="center"
+                    android:text="Gym"
+                    android:textColor="#9CA3AF"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/nav_agenda"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/nav_item_normal"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:src="@drawable/ic_calendar_today"
+                    android:tint="#9CA3AF" />
+
+                <TextView
+                    android:id="@+id/navLabelAgenda"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:fontFamily="@font/outfit_regular"
+                    android:gravity="center"
+                    android:text="Agenda"
+                    android:textColor="#9CA3AF"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/nav_cobros"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/nav_item_normal"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:src="@drawable/ic_payments"
+                    android:tint="#9CA3AF" />
+
+                <TextView
+                    android:id="@+id/navLabelCobros"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:fontFamily="@font/outfit_regular"
+                    android:gravity="center"
+                    android:text="Cobros"
+                    android:textColor="#9CA3AF"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </FrameLayout>
 
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

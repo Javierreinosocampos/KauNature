@@ -90,11 +90,11 @@ public class NavHelper {
 
     private static void setActive(LinearLayout tab, TextView label) {
         android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
-        bg.setColor(Color.parseColor("#0A66FF"));
+        bg.setColor(Color.parseColor("#22000077"));
         bg.setCornerRadius(999);
         tab.setBackground(bg);
         if (label != null) {
-            label.setTextColor(Color.WHITE);
+            label.setTextColor(Color.BLUE);
             label.setTypeface(Typeface.DEFAULT_BOLD);
         }
     }

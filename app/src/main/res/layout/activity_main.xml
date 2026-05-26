@@ -1,152 +1,235 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F7F9FF">
+    android:background="#00FFFFFF"
+    android:backgroundTint="#00FFFFFF">
 
-    <!-- ══ CONTENIDO PRINCIPAL ══ -->
+    <!-- CONTENIDO PRINCIPAL -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:clipToPadding="false"
         android:fillViewport="true"
-        android:paddingBottom="80dp"
-        android:clipToPadding="false">
+        android:overScrollMode="never"
+        android:paddingBottom="110dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- ── HEADER ── -->
-            <LinearLayout
+            <!-- HEADER -->
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:background="#FFFFFF"
-                android:paddingStart="22dp"
-                android:paddingEnd="22dp"
-                android:paddingTop="52dp"
-                android:paddingBottom="18dp">
+                android:layout_height="217dp"
+                android:background="@drawable/bg_header_spectacular"
+                android:elevation="12dp"
+                android:paddingStart="26dp"
+                android:paddingTop="10dp"
+                android:paddingEnd="26dp"
+                android:paddingBottom="30dp">
+
+                <View
+                    android:id="@+id/decorCircle2"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:background="@drawable/shape_glow_medium"
+                    android:translationX="30dp"
+                    android:translationY="-30dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <LinearLayout
-                    android:layout_width="match_parent"
+                    android:id="@+id/headerContent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:layout_marginTop="92dp"
+                    android:orientation="vertical"
+                    app:layout_constraintEnd_toStartOf="@id/headerActions"
+                    app:layout_constraintHorizontal_bias="0.0"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
 
-                    <LinearLayout
-                        android:layout_width="0dp"
+                    <TextView
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
+                        android:fontFamily="@font/outfit_bold"
+                        android:letterSpacing="0.24"
+                        android:shadowColor="#40000000"
+                        android:shadowDx="0"
+                        android:shadowDy="1"
+                        android:shadowRadius="3"
+                        android:text="KAU NATURE"
+                        android:textColor="#93C5FD"
+                        android:textSize="11sp" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="KAU NATURE"
-                            android:textSize="9sp"
-                            android:textColor="#2563EB"
-                            android:letterSpacing="0.18"
-                            android:textStyle="bold"/>
+                    <TextView
+                        android:id="@+id/tvGreeting"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:fontFamily="@font/outfit_bold"
+                        android:shadowColor="#60000000"
+                        android:shadowDx="0"
+                        android:shadowDy="4"
+                        android:shadowRadius="14"
+                        android:text="Buenos días"
+                        android:textColor="#FFFFFF"
+                        android:textSize="34sp" />
 
-                        <TextView
-                            android:id="@+id/tvGreeting"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Buenos días"
-                            android:textSize="28sp"
-                            android:textColor="#0D1B3E"
-                            android:textStyle="bold"/>
+                    <TextView
+                        android:id="@+id/tvFechaHoy"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:fontFamily="@font/outfit_regular"
+                        android:text="Hoy"
+                        android:textColor="#BFDBFF"
+                        android:textSize="14sp" />
 
-                        <TextView
-                            android:id="@+id/tvFechaHoy"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Hoy"
-                            android:textSize="12sp"
-                            android:textColor="#9CA3AF"/>
-
-                    </LinearLayout>
-
-                    <!-- Notificaciones -->
-                    <androidx.cardview.widget.CardView
-                        android:id="@+id/btnNotif"
-                        android:layout_width="42dp"
-                        android:layout_height="42dp"
-                        android:layout_marginEnd="10dp"
-                        app:cardCornerRadius="14dp"
-                        app:cardElevation="0dp"
-                        app:cardBackgroundColor="#EEF4FF">
-                        <FrameLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent">
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:text="🔔"
-                                android:textSize="18sp"
-                                android:gravity="center"/>
-                            <View
-                                android:id="@+id/badgeNotif"
-                                android:layout_width="8dp"
-                                android:layout_height="8dp"
-                                android:layout_gravity="top|end"
-                                android:layout_margin="6dp"
-                                android:background="#EF4444"
-                                android:visibility="gone"/>
-                        </FrameLayout>
-                    </androidx.cardview.widget.CardView>
-
-                    <!-- Settings -->
-                    <androidx.cardview.widget.CardView
-                        android:id="@+id/btnSettings"
-                        android:layout_width="42dp"
-                        android:layout_height="42dp"
-                        app:cardCornerRadius="14dp"
-                        app:cardElevation="0dp"
-                        app:cardBackgroundColor="#EEF4FF">
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:text="⚙"
-                            android:textSize="18sp"
-                            android:gravity="center"/>
-                    </androidx.cardview.widget.CardView>
+                    <View
+                        android:id="@+id/decorCircle1"
+                        android:layout_width="0dp"
+                        android:layout_height="2dp"
+                        android:background="@drawable/shape_glow_large"
+                        android:translationX="-70dp"
+                        android:translationY="-50dp" />
 
                 </LinearLayout>
-            </LinearLayout>
 
-            <!-- ── CUERPO ── -->
+                <LinearLayout
+                    android:id="@+id/headerActions"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="32dp"
+                    android:orientation="horizontal"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <!--
+                        CORRECCIÓN: Se elimina CardView (que fuerza fondo blanco sólido).
+                        Se usa FrameLayout con background drawable que tenga corner radius.
+                        Crea res/drawable/bg_header_btn.xml con:
+                          <shape><solid android:color="#FFFFFF"/><corners android:radius="18dp"/></shape>
+                        y res/drawable/bg_header_btn_ripple.xml para el efecto ripple al pulsar.
+                    -->
+                    <FrameLayout
+                        android:id="@+id/btnNotif"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="@drawable/bg_header_btn"
+                        android:clickable="true"
+                        android:elevation="10dp"
+                        android:focusable="true"
+                        android:foreground="?attr/selectableItemBackgroundBorderless">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_bell"
+                            android:tint="#0A66FF" />
+
+                        <View
+                            android:id="@+id/badgeNotif"
+                            android:layout_width="12dp"
+                            android:layout_height="12dp"
+                            android:layout_gravity="top|end"
+                            android:layout_margin="8dp"
+                            android:background="@drawable/shape_badge_pulse"
+                            android:elevation="2dp"
+                            android:visibility="gone" />
+                    </FrameLayout>
+
+                    <FrameLayout
+                        android:id="@+id/btnSettings"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:background="@drawable/bg_header_btn"
+                        android:clickable="true"
+                        android:elevation="10dp"
+                        android:focusable="true"
+                        android:foreground="?attr/selectableItemBackgroundBorderless">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_settings"
+                            android:tint="#6B7FA3" />
+                    </FrameLayout>
+
+                </LinearLayout>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="20dp">
 
-                <!-- ── ACCIONES RÁPIDAS (cuadrado azul) ── -->
-                <androidx.cardview.widget.CardView
+                <!-- ============================================================ -->
+                <!--   CARD ACCIONES RÁPIDAS                                      -->
+                <!--   CORRECCIÓN: CardView reemplazado por FrameLayout +         -->
+                <!--   background drawable. Así el fondo es controlado por ti     -->
+                <!--   y no hay fondo blanco extra debajo del border-radius.      -->
+                <!-- ============================================================ -->
+                <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
-                    app:cardCornerRadius="20dp"
-                    app:cardElevation="4dp"
-                    app:cardBackgroundColor="#2563EB">
+                    android:layout_marginBottom="22dp"
+                    android:background="@drawable/bg_quick_actions_card"
+                    android:clipToOutline="true"
+                    android:elevation="20dp"
+                    android:outlineProvider="none">
 
+                    <!-- Círculo decorativo superior-derecho -->
+                    <View
+                        android:layout_width="180dp"
+                        android:layout_height="180dp"
+                        android:layout_gravity="top|end"
+                        android:background="@drawable/shape_actions_circle_top"
+                        android:translationX="50dp"
+                        android:translationY="-50dp" />
+
+                    <!-- Círculo decorativo inferior-izquierdo -->
+                    <View
+                        android:layout_width="120dp"
+                        android:layout_height="120dp"
+                        android:layout_gravity="bottom|start"
+                        android:background="@drawable/shape_actions_circle_bottom"
+                        android:translationX="-30dp"
+                        android:translationY="30dp" />
+
+                    <!-- Línea de brillo superior -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_gravity="top"
+                        android:layout_marginStart="28dp"
+                        android:layout_marginTop="1dp"
+                        android:layout_marginEnd="28dp"
+                        android:background="@drawable/shape_shimmer_line" />
+
+                    <!-- Contenido -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="18dp">
+                        android:padding="24dp">
 
-                        <!-- Título + botón + -->
+                        <!-- Cabecera -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal"
+                            android:layout_marginBottom="20dp"
                             android:gravity="center_vertical"
-                            android:layout_marginBottom="14dp">
+                            android:orientation="horizontal">
 
                             <LinearLayout
                                 android:layout_width="0dp"
@@ -157,21 +240,24 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
+                                    android:fontFamily="@font/outfit_bold"
+                                    android:shadowColor="#50000000"
+                                    android:shadowDx="0"
+                                    android:shadowDy="2"
+                                    android:shadowRadius="6"
                                     android:text="Acciones rápidas"
-                                    android:textSize="16sp"
                                     android:textColor="#FFFFFF"
-                                    android:textStyle="bold"/>
+                                    android:textSize="20sp" />
 
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:fontFamily="@font/outfit_regular"
                                     android:text="¿Qué hacemos hoy?"
-                                    android:textSize="11sp"
-                                    android:textColor="#BFDBFF"
-                                    android:layout_marginTop="2dp"/>
-
+                                    android:textColor="#93C5FD"
+                                    android:textSize="13sp" />
                             </LinearLayout>
-
 
                         </LinearLayout>
 
@@ -179,74 +265,115 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:layout_marginBottom="8dp">
+                            android:layout_marginBottom="12dp"
+                            android:orientation="horizontal">
 
-                            <androidx.cardview.widget.CardView
+                            <!--
+                                CORRECCIÓN: CardView → FrameLayout con background drawable.
+                                bg_action_btn.xml debe tener:
+                                  <shape>
+                                    <solid android:color="#1A5CDB"/>
+                                    <corners android:radius="20dp"/>
+                                  </shape>
+                                Así no hay ningún fondo blanco extra bajo el borde redondeado.
+                            -->
+                            <FrameLayout
                                 android:id="@+id/btnAccionCobrar"
                                 android:layout_width="0dp"
-                                android:layout_height="70dp"
+                                android:layout_height="86dp"
+                                android:layout_marginEnd="8dp"
                                 android:layout_weight="1"
-                                android:layout_marginEnd="6dp"
-                                app:cardCornerRadius="16dp"
-                                app:cardElevation="0dp"
-                                app:cardBackgroundColor="#1D4ED8">
-                                <LinearLayout
+                                android:background="@drawable/bg_action_btn"
+                                android:clickable="true"
+                                android:clipToOutline="true"
+                                android:elevation="6dp"
+                                android:focusable="true"
+                                android:foreground="@drawable/ripple_action_btn"
+                                android:outlineProvider="none">
+
+                                <FrameLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="match_parent"
-                                    android:orientation="horizontal"
-                                    android:gravity="center_vertical"
-                                    android:paddingStart="14dp"
-                                    android:paddingEnd="10dp">
-                                    <TextView
-                                        android:layout_width="28dp"
-                                        android:layout_height="28dp"
-                                        android:text="💰"
-                                        android:textSize="17sp"
-                                        android:gravity="center"/>
-                                    <TextView
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        android:text="Cobrar"
-                                        android:textSize="13sp"
-                                        android:textColor="#FFFFFF"
-                                        android:textStyle="bold"
-                                        android:layout_marginStart="6dp"/>
-                                </LinearLayout>
-                            </androidx.cardview.widget.CardView>
+                                    android:background="@drawable/bg_action_btn_inner">
 
-                            <androidx.cardview.widget.CardView
+                                    <LinearLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:background="#00FFFFFF"
+                                        android:backgroundTint="#00FFFFFF"
+                                        android:gravity="center"
+                                        android:orientation="vertical"
+                                        android:padding="14dp">
+
+                                        <ImageView
+                                            android:layout_width="28dp"
+                                            android:layout_height="28dp"
+                                            android:elevation="2dp"
+                                            android:src="@drawable/ic_payments" />
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginTop="6dp"
+                                            android:fontFamily="@font/outfit_bold"
+                                            android:shadowColor="#40000000"
+                                            android:shadowDx="0"
+                                            android:shadowDy="1"
+                                            android:shadowRadius="2"
+                                            android:text="Cobrar"
+                                            android:textColor="#FFFFFF"
+                                            android:textSize="13sp" />
+                                    </LinearLayout>
+                                </FrameLayout>
+                            </FrameLayout>
+
+                            <FrameLayout
                                 android:id="@+id/btnAccionCita"
                                 android:layout_width="0dp"
-                                android:layout_height="70dp"
+                                android:layout_height="86dp"
+                                android:layout_marginStart="8dp"
                                 android:layout_weight="1"
-                                android:layout_marginStart="6dp"
-                                app:cardCornerRadius="16dp"
-                                app:cardElevation="0dp"
-                                app:cardBackgroundColor="#1D4ED8">
-                                <LinearLayout
+                                android:background="@drawable/bg_action_btn"
+                                android:clickable="true"
+                                android:clipToOutline="true"
+                                android:elevation="6dp"
+                                android:focusable="true"
+                                android:foreground="@drawable/ripple_action_btn"
+                                android:outlineProvider="none">
+
+                                <FrameLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="match_parent"
-                                    android:orientation="horizontal"
-                                    android:gravity="center_vertical"
-                                    android:paddingStart="14dp"
-                                    android:paddingEnd="10dp">
-                                    <TextView
-                                        android:layout_width="28dp"
-                                        android:layout_height="28dp"
-                                        android:text="📅"
-                                        android:textSize="17sp"
-                                        android:gravity="center"/>
-                                    <TextView
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        android:text="Nueva cita"
-                                        android:textSize="13sp"
-                                        android:textColor="#FFFFFF"
-                                        android:textStyle="bold"
-                                        android:layout_marginStart="6dp"/>
-                                </LinearLayout>
-                            </androidx.cardview.widget.CardView>
+                                    android:background="@drawable/bg_action_btn_inner">
+
+                                    <LinearLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:gravity="center"
+                                        android:orientation="vertical"
+                                        android:padding="14dp">
+
+                                        <ImageView
+                                            android:layout_width="28dp"
+                                            android:layout_height="28dp"
+                                            android:elevation="2dp"
+                                            android:src="@drawable/ic_calendar_today" />
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginTop="6dp"
+                                            android:fontFamily="@font/outfit_bold"
+                                            android:shadowColor="#40000000"
+                                            android:shadowDx="0"
+                                            android:shadowDy="1"
+                                            android:shadowRadius="2"
+                                            android:text="Nueva cita"
+                                            android:textColor="#FFFFFF"
+                                            android:textSize="13sp" />
+                                    </LinearLayout>
+                                </FrameLayout>
+                            </FrameLayout>
 
                         </LinearLayout>
 
@@ -254,159 +381,249 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:layout_marginBottom="8dp">
+                            android:layout_marginBottom="12dp"
+                            android:orientation="horizontal">
 
-                            <androidx.cardview.widget.CardView
+                            <FrameLayout
                                 android:id="@+id/btnAccionGym"
                                 android:layout_width="0dp"
-                                android:layout_height="70dp"
+                                android:layout_height="86dp"
+                                android:layout_marginEnd="8dp"
                                 android:layout_weight="1"
-                                android:layout_marginEnd="6dp"
-                                app:cardCornerRadius="16dp"
-                                app:cardElevation="0dp"
-                                app:cardBackgroundColor="#1D4ED8">
-                                <LinearLayout
+                                android:background="@drawable/bg_action_btn"
+                                android:clickable="true"
+                                android:clipToOutline="true"
+                                android:elevation="6dp"
+                                android:focusable="true"
+                                android:foreground="@drawable/ripple_action_btn"
+                                android:outlineProvider="none">
+
+                                <FrameLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="match_parent"
-                                    android:orientation="horizontal"
-                                    android:gravity="center_vertical"
-                                    android:paddingStart="14dp"
-                                    android:paddingEnd="10dp">
-                                    <TextView
-                                        android:layout_width="28dp"
-                                        android:layout_height="28dp"
-                                        android:text="💪"
-                                        android:textSize="17sp"
-                                        android:gravity="center"/>
-                                    <TextView
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        android:text="Gimnasio"
-                                        android:textSize="13sp"
-                                        android:textColor="#FFFFFF"
-                                        android:textStyle="bold"
-                                        android:layout_marginStart="6dp"/>
-                                </LinearLayout>
-                            </androidx.cardview.widget.CardView>
+                                    android:background="@drawable/bg_action_btn_inner">
 
-                            <androidx.cardview.widget.CardView
+                                    <LinearLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:gravity="center"
+                                        android:orientation="vertical"
+                                        android:padding="14dp">
+
+                                        <ImageView
+                                            android:layout_width="28dp"
+                                            android:layout_height="28dp"
+                                            android:elevation="2dp"
+                                            android:src="@drawable/ic_fitness" />
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginTop="6dp"
+                                            android:fontFamily="@font/outfit_bold"
+                                            android:shadowColor="#40000000"
+                                            android:shadowDx="0"
+                                            android:shadowDy="1"
+                                            android:shadowRadius="2"
+                                            android:text="Gimnasio"
+                                            android:textColor="#FFFFFF"
+                                            android:textSize="13sp" />
+                                    </LinearLayout>
+                                </FrameLayout>
+                            </FrameLayout>
+
+                            <FrameLayout
                                 android:id="@+id/btnAccionClientes"
                                 android:layout_width="0dp"
-                                android:layout_height="70dp"
+                                android:layout_height="86dp"
+                                android:layout_marginStart="8dp"
                                 android:layout_weight="1"
-                                android:layout_marginStart="6dp"
-                                app:cardCornerRadius="16dp"
-                                app:cardElevation="0dp"
-                                app:cardBackgroundColor="#1D4ED8">
-                                <LinearLayout
+                                android:background="@drawable/bg_action_btn"
+                                android:clickable="true"
+                                android:clipToOutline="true"
+                                android:elevation="6dp"
+                                android:focusable="true"
+                                android:foreground="@drawable/ripple_action_btn"
+                                android:outlineProvider="none">
+
+                                <FrameLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="match_parent"
-                                    android:orientation="horizontal"
-                                    android:gravity="center_vertical"
-                                    android:paddingStart="14dp"
-                                    android:paddingEnd="10dp">
-                                    <TextView
-                                        android:layout_width="28dp"
-                                        android:layout_height="28dp"
-                                        android:text="👥"
-                                        android:textSize="17sp"
-                                        android:gravity="center"/>
-                                    <TextView
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        android:text="Clientes"
-                                        android:textSize="13sp"
-                                        android:textColor="#FFFFFF"
-                                        android:textStyle="bold"
-                                        android:layout_marginStart="6dp"/>
-                                </LinearLayout>
-                            </androidx.cardview.widget.CardView>
+                                    android:background="@drawable/bg_action_btn_inner">
+
+                                    <LinearLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:gravity="center"
+                                        android:orientation="vertical"
+                                        android:padding="14dp">
+
+                                        <ImageView
+                                            android:layout_width="28dp"
+                                            android:layout_height="28dp"
+                                            android:elevation="2dp"
+                                            android:src="@drawable/ic_people" />
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginTop="6dp"
+                                            android:fontFamily="@font/outfit_bold"
+                                            android:shadowColor="#40000000"
+                                            android:shadowDx="0"
+                                            android:shadowDy="1"
+                                            android:shadowRadius="2"
+                                            android:text="Clientes"
+                                            android:textColor="#FFFFFF"
+                                            android:textSize="13sp" />
+                                    </LinearLayout>
+                                </FrameLayout>
+                            </FrameLayout>
 
                         </LinearLayout>
 
-                        <!-- Fila 3: Inscribir (ancho completo) -->
-                        <androidx.cardview.widget.CardView
+                        <!-- Divisor -->
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginBottom="12dp"
+                            android:background="@drawable/shape_divider_blue" />
+
+                        <!-- Fila 3: Inscribir -->
+                        <!--
+                            CORRECCIÓN: CardView → FrameLayout.
+                            bg_inscribir_btn_shape.xml:
+                              <shape>
+                                <solid android:color="#0840AA"/>
+                                <corners android:radius="20dp"/>
+                              </shape>
+                        -->
+                        <FrameLayout
                             android:id="@+id/btnAccionInscribir"
                             android:layout_width="match_parent"
-                            android:layout_height="70dp"
-                            app:cardCornerRadius="16dp"
-                            app:cardElevation="0dp"
-                            app:cardBackgroundColor="#1D4ED8">
+                            android:layout_height="72dp"
+                            android:background="@drawable/bg_inscribir_btn_shape"
+                            android:clickable="true"
+                            android:clipToOutline="true"
+                            android:elevation="10dp"
+                            android:focusable="true"
+                            android:foreground="@drawable/ripple_action_btn"
+                            android:outlineProvider="none">
 
-                            <LinearLayout
+                            <FrameLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical"
-                                android:paddingStart="18dp"
-                                android:paddingEnd="18dp">
+                                android:background="@drawable/bg_inscribir_btn">
 
-                                <TextView
-                                    android:layout_width="32dp"
-                                    android:layout_height="32dp"
-                                    android:text="🎫"
-                                    android:textSize="20sp"
-                                    android:gravity="center"/>
+                                <View
+                                    android:layout_width="60dp"
+                                    android:layout_height="match_parent"
+                                    android:layout_gravity="start"/>
 
                                 <LinearLayout
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:orientation="vertical"
-                                    android:layout_marginStart="12dp">
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:gravity="center_vertical"
+                                    android:orientation="horizontal"
+                                    android:paddingStart="20dp"
+                                    android:paddingEnd="20dp">
 
-                                    <TextView
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        android:text="Inscribir cliente"
-                                        android:textSize="14sp"
-                                        android:textColor="#FFFFFF"
-                                        android:textStyle="bold"/>
+                                    <FrameLayout
+                                        android:layout_width="42dp"
+                                        android:layout_height="42dp"
+                                        android:background="@drawable/shape_inscribir_icon_bg">
 
-                                    <TextView
-                                        android:layout_width="wrap_content"
+                                        <ImageView
+                                            android:layout_width="22dp"
+                                            android:layout_height="22dp"
+                                            android:layout_gravity="center"
+                                            android:elevation="2dp"
+                                            android:src="@drawable/ic_ticket" />
+                                    </FrameLayout>
+
+                                    <LinearLayout
+                                        android:layout_width="0dp"
                                         android:layout_height="wrap_content"
-                                        android:text="Crear membresía y generar cobro automático"
-                                        android:textSize="10sp"
-                                        android:textColor="#BFDBFF"
-                                        android:layout_marginTop="2dp"/>
+                                        android:layout_marginStart="14dp"
+                                        android:layout_weight="1"
+                                        android:orientation="vertical">
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:fontFamily="@font/outfit_bold"
+                                            android:shadowColor="#50000000"
+                                            android:shadowDx="0"
+                                            android:shadowDy="1"
+                                            android:shadowRadius="3"
+                                            android:text="Inscribir cliente"
+                                            android:textColor="#FFFFFF"
+                                            android:textSize="16sp" />
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginTop="2dp"
+                                            android:fontFamily="@font/outfit_regular"
+                                            android:text="Membresía y cobro automático"
+                                            android:textColor="#93C5FD"
+                                            android:textSize="11sp" />
+
+                                    </LinearLayout>
+
+                                    <FrameLayout
+                                        android:layout_width="32dp"
+                                        android:layout_height="32dp"
+                                        android:background="@drawable/shape_arrow_circle">
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_gravity="center"
+                                            android:paddingBottom="2dp"
+                                            android:text="›"
+                                            android:textColor="#FFFFFF"
+                                            android:textSize="22sp" />
+                                    </FrameLayout>
 
                                 </LinearLayout>
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="›"
-                                    android:textSize="24sp"
-                                    android:textColor="#FFFFFF"
-                                    android:alpha="0.7"/>
-
-                            </LinearLayout>
-                        </androidx.cardview.widget.CardView>
+                            </FrameLayout>
+                        </FrameLayout>
 
                     </LinearLayout>
-                </androidx.cardview.widget.CardView>
+                </FrameLayout>
 
-                <!-- ── KPIs ── -->
+                <!-- KPIs -->
+                <!--
+                    CORRECCIÓN: Los tres CardView blancos reemplazados por FrameLayout.
+                    Crea bg_kpi_card.xml:
+                      <shape>
+                        <solid android:color="#FFFFFF"/>
+                        <corners android:radius="22dp"/>
+                      </shape>
+                    Con elevation + outlineProvider="background" + clipToOutline="true"
+                    obtienes la sombra sin fondo blanco extra fuera del radio.
+                -->
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="76dp"
-                    android:layout_marginBottom="16dp"
+                    android:layout_height="88dp"
+                    android:layout_marginBottom="22dp"
                     android:orientation="horizontal">
 
-                    <androidx.cardview.widget.CardView
+                    <FrameLayout
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="6dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginEnd="8dp"
                         android:layout_weight="1"
-                        app:cardBackgroundColor="#FFFFFF"
-                        app:cardCornerRadius="18dp"
-                        app:cardElevation="2dp">
+                        android:background="@drawable/bg_kpi_card"
+                        android:clipToOutline="true"
+                        android:elevation="10dp"
+                        android:outlineProvider="none">
 
                         <LinearLayout
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="center_vertical"
                             android:orientation="vertical"
                             android:padding="16dp">
 
@@ -415,39 +632,44 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:ellipsize="none"
+                                android:fontFamily="@font/outfit_bold"
                                 android:maxLines="1"
+                                android:shadowColor="#200A66FF"
+                                android:shadowDx="0"
+                                android:shadowDy="2"
+                                android:shadowRadius="4"
                                 android:text="—"
-                                android:textColor="#2563EB"
-                                android:textStyle="bold"
+                                android:textColor="#0A66FF"
                                 app:autoSizeMaxTextSize="32sp"
-                                app:autoSizeMinTextSize="14sp"
+                                app:autoSizeMinTextSize="16sp"
                                 app:autoSizeStepGranularity="1sp"
                                 app:autoSizeTextType="uniform" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:letterSpacing="0.05"
+                                android:fontFamily="@font/outfit_bold"
                                 android:text="Citas hoy"
                                 android:textColor="#9CA3AF"
-                                android:textSize="10sp"
-                                android:textStyle="bold" />
+                                android:textSize="14sp" />
                         </LinearLayout>
-                    </androidx.cardview.widget.CardView>
+                    </FrameLayout>
 
-                    <androidx.cardview.widget.CardView
+                    <FrameLayout
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="6dp"
-                        android:layout_marginEnd="6dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="4dp"
+                        android:layout_marginEnd="8dp"
                         android:layout_weight="1"
-                        app:cardBackgroundColor="#FFFFFF"
-                        app:cardCornerRadius="18dp"
-                        app:cardElevation="2dp">
+                        android:background="@drawable/bg_kpi_card"
+                        android:clipToOutline="true"
+                        android:elevation="10dp"
+                        android:outlineProvider="none">
 
                         <LinearLayout
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="center_vertical"
                             android:orientation="vertical"
                             android:padding="16dp">
 
@@ -456,38 +678,43 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:ellipsize="none"
+                                android:fontFamily="@font/outfit_bold"
                                 android:maxLines="1"
+                                android:shadowColor="#2010B981"
+                                android:shadowDx="0"
+                                android:shadowDy="2"
+                                android:shadowRadius="4"
                                 android:text="—"
                                 android:textColor="#10B981"
-                                android:textStyle="bold"
                                 app:autoSizeMaxTextSize="32sp"
-                                app:autoSizeMinTextSize="14sp"
+                                app:autoSizeMinTextSize="16sp"
                                 app:autoSizeStepGranularity="1sp"
                                 app:autoSizeTextType="uniform" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:letterSpacing="0.05"
+                                android:fontFamily="@font/outfit_bold"
                                 android:text="En gym hoy"
                                 android:textColor="#9CA3AF"
-                                android:textSize="10sp"
-                                android:textStyle="bold" />
+                                android:textSize="14sp" />
                         </LinearLayout>
-                    </androidx.cardview.widget.CardView>
+                    </FrameLayout>
 
-                    <androidx.cardview.widget.CardView
+                    <FrameLayout
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="6dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="4dp"
                         android:layout_weight="1"
-                        app:cardBackgroundColor="#FFFFFF"
-                        app:cardCornerRadius="18dp"
-                        app:cardElevation="2dp">
+                        android:background="@drawable/bg_kpi_card"
+                        android:clipToOutline="true"
+                        android:elevation="10dp"
+                        android:outlineProvider="none">
 
                         <LinearLayout
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="center_vertical"
                             android:orientation="vertical"
                             android:padding="16dp">
 
@@ -496,166 +723,271 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:ellipsize="none"
+                                android:fontFamily="@font/outfit_bold"
                                 android:maxLines="1"
+                                android:shadowColor="#20F59E0B"
+                                android:shadowDx="0"
+                                android:shadowDy="2"
+                                android:shadowRadius="4"
                                 android:text="—"
                                 android:textColor="#F59E0B"
-                                android:textStyle="bold"
                                 app:autoSizeMaxTextSize="28sp"
-                                app:autoSizeMinTextSize="12sp"
+                                app:autoSizeMinTextSize="14sp"
                                 app:autoSizeStepGranularity="1sp"
                                 app:autoSizeTextType="uniform" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:letterSpacing="0.05"
+                                android:fontFamily="@font/outfit_bold"
                                 android:text="Pendiente"
                                 android:textColor="#9CA3AF"
-                                android:textSize="10sp"
-                                android:textStyle="bold" />
+                                android:textSize="14sp" />
                         </LinearLayout>
-                    </androidx.cardview.widget.CardView>
+                    </FrameLayout>
 
                 </LinearLayout>
 
-                <!-- ── CITAS HOY ── -->
+                <!-- CITAS HOY -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
+                    android:layout_marginBottom="12dp"
                     android:gravity="center_vertical"
-                    android:layout_marginBottom="10dp">
+                    android:orientation="horizontal">
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
+                        android:fontFamily="@font/outfit_bold"
                         android:text="Citas de hoy"
-                        android:textSize="14sp"
                         android:textColor="#0D1B3E"
-                        android:textStyle="bold"/>
+                        android:textSize="17sp" />
 
                     <TextView
                         android:id="@+id/tvVerCitas"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:fontFamily="@font/outfit_bold"
                         android:text="Ver agenda →"
-                        android:textSize="11sp"
-                        android:textColor="#2563EB"
-                        android:textStyle="bold"/>
-
+                        android:textColor="#0A66FF"
+                        android:textSize="15sp" />
                 </LinearLayout>
 
                 <LinearLayout
                     android:id="@+id/listaCitas"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:layout_marginBottom="16dp"/>
+                    android:layout_marginBottom="22dp"
+                    android:orientation="vertical" />
 
-                <!-- ── PAGOS PENDIENTES ── -->
+                <!-- PAGOS PENDIENTES -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
+                    android:layout_marginBottom="12dp"
                     android:gravity="center_vertical"
-                    android:layout_marginBottom="10dp">
+                    android:orientation="horizontal">
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
+                        android:fontFamily="@font/outfit_bold"
                         android:text="Pagos pendientes"
-                        android:textSize="14sp"
                         android:textColor="#0D1B3E"
-                        android:textStyle="bold"/>
+                        android:textSize="17sp" />
 
                     <TextView
                         android:id="@+id/tvVerPagos"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:fontFamily="@font/outfit_bold"
                         android:text="Ver cobros →"
-                        android:textSize="11sp"
-                        android:textColor="#2563EB"
-                        android:textStyle="bold"/>
-
+                        android:textColor="#0A66FF"
+                        android:textSize="15sp" />
                 </LinearLayout>
 
                 <LinearLayout
                     android:id="@+id/listaPagos"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"/>
+                    android:orientation="vertical" />
 
             </LinearLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- ══ BOTTOM NAV ══ -->
-    <LinearLayout
+    <!-- BOTTOM NAV FLOTANTE -->
+    <!--
+        CORRECCIÓN: CardView → FrameLayout con bg_nav_card.xml:
+          <shape>
+            <solid android:color="#FFFFFF"/>
+            <corners android:radius="30dp"/>
+          </shape>
+        elevation + outlineProvider + clipToOutline evitan el fondo blanco
+        que se filtraba fuera de los bordes redondeados.
+    -->
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="72dp"
+        android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:orientation="horizontal"
-        android:background="#FFFFFF"
-        android:elevation="12dp"
-        android:paddingStart="4dp"
-        android:paddingEnd="4dp"
-        android:paddingTop="6dp"
-        android:paddingBottom="8dp">
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/bg_nav_card"
+        android:clipToOutline="true"
+        android:elevation="24dp"
+        android:outlineProvider="none">
 
-        <LinearLayout android:id="@+id/nav_home"
-            android:layout_width="0dp" android:layout_height="match_parent"
-            android:layout_weight="1" android:orientation="vertical" android:gravity="center">
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="🏠" android:textSize="17sp" android:gravity="center"/>
-            <TextView android:id="@+id/navLabelHome"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="Inicio" android:textSize="9sp" android:textColor="#6B7FA3" android:gravity="center"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="72dp"
+            android:orientation="horizontal"
+            android:paddingStart="10dp"
+            android:paddingTop="10dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="10dp">
+
+            <LinearLayout
+                android:id="@+id/nav_home"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/nav_item_selected"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:elevation="2dp"
+                    android:src="@drawable/ic_home"
+                    android:tint="#0A66FF" />
+
+                <TextView
+                    android:id="@+id/navLabelHome"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:fontFamily="@font/outfit_bold"
+                    android:gravity="center"
+                    android:text="Inicio"
+                    android:textColor="#0A66FF"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/nav_clientes"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/nav_item_normal"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:src="@drawable/ic_people"
+                    android:tint="#9CA3AF" />
+
+                <TextView
+                    android:id="@+id/navLabelClientes"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:fontFamily="@font/outfit_regular"
+                    android:gravity="center"
+                    android:text="Clientes"
+                    android:textColor="#9CA3AF"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/nav_gimnasio"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/nav_item_normal"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:id="@+id/navIconGimnasio"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:src="@drawable/ic_fitness"
+                    android:tint="#9CA3AF" />
+
+                <TextView
+                    android:id="@+id/navLabelGimnasio"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:fontFamily="@font/outfit_regular"
+                    android:gravity="center"
+                    android:text="Gym"
+                    android:textColor="#9CA3AF"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/nav_agenda"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/nav_item_normal"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:src="@drawable/ic_calendar_today"
+                    android:tint="#9CA3AF" />
+
+                <TextView
+                    android:id="@+id/navLabelAgenda"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:fontFamily="@font/outfit_regular"
+                    android:gravity="center"
+                    android:text="Agenda"
+                    android:textColor="#9CA3AF"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/nav_cobros"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/nav_item_normal"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:src="@drawable/ic_payments"
+                    android:tint="#9CA3AF" />
+
+                <TextView
+                    android:id="@+id/navLabelCobros"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:fontFamily="@font/outfit_regular"
+                    android:gravity="center"
+                    android:text="Cobros"
+                    android:textColor="#9CA3AF"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
         </LinearLayout>
-
-        <LinearLayout android:id="@+id/nav_clientes"
-            android:layout_width="0dp" android:layout_height="match_parent"
-            android:layout_weight="1" android:orientation="vertical" android:gravity="center">
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="👥" android:textSize="17sp" android:gravity="center"/>
-            <TextView android:id="@+id/navLabelClientes"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="Clientes" android:textSize="9sp" android:textColor="#6B7FA3" android:gravity="center"/>
-        </LinearLayout>
-
-        <LinearLayout android:id="@+id/nav_gimnasio"
-            android:layout_width="0dp" android:layout_height="match_parent"
-            android:layout_weight="1" android:orientation="vertical" android:gravity="center"
-            android:paddingTop="4dp" android:paddingBottom="4dp">
-            <TextView android:id="@+id/navIconGimnasio"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="💪" android:textSize="17sp" android:gravity="center"/>
-            <TextView android:id="@+id/navLabelGimnasio"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="Gimnasio" android:textSize="9sp" android:textColor="#2563EB" android:gravity="center"/>
-        </LinearLayout>
-
-        <LinearLayout android:id="@+id/nav_agenda"
-            android:layout_width="0dp" android:layout_height="match_parent"
-            android:layout_weight="1" android:orientation="vertical" android:gravity="center">
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="📅" android:textSize="17sp" android:gravity="center"/>
-            <TextView android:id="@+id/navLabelAgenda"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="Agenda" android:textSize="9sp" android:textColor="#6B7FA3" android:gravity="center"/>
-        </LinearLayout>
-
-        <LinearLayout android:id="@+id/nav_cobros"
-            android:layout_width="0dp" android:layout_height="match_parent"
-            android:layout_weight="1" android:orientation="vertical" android:gravity="center">
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="💰" android:textSize="17sp" android:gravity="center"/>
-            <TextView android:id="@+id/navLabelCobros"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="Cobros" android:textSize="9sp" android:textColor="#6B7FA3" android:gravity="center"/>
-        </LinearLayout>
-
-    </LinearLayout>
+    </FrameLayout>
 
 </FrameLayout>

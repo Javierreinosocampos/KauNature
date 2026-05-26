@@ -900,7 +900,7 @@ public class MainActivity extends AppCompatActivity {
     // ════════════════════════════════════════════════════════════════
     private void setupGreeting() {
         int h = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
-        tvGreeting.setText(h < 13 ? "Buenos días ☀️" : h < 20 ? "Buenas tardes 👋" : "Buenas noches 🌙");
+        tvGreeting.setText(h < 13 ? "Buenos días ☀" : h < 20 ? "Buenas tardes " : "Buenas noches ");
     }
 
     private void setupFecha() {
@@ -942,7 +942,7 @@ public class MainActivity extends AppCompatActivity {
         txt.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1f));
         TextView tv1 = new TextView(this);
         tv1.setText(titulo);
-        tv1.setTextSize(13f);
+        tv1.setTextSize(14f);
         tv1.setTextColor(TEXT_D);
         tv1.setTypeface(Typeface.DEFAULT_BOLD);
         tv1.setSingleLine(true);
@@ -950,7 +950,7 @@ public class MainActivity extends AppCompatActivity {
         txt.addView(tv1);
         TextView tv2 = new TextView(this);
         tv2.setText(sub);
-        tv2.setTextSize(11f);
+        tv2.setTextSize(12f);
         tv2.setTextColor(TEXT_L);
         tv2.setSingleLine(true);
         tv2.setEllipsize(android.text.TextUtils.TruncateAt.END);
@@ -966,7 +966,7 @@ public class MainActivity extends AppCompatActivity {
         chipBg.setCornerRadius(dp(10));
         TextView chip = new TextView(this);
         chip.setText(chipTxt);
-        chip.setTextSize(12f);
+        chip.setTextSize(15f);
         chip.setTextColor(accentColor);
         chip.setTypeface(Typeface.DEFAULT_BOLD);
         chip.setGravity(Gravity.CENTER);

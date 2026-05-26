@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/navigation_home"
+        android:icon="@drawable/ic_home"
+        android:title="Inicio" />
+
+    <item
+        android:id="@+id/navigation_clientes"
+        android:icon="@drawable/ic_people"
+        android:title="Clientes" />
+
+    <item
+        android:id="@+id/navigation_gimnasio"
+        android:icon="@drawable/ic_fitness"
+        android:title="Gimnasio" />
+
+    <item
+        android:id="@+id/navigation_agenda"
+        android:icon="@drawable/ic_calendar_today"
+        android:title="Agenda" />
+
+    <item
+        android:id="@+id/navigation_cobros"
+        android:icon="@drawable/ic_payments"
+        android:title="Cobros" />
+</menu>

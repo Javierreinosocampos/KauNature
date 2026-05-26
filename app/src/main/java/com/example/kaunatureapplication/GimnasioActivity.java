@@ -8,11 +8,14 @@ import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewOutlineProvider;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -20,6 +23,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+import androidx.core.content.res.ResourcesCompat;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
@@ -2524,33 +2528,91 @@ public class GimnasioActivity extends AppCompatActivity {
     }
 
     private View buildNavBar() {
+        // Contenedor principal con margen (flotante)
+        FrameLayout container = new FrameLayout(this);
+        FrameLayout.LayoutParams containerParams = new FrameLayout.LayoutParams(-1, -2);
+        containerParams.gravity = Gravity.BOTTOM;
+        containerParams.setMargins(dp(20), 0, dp(20), dp(20));
+        container.setLayoutParams(containerParams);
+
+        // Card flotante con fondo redondeado
+        FrameLayout card = new FrameLayout(this);
+        card.setBackgroundResource(R.drawable.bg_nav_card); // Fondo blanco con radius 30dp
+        card.setElevation(dp(24));
+        card.setClipToOutline(true);
+        card.setOutlineProvider(ViewOutlineProvider.BACKGROUND);
+
+        // LinearLayout interno con los tabs
         LinearLayout nav = new LinearLayout(this);
         nav.setOrientation(LinearLayout.HORIZONTAL);
-        nav.setBackgroundColor(WHITE);
-        nav.setElevation(dp(12));
-        FrameLayout.LayoutParams np = new FrameLayout.LayoutParams(-1, dp(74));
-        np.gravity = Gravity.BOTTOM;
-        nav.setLayoutParams(np);
-        nav.setPadding(dp(4), dp(6), dp(4), dp(8));
+        nav.setLayoutParams(new FrameLayout.LayoutParams(-1, dp(72)));
+        nav.setPadding(dp(10), dp(10), dp(10), dp(10));
 
-        nav.addView(mkNavTab3("🏠","Inicio",false, v -> {
-            startActivity(new Intent(this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
+        // Tabs
+        nav.addView(mkNavTab4("Inicio", R.drawable.ic_home, false, v -> {
+            startActivity(new Intent(this, MainActivity.class)
+                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
             overridePendingTransition(0, 0);
         }));
-        nav.addView(mkNavTab3("👥","Clientes",false, v -> {
+
+        nav.addView(mkNavTab4("Clientes", R.drawable.ic_people, false, v -> {
             startActivity(new Intent(this, ClientesActivity.class));
-            overridePendingTransition(0, 0); finish();
+            overridePendingTransition(0, 0);
+            finish();
         }));
-        nav.addView(mkNavTab3("💪","Gimnasio",true, v -> { /* ya estamos aquí */ }));
-        nav.addView(mkNavTab3("📅","Agenda",false, v -> {
+
+        nav.addView(mkNavTab4("Gym", R.drawable.ic_fitness, true, v -> {
+            /* ya estamos aquí */
+        }));
+
+        nav.addView(mkNavTab4("Agenda", R.drawable.ic_calendar_today, false, v -> {
             startActivity(new Intent(this, AgendaActivity.class));
-            overridePendingTransition(0, 0); finish();
+            overridePendingTransition(0, 0);
+            finish();
         }));
-        nav.addView(mkNavTab3("💰","Cobros",false, v -> {
+
+        nav.addView(mkNavTab4("Cobros", R.drawable.ic_payments, false, v -> {
             startActivity(new Intent(this, CobrosActivity.class));
-            overridePendingTransition(0, 0); finish();
+            overridePendingTransition(0, 0);
+            finish();
         }));
-        return nav;
+
+        card.addView(nav);
+        container.addView(card);
+        return container;
+    }
+
+    private View mkNavTab4(String label, int iconRes, boolean selected, View.OnClickListener click) {
+        LinearLayout tab = new LinearLayout(this);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, -1, 1f);
+        tab.setLayoutParams(lp);
+        tab.setOrientation(LinearLayout.VERTICAL);
+        tab.setGravity(Gravity.CENTER);
+        tab.setBackgroundResource(selected ? R.drawable.nav_item_selected : R.drawable.nav_item_normal);
+        tab.setOnClickListener(click);
+
+        // Ícono
+        ImageView icon = new ImageView(this);
+        LinearLayout.LayoutParams iconLp = new LinearLayout.LayoutParams(dp(25), dp(25));
+        icon.setLayoutParams(iconLp);
+        icon.setImageResource(iconRes);
+        icon.setColorFilter(selected ? 0xFF0A66FF : 0xFF9CA3AF); // Azul si seleccionado, gris si no
+
+        // Texto
+        TextView text = new TextView(this);
+        LinearLayout.LayoutParams textLp = new LinearLayout.LayoutParams(-2, -2);
+        textLp.topMargin = dp(4);
+        text.setLayoutParams(textLp);
+        text.setText(label);
+        text.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
+        text.setTextColor(selected ? 0xFF0A66FF : 0xFF9CA3AF);
+        text.setGravity(Gravity.CENTER);
+        text.setTypeface(ResourcesCompat.getFont(this,
+                selected ? R.font.outfit_bold : R.font.outfit_regular));
+
+        tab.addView(icon);
+        tab.addView(text);
+        return tab;
     }
 
     private LinearLayout mkNavTab3(String ico, String lbl, boolean activo, View.OnClickListener l) {

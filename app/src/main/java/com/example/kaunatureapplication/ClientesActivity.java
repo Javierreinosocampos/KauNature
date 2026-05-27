@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+
 public class ClientesActivity extends AppCompatActivity {
 
     // ══════════════════════════════════════════════════════════════════
@@ -176,7 +177,7 @@ public class ClientesActivity extends AppCompatActivity {
         f1P.bottomMargin = dpToPx(6);
         fila1.setLayoutParams(f1P);
 
-        filtroConMembresia = buildFiltroBtn("🎫 Con membresía", false);
+        filtroConMembresia = buildFiltroBtn("Con membresía", false);
         LinearLayout.LayoutParams p1 = new LinearLayout.LayoutParams(0, -2, 1f);
         p1.setMarginEnd(dpToPx(6));
         filtroConMembresia.setLayoutParams(p1);
@@ -189,7 +190,7 @@ public class ClientesActivity extends AppCompatActivity {
         cont.addView(fila1);
 
         // SEGUNDA FILA: Membresía cancelada
-        filtroCancelada = buildFiltroBtn("⏳ Membresía cancelada", false);
+        filtroCancelada = buildFiltroBtn("Membresía cancelada", false);
         LinearLayout.LayoutParams pC = new LinearLayout.LayoutParams(-1, -2);
         filtroCancelada.setLayoutParams(pC);
         cont.addView(filtroCancelada);
@@ -390,7 +391,7 @@ public class ClientesActivity extends AppCompatActivity {
                                 cargarDeudasYCitasReales();
                                 runOnUiThread(() ->
                                         Toast.makeText(ClientesActivity.this,
-                                                "💳 Cobro mensual generado: " + nomFinal,
+                                                "Cobro mensual generado: " + nomFinal,
                                                 Toast.LENGTH_SHORT).show());
                             }
                         }
@@ -621,7 +622,7 @@ public class ClientesActivity extends AppCompatActivity {
                 }
             }
 
-            tvMemb.setText("  🎫 Día " + dia + "/"+ mesTexto);
+            tvMemb.setText("      Día " + dia + "/"+ mesTexto);
             tvMemb.setTextSize(10f);
             tvMemb.setTextColor(Color.parseColor("#059669"));
             tvMemb.setTypeface(getResources().getFont(R.font.outfit_bold));
@@ -683,11 +684,11 @@ public class ClientesActivity extends AppCompatActivity {
         ((TextView) view.findViewById(R.id.tvDetalleNombre)).setText(cliente.nombreCompleto());
         ((TextView) view.findViewById(R.id.tvDetalleFecha)).setText("Alta: " + cliente.fechaAlta);
         ((TextView) view.findViewById(R.id.tvDetalleTelefono)).setText(
-                "📞 " + (cliente.telefono.isEmpty() ? "Sin teléfono" : cliente.telefono));
+                cliente.telefono.isEmpty() ? "Sin teléfono" : cliente.telefono);
         ((TextView) view.findViewById(R.id.tvDetalleEmail)).setText(
-                "✉️ " + (cliente.email.isEmpty() ? "Sin email" : cliente.email));
+                cliente.email.isEmpty() ? "Sin email" : cliente.email);
         ((TextView) view.findViewById(R.id.tvDetalleNotas)).setText(
-                "📝 " + (cliente.notas.isEmpty() ? "Sin notas" : cliente.notas));
+                cliente.notas.isEmpty() ? "Sin notas" : cliente.notas);
 
         TextView tvDetalleMembresias = view.findViewById(R.id.tvDetalleMembresias);
         if (tvDetalleMembresias != null) {
@@ -708,7 +709,7 @@ public class ClientesActivity extends AppCompatActivity {
                     .replace(".", ",") + "€ pendiente");
             tvSaldo.setTextColor(Color.parseColor("#EF4444"));
         } else {
-            tvSaldo.setText("Al día ✅");
+            tvSaldo.setText("Al día");
             tvSaldo.setTextColor(Color.parseColor("#12B76A"));
         }
 
@@ -724,7 +725,7 @@ public class ClientesActivity extends AppCompatActivity {
 
         // Toggle activo/inactivo
         TextView tvToggle = view.findViewById(R.id.tvDetalleToggleLabel);
-        tvToggle.setText("activo".equals(cliente.estado) ? "⏸ Inactivar" : "▶ Activar");
+        tvToggle.setText("activo".equals(cliente.estado) ? "Inactivar" : "Activar");
         view.findViewById(R.id.btnDetalleToggle).setOnClickListener(v -> {
             String nuevoEstado = "activo".equals(cliente.estado) ? "inactivo" : "activo";
             view.findViewById(R.id.btnDetalleToggle).setEnabled(false);
@@ -784,10 +785,10 @@ public class ClientesActivity extends AppCompatActivity {
         android.view.ViewGroup contenedor = encontrarContenedor(view);
         if (contenedor != null) {
             contenedor.addView(mkSeparador());
-            contenedor.addView(mkBtnSheet("✏️  Editar datos del cliente",
+            contenedor.addView(mkBtnSheet("Editar datos del cliente",
                     "#EEF4FF", "#0A66FF",
                     v -> { sheet.dismiss(); showFormularioCliente(cliente); }));
-            contenedor.addView(mkBtnSheet("🗑  Eliminar cliente",
+            contenedor.addView(mkBtnSheet("Eliminar cliente",
                     "#FFF0F0", "#EF4444",
                     v -> { sheet.dismiss(); confirmarEliminar(cliente); }));
         }
@@ -880,7 +881,7 @@ public class ClientesActivity extends AppCompatActivity {
         if (activa != null) {
             banner.setCardBackgroundColor(Color.parseColor("#E8F5EE"));
 
-            TextView tvTit = mkTv("🎫 Membresía activa · " + activa.tipo, 13f, "#0D1B3E", true);
+            TextView tvTit = mkTv("Membresía activa · " + activa.tipo, 13f, "#0D1B3E", true);
             inner.addView(tvTit);
 
             // Información según tipo de membresía
@@ -889,12 +890,12 @@ public class ClientesActivity extends AppCompatActivity {
                 int diaInicio = activa.diaMesInicio();
                 String diaTexto = diaInicio > 0 ? "Renovación el día " + diaInicio + " de cada mes" : "Renovación mensual";
                 String proxCobro = activa.proximoCobro();
-                String proxTexto = proxCobro.isEmpty() ? "" : "\n💳 Próximo cobro: " + formatFecha(proxCobro);
+                String proxTexto = proxCobro.isEmpty() ? "" : "\nPróximo cobro: " + formatFecha(proxCobro);
                 infoTexto = String.format("%.0f€/mes  ·  Inicio: %s\n%s%s", activa.precio,
                         activa.fechaInicio != null ? formatFecha(activa.fechaInicio) : "—", diaTexto, proxTexto);
             } else {
                 String fechaFin = activa.calcularFechaFin();
-                infoTexto = String.format("%.0f€  ·  Inicio: %s\nVálida hasta: %s\n💰 Cobro único al inicio",
+                infoTexto = String.format("%.0f€  ·  Inicio: %s\nVálida hasta: %s\nCobro único al inicio",
                         activa.precio, activa.fechaInicio != null ? formatFecha(activa.fechaInicio) : "—",
                         !fechaFin.isEmpty() ? formatFecha(fechaFin) : "—");
             }
@@ -911,14 +912,14 @@ public class ClientesActivity extends AppCompatActivity {
             rbP.topMargin = dpToPx(14);
             rowB.setLayoutParams(rbP);
 
-            CardView bEdit = buildBtnCard("✏️ Editar cuota", "#EEF4FF", Color.parseColor("#0A66FF"));
+            CardView bEdit = buildBtnCard("Editar cuota", "#EEF4FF", Color.parseColor("#0A66FF"));
             LinearLayout.LayoutParams ep = new LinearLayout.LayoutParams(0, dpToPx(42), 1f);
             ep.setMarginEnd(dpToPx(8));
             bEdit.setLayoutParams(ep);
             bEdit.setOnClickListener(v -> showEditarCuotaSheet(activa));
             rowB.addView(bEdit);
 
-            CardView bCan = buildBtnCard("❌ Cancelar membresía", "#FFF0F0", Color.parseColor("#EF4444"));
+            CardView bCan = buildBtnCard("Cancelar membresía", "#FFF0F0", Color.parseColor("#EF4444"));
             bCan.setLayoutParams(new LinearLayout.LayoutParams(0, dpToPx(42), 1f));
             bCan.setOnClickListener(v -> confirmarCancelacionMembresia(activa, cliente, sheet));
             rowB.addView(bCan);
@@ -932,7 +933,7 @@ public class ClientesActivity extends AppCompatActivity {
             String tipoMembresia = ultimaCancelada.tipo != null ? ultimaCancelada.tipo : "Mensual";
             String fechaFin = ultimaCancelada.fechaFin != null ? formatFecha(ultimaCancelada.fechaFin) : "—";
 
-            inner.addView(mkTv("⏳ Membresía " + tipoMembresia + " cancelada", 13f, "#92400E", true));
+            inner.addView(mkTv("Membresía " + tipoMembresia + " cancelada", 13f, "#92400E", true));
 
             String textoTiempo;
             if (diasRestantes == 0) textoTiempo = "¡Puede reinscribirse hoy!";
@@ -942,7 +943,7 @@ public class ClientesActivity extends AppCompatActivity {
             else textoTiempo = "Debe esperar " + diasRestantes + " días hasta el fin del período.";
 
             TextView tvInfo = mkTv("Canceló su membresía " + tipoMembresia + ".\nPeríodo de suscripción termina el: " + fechaFin +
-                    "\n\n⚠️ Debe esperar hasta el final del período para reinscribirse.\nSi tiene cobros pendientes, debe saldarlos antes de reinscribirse.\n\n" +
+                    "\n\nDebe esperar hasta el final del período para reinscribirse.\nSi tiene cobros pendientes, debe saldarlos antes de reinscribirse.\n\n" +
                     textoTiempo, 11f, "#92400E", false);
             LinearLayout.LayoutParams ip = new LinearLayout.LayoutParams(-1, -2);
             ip.topMargin = dpToPx(6);
@@ -950,11 +951,12 @@ public class ClientesActivity extends AppCompatActivity {
             inner.addView(tvInfo);
 
             String badgeTexto, badgeColor;
-            if (diasRestantes == 0) { badgeTexto = "✅ Disponible hoy"; badgeColor = "#059669"; }
-            else if (diasRestantes == 1) { badgeTexto = "⏰ Disponible mañana"; badgeColor = "#F59E0B"; }
-            else if (diasRestantes <= 7) { badgeTexto = "🔒 " + diasRestantes + " días restantes"; badgeColor = "#EF4444"; }
-            else if (diasRestantes <= 30) { badgeTexto = "🔒 " + diasRestantes + " días hasta " + fechaFin; badgeColor = "#F59E0B"; }
-            else { badgeTexto = "🔒 Bloqueado (" + diasRestantes + " días)"; badgeColor = "#9CA3AF"; }
+            if (diasRestantes == 0) { badgeTexto = "Disponible hoy"; badgeColor = "#059669"; }
+            else if (diasRestantes == 1) { badgeTexto = "Disponible mañana"; badgeColor = "#F59E0B"; }
+            else if (diasRestantes <= 7) { badgeTexto = diasRestantes + " días restantes"; badgeColor = "#EF4444"; }
+            else if (diasRestantes <= 30) { badgeTexto = diasRestantes + " días hasta " + fechaFin; badgeColor = "#F59E0B"; }
+            else { badgeTexto = "Bloqueado (" + diasRestantes + " días)"; badgeColor = "#9CA3AF"; }
+
 
             CardView bDis = buildBtnCard(badgeTexto, "#E5E7EB", Color.parseColor(badgeColor));
             LinearLayout.LayoutParams dp2 = new LinearLayout.LayoutParams(-1, dpToPx(42));
@@ -967,7 +969,7 @@ public class ClientesActivity extends AppCompatActivity {
         } else {
             banner.setCardBackgroundColor(Color.parseColor("#F0F4FF"));
 
-            inner.addView(mkTv("🎫 Sin membresía", 13f, "#0D1B3E", true));
+            inner.addView(mkTv("Sin membresía", 13f, "#0D1B3E", true));
 
             TextView tvInfo = mkTv("Este cliente no tiene membresía activa.\nPuede inscribirle desde el panel principal.",
                     11f, "#6B7FA3", false);
@@ -1017,12 +1019,14 @@ public class ClientesActivity extends AppCompatActivity {
         root.setPadding(dpToPx(24), dpToPx(24), dpToPx(24), dpToPx(48));
         root.addView(mkHandle());
 
-        TextView tvEmoji = mkTv("❌", 44f, "#000000", false);
-        tvEmoji.setGravity(Gravity.CENTER);
-        LinearLayout.LayoutParams eP = new LinearLayout.LayoutParams(-1, -2);
+        android.widget.ImageView ivCancel = new android.widget.ImageView(this);
+        LinearLayout.LayoutParams eP = new LinearLayout.LayoutParams(dpToPx(52), dpToPx(52));
+        eP.gravity = Gravity.CENTER_HORIZONTAL;
         eP.bottomMargin = dpToPx(10);
-        tvEmoji.setLayoutParams(eP);
-        root.addView(tvEmoji);
+        ivCancel.setLayoutParams(eP);
+        ivCancel.setImageResource(R.drawable.ic_cancel);
+        ivCancel.setColorFilter(Color.parseColor("#EF4444"));
+        root.addView(ivCancel);
 
         TextView tvTit = mkTv("Cancelar membresía", 20f, "#0D1B3E", true);
         tvTit.setGravity(Gravity.CENTER);
@@ -1159,25 +1163,25 @@ public class ClientesActivity extends AppCompatActivity {
                                                         }
                                                         @Override public void onError(String e) {
                                                             finalizarCancelacionConCobro(cliente, mem, dlgConfirm, sheetPadre,
-                                                                    "⚠️ Membresía cancelada · error al generar cobro: " + e);
+                                                                    "Membresía cancelada · error al generar cobro: " + e);
                                                         }
                                                     });
                                         } else {
                                             // Ya existe cobro pendiente → NO crear duplicado
                                             finalizarCancelacionConCobro(cliente, mem, dlgConfirm, sheetPadre,
-                                                    "✅ Membresía cancelada · ya tenía cobro pendiente");
+                                                    "Membresía cancelada · ya tenía cobro pendiente");
                                         }
                                     }
                                     @Override public void onError(String e) {
                                         finalizarCancelacionConCobro(cliente, mem, dlgConfirm, sheetPadre,
-                                                "✅ Membresía cancelada");
+                                                "Membresía cancelada");
                                     }
                                 });
                     }
                     @Override public void onError(String e) {
                         runOnUiThread(() -> {
                             Toast.makeText(ClientesActivity.this,
-                                    "❌ Error al cancelar: " + e, Toast.LENGTH_LONG).show();
+                                    "Error al cancelar: " + e, Toast.LENGTH_LONG).show();
                             dlgConfirm.dismiss();
                         });
                     }
@@ -1290,7 +1294,7 @@ public class ClientesActivity extends AppCompatActivity {
                                 mem.precio = np[0];
                                 s2.dismiss();
                                 Toast.makeText(ClientesActivity.this,
-                                        "✅ Cuota actualizada: " + (int) np[0] + "€/mes",
+                                        "Cuota actualizada: " + (int) np[0] + "€/mes",
                                         Toast.LENGTH_SHORT).show();
                             });
                         }
@@ -1325,7 +1329,7 @@ public class ClientesActivity extends AppCompatActivity {
         EditText etNotas     = view.findViewById(R.id.etNuevoNotas);
 
         CardView btnGuardarCard = view.findViewById(R.id.btnGuardarCliente);
-        TextView btnGuardarTv   = (TextView) btnGuardarCard.getChildAt(0);
+        TextView btnGuardarTv = view.findViewById(R.id.tvGuardarCliente);
 
         boolean esEdicion = (clienteEditar != null);
         if (esEdicion) {
@@ -1365,7 +1369,7 @@ public class ClientesActivity extends AppCompatActivity {
                                     clienteEditar.notas     = notas;
                                     sheet.dismiss(); ocultarTeclado(); renderLista();
                                     Toast.makeText(ClientesActivity.this,
-                                            "✅ Cliente actualizado", Toast.LENGTH_SHORT).show();
+                                            "Cliente actualizado", Toast.LENGTH_SHORT).show();
                                 });
                             }
                             @Override public void onError(String e) {
@@ -1390,7 +1394,7 @@ public class ClientesActivity extends AppCompatActivity {
                                     sheet.dismiss(); ocultarTeclado();
                                     cargarMembresiasEnBackground();
                                     Toast.makeText(ClientesActivity.this,
-                                            "✅ Cliente añadido: " + nombre, Toast.LENGTH_SHORT).show();
+                                            "Cliente añadido: " + nombre, Toast.LENGTH_SHORT).show();
                                 });
                             }
                             @Override public void onError(String e) {
@@ -1420,12 +1424,14 @@ public class ClientesActivity extends AppCompatActivity {
         root.setGravity(Gravity.CENTER_HORIZONTAL);
         root.addView(mkHandle());
 
-        TextView tvEmoji = mkTv("🗑", 44f, "#000000", false);
-        tvEmoji.setGravity(Gravity.CENTER);
-        LinearLayout.LayoutParams eP = new LinearLayout.LayoutParams(-1, -2);
+        android.widget.ImageView ivDelete = new android.widget.ImageView(this);
+        LinearLayout.LayoutParams eP = new LinearLayout.LayoutParams(dpToPx(52), dpToPx(52));
+        eP.gravity = Gravity.CENTER_HORIZONTAL;
         eP.bottomMargin = dpToPx(12);
-        tvEmoji.setLayoutParams(eP);
-        root.addView(tvEmoji);
+        ivDelete.setLayoutParams(eP);
+        ivDelete.setImageResource(R.drawable.ic_delete);
+        ivDelete.setColorFilter(Color.parseColor("#EF4444"));
+        root.addView(ivDelete);
 
         TextView tvTitulo = mkTv("Eliminar cliente", 20f, "#0D1B3E", true);
         tvTitulo.setGravity(Gravity.CENTER);
@@ -1469,7 +1475,7 @@ public class ClientesActivity extends AppCompatActivity {
                                 todosLosClientes.remove(cliente);
                                 sheet.dismiss(); renderLista();
                                 Toast.makeText(ClientesActivity.this,
-                                        "🗑 " + cliente.nombreCompleto() + " eliminado",
+                                         cliente.nombreCompleto() + " eliminado",
                                         Toast.LENGTH_SHORT).show();
                             });
                         }

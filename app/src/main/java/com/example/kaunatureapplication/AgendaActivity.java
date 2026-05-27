@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+
 public class AgendaActivity extends AppCompatActivity {
 
     interface KauCallback { void call(String value); }

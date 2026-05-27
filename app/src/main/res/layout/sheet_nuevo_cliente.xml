@@ -16,7 +16,7 @@
         android:layout_marginBottom="8dp"
         android:background="@drawable/shape_handle"/>
 
-    <!-- Header compacto -->
+    <!-- Header -->
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -29,23 +29,30 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
             android:background="@drawable/gradient_blue_primary"
             android:padding="12dp">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_people"
+                android:tint="#FFFFFF"
+                android:layout_marginEnd="10dp"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="👤 Nuevo cliente"
+                android:text="Nuevo cliente"
                 android:textSize="18sp"
                 android:textColor="@color/white"
                 android:fontFamily="@font/outfit_bold"/>
 
         </LinearLayout>
-
     </androidx.cardview.widget.CardView>
 
-    <!-- Botón ARRIBA - SIEMPRE visible -->
+    <!-- Botón Guardar -->
     <androidx.cardview.widget.CardView
         android:id="@+id/btnGuardarCliente"
         android:layout_width="match_parent"
@@ -57,15 +64,28 @@
         app:cardElevation="4dp"
         app:cardBackgroundColor="#0A66FF">
 
-        <TextView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="✅ Guardar cliente"
-            android:textSize="14sp"
-            android:textColor="@color/white"
-            android:fontFamily="@font/outfit_bold"
-            android:gravity="center"/>
+            android:orientation="horizontal"
+            android:gravity="center">
 
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@drawable/ic_check_circle"
+                android:tint="#FFFFFF"
+                android:layout_marginEnd="8dp"/>
+
+            <TextView
+                android:id="@+id/tvGuardarCliente"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Guardar cliente"
+                android:textSize="14sp"
+                android:textColor="@color/white"
+                android:fontFamily="@font/outfit_bold"/>
+        </LinearLayout>
     </androidx.cardview.widget.CardView>
 
     <!-- Contenido scrollable -->
@@ -121,7 +141,6 @@
                         android:maxLines="1"/>
 
                 </LinearLayout>
-
             </androidx.cardview.widget.CardView>
 
             <!-- Apellidos -->
@@ -164,7 +183,6 @@
                         android:maxLines="1"/>
 
                 </LinearLayout>
-
             </androidx.cardview.widget.CardView>
 
             <!-- Teléfono -->
@@ -184,14 +202,29 @@
                     android:orientation="vertical"
                     android:padding="12dp">
 
-                    <TextView
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="📞 Teléfono"
-                        android:textSize="11sp"
-                        android:textColor="@color/text_muted"
-                        android:fontFamily="@font/outfit_bold"
-                        android:layout_marginBottom="4dp"/>
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="4dp">
+
+                        <ImageView
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
+                            android:src="@drawable/ic_phone"
+                            android:tint="@color/text_muted"
+                            android:layout_marginEnd="4dp"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Teléfono"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_muted"
+                            android:fontFamily="@font/outfit_bold"/>
+
+                    </LinearLayout>
 
                     <EditText
                         android:id="@+id/etNuevoTelefono"
@@ -207,7 +240,6 @@
                         android:maxLines="1"/>
 
                 </LinearLayout>
-
             </androidx.cardview.widget.CardView>
 
             <!-- Email -->
@@ -227,14 +259,29 @@
                     android:orientation="vertical"
                     android:padding="12dp">
 
-                    <TextView
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="✉️ Email"
-                        android:textSize="11sp"
-                        android:textColor="@color/text_muted"
-                        android:fontFamily="@font/outfit_bold"
-                        android:layout_marginBottom="4dp"/>
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="4dp">
+
+                        <ImageView
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
+                            android:src="@drawable/ic_email"
+                            android:tint="@color/text_muted"
+                            android:layout_marginEnd="4dp"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Email"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_muted"
+                            android:fontFamily="@font/outfit_bold"/>
+
+                    </LinearLayout>
 
                     <EditText
                         android:id="@+id/etNuevoEmail"
@@ -250,7 +297,6 @@
                         android:maxLines="1"/>
 
                 </LinearLayout>
-
             </androidx.cardview.widget.CardView>
 
             <!-- Notas -->
@@ -269,14 +315,29 @@
                     android:orientation="vertical"
                     android:padding="12dp">
 
-                    <TextView
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="📝 Notas"
-                        android:textSize="11sp"
-                        android:textColor="@color/text_muted"
-                        android:fontFamily="@font/outfit_bold"
-                        android:layout_marginBottom="4dp"/>
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="4dp">
+
+                        <ImageView
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
+                            android:src="@drawable/ic_notes"
+                            android:tint="@color/text_muted"
+                            android:layout_marginEnd="4dp"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Notas"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_muted"
+                            android:fontFamily="@font/outfit_bold"/>
+
+                    </LinearLayout>
 
                     <EditText
                         android:id="@+id/etNuevoNotas"
@@ -295,11 +356,9 @@
                         android:scrollbars="vertical"/>
 
                 </LinearLayout>
-
             </androidx.cardview.widget.CardView>
 
         </LinearLayout>
-
     </androidx.core.widget.NestedScrollView>
 
 </LinearLayout>

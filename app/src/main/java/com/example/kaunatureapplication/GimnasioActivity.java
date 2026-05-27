@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 public class GimnasioActivity extends AppCompatActivity {
 
     // ── Paleta ───────────────────────────────────────────────────────
@@ -141,7 +142,13 @@ public class GimnasioActivity extends AppCompatActivity {
         svMain.addView(col);
 
         col.addView(buildHeader());
+        // ── Separación entre header y tabs. Cambia dp(6) para más/menos margen ──
+        View sepHeader = new View(this);
+        sepHeader.setBackgroundColor(BG);
+        sepHeader.setLayoutParams(new LinearLayout.LayoutParams(-1, dp(6)));
+        col.addView(sepHeader);
         col.addView(buildVistaTabs());
+
         col.addView(buildDiaSelector());
         col.addView(buildKpiStrip());
         col.addView(buildSeparador());
@@ -310,61 +317,135 @@ public class GimnasioActivity extends AppCompatActivity {
     //  HEADER
     // ════════════════════════════════════════════════════════════════
     private View buildHeader() {
-        LinearLayout h = new LinearLayout(this);
-        h.setOrientation(LinearLayout.VERTICAL);
-        h.setBackgroundColor(WHITE);
-        h.setPadding(dp(22), dp(52), dp(22), dp(14));
+        FrameLayout header = new FrameLayout(this);
+        header.setLayoutParams(new LinearLayout.LayoutParams(-1, dp(148)));
+        header.setBackgroundResource(R.drawable.bg_header_spectacular);
+        header.setElevation(dp(12));
 
-        LinearLayout row = new LinearLayout(this);
-        row.setOrientation(LinearLayout.HORIZONTAL);
-        row.setGravity(Gravity.CENTER_VERTICAL);
+        // Círculo decorativo top-right
+        View circTR = new View(this);
+        circTR.setBackgroundResource(R.drawable.shape_actions_circle_top);
+        FrameLayout.LayoutParams cTRP = new FrameLayout.LayoutParams(dp(160), dp(160));
+        cTRP.gravity = Gravity.TOP | Gravity.END;
+        circTR.setLayoutParams(cTRP);
+        circTR.setTranslationX(dp(50));
+        circTR.setTranslationY(dp(-50));
+        header.addView(circTR);
 
+        // Círculo decorativo bottom-left
+        View circBL = new View(this);
+        circBL.setBackgroundResource(R.drawable.shape_actions_circle_bottom);
+        FrameLayout.LayoutParams cBLP = new FrameLayout.LayoutParams(dp(100), dp(100));
+        cBLP.gravity = Gravity.BOTTOM | Gravity.START;
+        circBL.setLayoutParams(cBLP);
+        circBL.setTranslationX(dp(-30));
+        circBL.setTranslationY(dp(30));
+        header.addView(circBL);
+
+        // Shimmer line
+        View shimmer = new View(this);
+        shimmer.setBackgroundResource(R.drawable.shape_shimmer_line);
+        FrameLayout.LayoutParams shimP = new FrameLayout.LayoutParams(-1, dp(1));
+        shimP.gravity = Gravity.TOP;
+        shimP.setMargins(dp(28), dp(1), dp(28), 0);
+        shimmer.setLayoutParams(shimP);
+        header.addView(shimmer);
+
+        // Contenido
+        LinearLayout content = new LinearLayout(this);
+        content.setOrientation(LinearLayout.HORIZONTAL);
+        content.setGravity(Gravity.CENTER_VERTICAL);
+        FrameLayout.LayoutParams contentP = new FrameLayout.LayoutParams(-1, -1);
+        contentP.setMargins(dp(20), dp(40), dp(20), dp(20));
+        content.setLayoutParams(contentP);
+        header.addView(content);
+
+        // ── Botón atrás (flecha ←) ───────────────────────────────────
+        // Para cambiar tamaño: dp(42) en ambos parámetros del LayoutParams
+        // Para cambiar margen derecho: setMarginEnd(dp(14))
+        // REEMPLAZA el bloque del btnBack por este:
+        FrameLayout btnBack = new FrameLayout(this);
+        btnBack.setBackgroundResource(R.drawable.shape_inscribir_icon_bg);
+        LinearLayout.LayoutParams backP = new LinearLayout.LayoutParams(dp(42), dp(42));
+        backP.setMarginEnd(dp(14));
+        btnBack.setLayoutParams(backP);
+        btnBack.setClickable(true);
+        btnBack.setFocusable(true);
+        TextView tvBack = new TextView(this);
+        tvBack.setText("←");
+        tvBack.setTextSize(20f);
+        tvBack.setTextColor(Color.WHITE);
+        tvBack.setTypeface(getResources().getFont(R.font.outfit_bold));
+        tvBack.setGravity(Gravity.CENTER);
+        tvBack.setLayoutParams(new FrameLayout.LayoutParams(-1, -1));
+        btnBack.addView(tvBack);
+        btnBack.setOnClickListener(v -> finish());
+        content.addView(btnBack);
+
+        // ── Columna de texto ─────────────────────────────────────────
         LinearLayout tCol = new LinearLayout(this);
         tCol.setOrientation(LinearLayout.VERTICAL);
         tCol.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1f));
 
-        TextView tvSup = new TextView(this);
-        tvSup.setText("KAU NATURE · GIMNASIO");
-        tvSup.setTextSize(9.5f);
-        tvSup.setTextColor(BLUE);
-        tvSup.setTypeface(Typeface.DEFAULT_BOLD);
-        tvSup.setLetterSpacing(0.18f);
-        setMB(tvSup, 2);
-        tCol.addView(tvSup);
+        // "KAU NATURE" — para cambiar color: setTextColor(Color.parseColor("..."))
+        TextView tvKau = new TextView(this);
+        tvKau.setText("KAU NATURE");
+        tvKau.setTextSize(10f);
+        tvKau.setTextColor(Color.parseColor("#93C5FD"));
+        tvKau.setTypeface(getResources().getFont(R.font.outfit_bold));
+        tvKau.setLetterSpacing(0.24f);
+        tCol.addView(tvKau);
 
-        tvTituloDia = new TextView(this);
-        tvTituloDia.setText("");
-        tvTituloDia.setTextSize(30f);
-        tvTituloDia.setTextColor(TEXT_D);
-        tvTituloDia.setTypeface(Typeface.DEFAULT_BOLD);
-        tCol.addView(tvTituloDia);
+        // "Gimnasio" — TÍTULO FIJO, NO lo toca renderDias()
+        // Para cambiar texto: android:text aquí abajo
+        TextView tvGimnasio = new TextView(this);
+        tvGimnasio.setText("Gimnasio");
+        tvGimnasio.setTextSize(30f);
+        tvGimnasio.setTextColor(Color.WHITE);
+        tvGimnasio.setTypeface(getResources().getFont(R.font.outfit_bold));
+        tvGimnasio.setShadowLayer(14, 0, 4, Color.parseColor("#60000000"));
+        LinearLayout.LayoutParams titP = new LinearLayout.LayoutParams(-2, -2);
+        titP.topMargin = dp(2);
+        tvGimnasio.setLayoutParams(titP);
+        tCol.addView(tvGimnasio);
 
+        // Subtítulo dinámico (fecha/semana/mes) — renderDias() actualiza este
+        // Para cambiar color: setTextColor(Color.parseColor("..."))
         tvSubDia = new TextView(this);
         tvSubDia.setText(fmtLargo(selectedFecha));
         tvSubDia.setTextSize(12f);
-        tvSubDia.setTextColor(TEXT_L);
+        tvSubDia.setTextColor(Color.parseColor("#BFDBFF"));
+        tvSubDia.setTypeface(getResources().getFont(R.font.outfit_regular));
+        LinearLayout.LayoutParams subP = new LinearLayout.LayoutParams(-2, -2);
+        subP.topMargin = dp(2);
+        tvSubDia.setLayoutParams(subP);
         tCol.addView(tvSubDia);
 
-        row.addView(tCol);
+        content.addView(tCol);
 
-        TextView btnCfg = new TextView(this);
-        btnCfg.setText("⚙");
-        btnCfg.setTextSize(20f);
-        btnCfg.setTextColor(BLUE);
-        btnCfg.setGravity(Gravity.CENTER);
-        btnCfg.setPadding(dp(10), dp(8), dp(10), dp(8));
-        GradientDrawable cfgBg = new GradientDrawable();
-        cfgBg.setColor(BLUE_XL);
-        cfgBg.setCornerRadius(dp(14));
-        btnCfg.setBackground(cfgBg);
-        btnCfg.setOnClickListener(v -> showGestionarFranjasSheet(selectedFecha));
-        LinearLayout.LayoutParams cfgP = new LinearLayout.LayoutParams(-2, -2);
+        // ── Botón ⚙ ─────────────────────────────────────────────────
+        // Para cambiar tamaño: dp(42) en LayoutParams
+// REEMPLAZA el bloque del btnCfg por este:
+        FrameLayout btnCfgFrame = new FrameLayout(this);
+        btnCfgFrame.setBackgroundResource(R.drawable.bg_header_btn);
+        btnCfgFrame.setElevation(dp(10));
+        btnCfgFrame.setClipToOutline(true);
+        LinearLayout.LayoutParams cfgP = new LinearLayout.LayoutParams(dp(46), dp(46));
         cfgP.setMarginStart(dp(10));
-        btnCfg.setLayoutParams(cfgP);
-        row.addView(btnCfg);
+        btnCfgFrame.setLayoutParams(cfgP);
+        btnCfgFrame.setClickable(true);
+        btnCfgFrame.setFocusable(true);
+        ImageView ivCfg = new ImageView(this);
+        ivCfg.setImageResource(R.drawable.ic_fitness);
+        ivCfg.setColorFilter(Color.parseColor("#0A66FF"));
+        FrameLayout.LayoutParams ivP = new FrameLayout.LayoutParams(dp(22), dp(22));
+        ivP.gravity = Gravity.CENTER;
+        ivCfg.setLayoutParams(ivP);
+        btnCfgFrame.addView(ivCfg);
+        btnCfgFrame.setOnClickListener(v -> showGestionarFranjasSheet(selectedFecha));
+        content.addView(btnCfgFrame);
 
-        h.addView(row);
-        return h;
+        return header;
     }
 
     // ════════════════════════════════════════════════════════════════
@@ -432,24 +513,23 @@ public class GimnasioActivity extends AppCompatActivity {
         hsvDias.addView(llDias);
         return hsvDias;
     }
-
     private void renderDias() {
         hsvDias.setVisibility("dia".equals(vista) ? View.VISIBLE : View.GONE);
         if (!"dia".equals(vista)) {
             if ("semana".equals(vista)) {
                 String lunes = lunesDeSemana(semanaOffset);
-                tvTituloDia.setText("Semana");
-                tvSubDia.setText(fmtCorto(lunes) + " – " + fmtCorto(sumarDias(lunes, 6)));
+                // Para cambiar el texto de semana: edita el formato aquí
+                tvSubDia.setText("Semana · " + fmtCorto(lunes) + " – " + fmtCorto(sumarDias(lunes, 6)));
             } else {
                 java.util.Calendar cal = java.util.Calendar.getInstance();
                 cal.add(java.util.Calendar.MONTH, mesOffset);
-                tvTituloDia.setText(MESES[cal.get(java.util.Calendar.MONTH)].toUpperCase());
-                tvSubDia.setText(String.valueOf(cal.get(java.util.Calendar.YEAR)));
+                // Para cambiar el texto de mes: edita aquí
+                tvSubDia.setText(MESES[cal.get(java.util.Calendar.MONTH)] + " " + cal.get(java.util.Calendar.YEAR));
             }
             return;
         }
         String lunesBase = lunesDeSemana(semanaOffset);
-        tvTituloDia.setText(DIAS[diaSemanaIdx(selectedFecha)].toUpperCase());
+        // tvSubDia muestra la fecha del día seleccionado — para cambiar formato: edita fmtLargo()
         tvSubDia.setText(fmtLargo(selectedFecha));
         llDias.removeAllViews();
 
@@ -2527,58 +2607,46 @@ public class GimnasioActivity extends AppCompatActivity {
         return fab;
     }
 
+    // DESPUÉS — un solo FrameLayout, igual que los XML
     private View buildNavBar() {
-        // Contenedor principal con margen (flotante)
         FrameLayout container = new FrameLayout(this);
         FrameLayout.LayoutParams containerParams = new FrameLayout.LayoutParams(-1, -2);
         containerParams.gravity = Gravity.BOTTOM;
         containerParams.setMargins(dp(20), 0, dp(20), dp(20));
         container.setLayoutParams(containerParams);
+        container.setBackgroundResource(R.drawable.bg_nav_card);
+        container.setElevation(dp(24));
+        container.setClipToOutline(true);
+        container.setOutlineProvider(ViewOutlineProvider.BACKGROUND);
 
-        // Card flotante con fondo redondeado
-        FrameLayout card = new FrameLayout(this);
-        card.setBackgroundResource(R.drawable.bg_nav_card); // Fondo blanco con radius 30dp
-        card.setElevation(dp(24));
-        card.setClipToOutline(true);
-        card.setOutlineProvider(ViewOutlineProvider.BACKGROUND);
-
-        // LinearLayout interno con los tabs
         LinearLayout nav = new LinearLayout(this);
         nav.setOrientation(LinearLayout.HORIZONTAL);
         nav.setLayoutParams(new FrameLayout.LayoutParams(-1, dp(72)));
         nav.setPadding(dp(10), dp(10), dp(10), dp(10));
 
-        // Tabs
         nav.addView(mkNavTab4("Inicio", R.drawable.ic_home, false, v -> {
             startActivity(new Intent(this, MainActivity.class)
                     .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
             overridePendingTransition(0, 0);
         }));
-
         nav.addView(mkNavTab4("Clientes", R.drawable.ic_people, false, v -> {
             startActivity(new Intent(this, ClientesActivity.class));
             overridePendingTransition(0, 0);
             finish();
         }));
-
-        nav.addView(mkNavTab4("Gym", R.drawable.ic_fitness, true, v -> {
-            /* ya estamos aquí */
-        }));
-
+        nav.addView(mkNavTab4("Gym", R.drawable.ic_fitness, true, v -> { /* ya estamos aquí */ }));
         nav.addView(mkNavTab4("Agenda", R.drawable.ic_calendar_today, false, v -> {
             startActivity(new Intent(this, AgendaActivity.class));
             overridePendingTransition(0, 0);
             finish();
         }));
-
         nav.addView(mkNavTab4("Cobros", R.drawable.ic_payments, false, v -> {
             startActivity(new Intent(this, CobrosActivity.class));
             overridePendingTransition(0, 0);
             finish();
         }));
 
-        card.addView(nav);
-        container.addView(card);
+        container.addView(nav);
         return container;
     }
 

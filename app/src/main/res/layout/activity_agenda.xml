@@ -11,88 +11,136 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <!-- ── TOPBAR ── -->
-        <androidx.cardview.widget.CardView
+        <!-- ══ HEADER GRADIENTE AZUL ══ -->
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="10dp"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="4dp"
-            app:cardBackgroundColor="@color/white">
+            android:layout_height="148dp"
+            android:background="@drawable/bg_header_spectacular"
+            android:elevation="12dp">
+
+            <View
+                android:layout_width="160dp"
+                android:layout_height="160dp"
+                android:layout_gravity="top|end"
+                android:background="@drawable/shape_actions_circle_top"
+                android:translationX="50dp"
+                android:translationY="-50dp"/>
+
+            <View
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_gravity="bottom|start"
+                android:background="@drawable/shape_actions_circle_bottom"
+                android:translationX="-30dp"
+                android:translationY="30dp"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_gravity="top"
+                android:layout_marginStart="28dp"
+                android:layout_marginTop="1dp"
+                android:layout_marginEnd="28dp"
+                android:background="@drawable/shape_shimmer_line"/>
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:orientation="horizontal"
-                android:padding="16dp"
-                android:gravity="center_vertical">
+                android:gravity="center_vertical"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:paddingTop="40dp"
+                android:paddingBottom="20dp">
 
-                <androidx.cardview.widget.CardView
+                <FrameLayout
                     android:id="@+id/btnBack"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    app:cardCornerRadius="14dp"
-                    app:cardElevation="0dp"
-                    app:cardBackgroundColor="@color/blue_pale"
-                    android:layout_marginEnd="12dp">
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:layout_marginEnd="14dp"
+                    android:background="@drawable/shape_inscribir_icon_bg"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackgroundBorderless">
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:text="←"
                         android:textSize="20sp"
-                        android:textColor="@color/accent_blue"
+                        android:textColor="#FFFFFF"
                         android:fontFamily="@font/outfit_bold"
                         android:gravity="center"/>
-                </androidx.cardview.widget.CardView>
+                </FrameLayout>
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="KAU NATURE"
+                        android:textSize="10sp"
+                        android:textColor="#93C5FD"
+                        android:fontFamily="@font/outfit_bold"
+                        android:letterSpacing="0.24"/>
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Agenda"
-                        android:textSize="17sp"
-                        android:textColor="@color/text_primary"
-                        android:fontFamily="@font/outfit_bold"/>
+                        android:textSize="30sp"
+                        android:textColor="#FFFFFF"
+                        android:fontFamily="@font/outfit_bold"
+                        android:shadowColor="#60000000"
+                        android:shadowDx="0"
+                        android:shadowDy="4"
+                        android:shadowRadius="14"
+                        android:layout_marginTop="2dp"/>
+
                     <TextView
                         android:id="@+id/tvAgendaSubtitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Hoy"
-                        android:textSize="11sp"
-                        android:textColor="@color/text_muted"
+                        android:textSize="12sp"
+                        android:textColor="#BFDBFF"
                         android:fontFamily="@font/outfit_regular"
-                        android:layout_marginTop="1dp"/>
+                        android:layout_marginTop="2dp"/>
                 </LinearLayout>
 
-                <!-- Filtro servicio -->
-
-                <!-- Añadir cita -->
-                <androidx.cardview.widget.CardView
+                <FrameLayout
                     android:id="@+id/btnAddCita"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    app:cardCornerRadius="14dp"
-                    app:cardElevation="0dp"
-                    app:cardBackgroundColor="@color/accent_blue">
+                    android:layout_width="46dp"
+                    android:layout_height="46dp"
+                    android:background="@drawable/bg_header_btn"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:elevation="10dp"
+                    android:foreground="?attr/selectableItemBackgroundBorderless">
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_calendar_today"
+                        android:tint="@color/accent_blue"/>
                     <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:text="＋"
-                        android:textSize="20sp"
-                        android:textColor="@color/white"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_gravity="top|end"
+                        android:layout_margin="3dp"
+                        android:text="+"
+                        android:textSize="11sp"
+                        android:textColor="#FFFFFF"
                         android:fontFamily="@font/outfit_bold"
-                        android:gravity="center"/>
-                </androidx.cardview.widget.CardView>
+                        android:gravity="center"
+                        android:background="@drawable/shape_badge"/>
+                </FrameLayout>
 
             </LinearLayout>
-        </androidx.cardview.widget.CardView>
+        </FrameLayout>
 
         <!-- ── TABS VISTA ── -->
         <androidx.cardview.widget.CardView
@@ -100,6 +148,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
+            android:layout_marginTop="12dp"
             android:layout_marginBottom="12dp"
             app:cardCornerRadius="16dp"
             app:cardElevation="2dp"
@@ -162,15 +211,6 @@
     </LinearLayout>
 
     <!-- BOTTOM NAV FLOTANTE -->
-    <!--
-        CORRECCIÓN: CardView → FrameLayout con bg_nav_card.xml:
-          <shape>
-            <solid android:color="#FFFFFF"/>
-            <corners android:radius="30dp"/>
-          </shape>
-        elevation + outlineProvider + clipToOutline evitan el fondo blanco
-        que se filtraba fuera de los bordes redondeados.
-    -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -181,7 +221,7 @@
         android:background="@drawable/bg_nav_card"
         android:clipToOutline="true"
         android:elevation="24dp"
-        android:outlineProvider="none">
+        android:outlineProvider="background">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -331,7 +371,5 @@
 
         </LinearLayout>
     </FrameLayout>
-
-
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -1,456 +1,591 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg_main">
 
-    <androidx.core.widget.NestedScrollView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingBottom="90dp"
-        android:clipToPadding="false">
+        android:orientation="vertical">
 
-        <LinearLayout
+        <!-- ══ HEADER GRADIENTE AZUL (igual que Agenda) ══ -->
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:layout_height="148dp"
+            android:background="@drawable/bg_header_spectacular"
+            android:elevation="12dp">
 
-            <!-- ── TOPBAR ── -->
-            <androidx.cardview.widget.CardView
+            <!-- Círculo decorativo top-right -->
+            <View
+                android:layout_width="160dp"
+                android:layout_height="160dp"
+                android:layout_gravity="top|end"
+                android:background="@drawable/shape_actions_circle_top"
+                android:translationX="50dp"
+                android:translationY="-50dp" />
+
+            <!-- Círculo decorativo bottom-left -->
+            <View
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_gravity="bottom|start"
+                android:background="@drawable/shape_actions_circle_bottom"
+                android:translationX="-30dp"
+                android:translationY="30dp" />
+
+            <!-- Shimmer line -->
+            <View
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="14dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="4dp"
-                app:cardBackgroundColor="@color/white">
+                android:layout_height="1dp"
+                android:layout_gravity="top"
+                android:layout_marginStart="28dp"
+                android:layout_marginTop="1dp"
+                android:layout_marginEnd="28dp"
+                android:background="@drawable/shape_shimmer_line" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="16dp"
-                    android:gravity="center_vertical">
-
-                    <androidx.cardview.widget.CardView
-                        android:id="@+id/btnBack"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        app:cardCornerRadius="14dp"
-                        app:cardElevation="0dp"
-                        app:cardBackgroundColor="@color/blue_pale"
-                        android:layout_marginEnd="12dp">
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:text="←"
-                            android:textSize="20sp"
-                            android:textColor="@color/accent_blue"
-                            android:fontFamily="@font/outfit_bold"
-                            android:gravity="center"/>
-                    </androidx.cardview.widget.CardView>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Cobros"
-                            android:textSize="17sp"
-                            android:textColor="@color/text_primary"
-                            android:fontFamily="@font/outfit_bold"/>
-                        <TextView
-                            android:id="@+id/tvCobrosSubtitle"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Este mes"
-                            android:textSize="11sp"
-                            android:textColor="@color/text_muted"
-                            android:fontFamily="@font/outfit_regular"
-                            android:layout_marginTop="1dp"/>
-                    </LinearLayout>
-
-                    <androidx.cardview.widget.CardView
-                        android:id="@+id/btnNuevoCobro"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        app:cardCornerRadius="14dp"
-                        app:cardElevation="0dp"
-                        app:cardBackgroundColor="@color/accent_blue">
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:text="＋"
-                            android:textSize="20sp"
-                            android:textColor="@color/white"
-                            android:fontFamily="@font/outfit_bold"
-                            android:gravity="center"/>
-                    </androidx.cardview.widget.CardView>
-
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <!-- ── BUSCADOR POR NOMBRE ── -->
-            <androidx.cardview.widget.CardView
+            <!-- Contenido del header -->
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="2dp"
-                app:cardBackgroundColor="@color/white">
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingStart="14dp"
-                    android:paddingEnd="14dp">
-                    <EditText
-                        android:id="@+id/etBuscarNombre"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:hint="Buscar por nombre..."
-                        android:textSize="13sp"
-                        android:textColor="@color/text_primary"
-                        android:fontFamily="@font/outfit_regular"
-                        android:background="@null"
-                        android:inputType="textPersonName"
-                        android:imeOptions="actionSearch"
-                        android:maxLines="1"/>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="20dp"
+                android:paddingTop="40dp"
+                android:paddingEnd="20dp"
+                android:paddingBottom="20dp">
 
-            <!-- ── RESUMEN MES ── -->
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="14dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="4dp"
-                app:cardBackgroundColor="@color/accent_blue">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
-
-                    <!-- Navegacion de mes -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginBottom="2dp">
-                        <TextView
-                            android:id="@+id/btnMesAnterior"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:text="‹"
-                            android:textSize="20sp"
-                            android:textColor="#FFFFFF"
-                            android:fontFamily="@font/outfit_bold"
-                            android:gravity="center"
-                            android:background="@drawable/shape_chip_blue"
-                            android:backgroundTint="#1A3A7A"
-                            android:clickable="true"
-                            android:focusable="true"/>
-                        <TextView
-                            android:id="@+id/tvMesLabel"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Marzo 2026"
-                            android:textSize="12sp"
-                            android:textColor="#AACCFF"
-                            android:fontFamily="@font/outfit_bold"
-                            android:gravity="center"/>
-                        <TextView
-                            android:id="@+id/btnMesSiguiente"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:text="›"
-                            android:textSize="20sp"
-                            android:textColor="#FFFFFF"
-                            android:fontFamily="@font/outfit_bold"
-                            android:gravity="center"
-                            android:background="@drawable/shape_chip_blue"
-                            android:backgroundTint="#1A3A7A"
-                            android:alpha="0.35"
-                            android:clickable="false"
-                            android:focusable="false"/>
-                    </LinearLayout>
+                <!-- Botón atrás circular -->
+                <FrameLayout
+                    android:id="@+id/btnBack"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:layout_marginEnd="14dp"
+                    android:background="@drawable/shape_inscribir_icon_bg"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackgroundBorderless">
 
                     <TextView
-                        android:id="@+id/tvTotalMes"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:fontFamily="@font/outfit_bold"
+                        android:gravity="center"
+                        android:text="←"
+                        android:textColor="#FFFFFF"
+                        android:textSize="20sp" />
+                </FrameLayout>
+
+                <!-- Títulos -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="0,00€"
-                        android:textSize="34sp"
-                        android:textColor="@color/white"
                         android:fontFamily="@font/outfit_bold"
-                        android:layout_marginTop="4dp"
-                        android:layout_marginBottom="16dp"/>
+                        android:letterSpacing="0.24"
+                        android:text="KAU NATURE"
+                        android:textColor="#93C5FD"
+                        android:textSize="10sp" />
 
-                    <!-- KPIs fila -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
+                    <TextView
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:weightSum="3">
+                        android:layout_marginTop="2dp"
+                        android:fontFamily="@font/outfit_bold"
+                        android:shadowColor="#60000000"
+                        android:shadowDx="0"
+                        android:shadowDy="4"
+                        android:shadowRadius="14"
+                        android:text="Cobros"
+                        android:textColor="#FFFFFF"
+                        android:textSize="30sp" />
 
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-                            <TextView
-                                android:id="@+id/tvKpiEfectivo"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="0,00€"
-                                android:textSize="14sp"
-                                android:textColor="@color/white"
-                                android:fontFamily="@font/outfit_bold"
-                                android:maxLines="1"
-                                android:adjustViewBounds="true"
-                                android:ellipsize="none"/>
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="💵 Efectivo"
-                                android:textSize="10sp"
-                                android:textColor="#AACCFF"
-                                android:fontFamily="@font/outfit_regular"
-                                android:layout_marginTop="2dp"/>
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-                            <TextView
-                                android:id="@+id/tvKpiTarjeta"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="0,00€"
-                                android:textSize="14sp"
-                                android:textColor="@color/white"
-                                android:fontFamily="@font/outfit_bold"
-                                android:maxLines="1"
-                                android:adjustViewBounds="true"
-                                android:ellipsize="none"/>
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="💳 Tarjeta"
-                                android:textSize="10sp"
-                                android:textColor="#AACCFF"
-                                android:fontFamily="@font/outfit_regular"
-                                android:layout_marginTop="2dp"/>
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-                            <TextView
-                                android:id="@+id/tvKpiBizumTransfer"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="0,00€"
-                                android:textSize="14sp"
-                                android:textColor="@color/white"
-                                android:fontFamily="@font/outfit_bold"
-                                android:maxLines="1"
-                                android:adjustViewBounds="true"
-                                android:ellipsize="none"/>
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="📱 Bizum/Trans."
-                                android:textSize="10sp"
-                                android:textColor="#AACCFF"
-                                android:fontFamily="@font/outfit_regular"
-                                android:layout_marginTop="2dp"/>
-                        </LinearLayout>
-
-                    </LinearLayout>
-
+                    <TextView
+                        android:id="@+id/tvCobrosSubtitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:fontFamily="@font/outfit_regular"
+                        android:text="Este mes"
+                        android:textColor="#BFDBFF"
+                        android:textSize="12sp" />
                 </LinearLayout>
-            </androidx.cardview.widget.CardView>
 
-            <!-- ── FILTROS ── -->
-            <HorizontalScrollView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="14dp"
-                android:scrollbars="none">
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                <!-- Botón nuevo cobro -->
+                <FrameLayout
+                    android:id="@+id/btnNuevoCobro"
+                    android:layout_width="46dp"
+                    android:layout_height="46dp"
+                    android:background="@drawable/bg_header_btn"
+                    android:clickable="true"
+                    android:elevation="10dp"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackgroundBorderless">
 
-                    <TextView android:id="@+id/filtroTodos"
-                        android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="Todos" android:textSize="12sp" android:fontFamily="@font/outfit_bold"
-                        android:paddingStart="16dp" android:paddingEnd="16dp"
-                        android:paddingTop="8dp" android:paddingBottom="8dp"
-                        android:layout_marginEnd="8dp"
-                        android:background="@drawable/shape_filter_active"
-                        android:textColor="@color/white"/>
-
-                    <TextView android:id="@+id/filtroPendientes"
-                        android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="Pendientes" android:textSize="12sp" android:fontFamily="@font/outfit_bold"
-                        android:paddingStart="16dp" android:paddingEnd="16dp"
-                        android:paddingTop="8dp" android:paddingBottom="8dp"
-                        android:layout_marginEnd="8dp"
-                        android:background="@drawable/shape_filter_inactive"
-                        android:textColor="@color/text_muted"/>
-
-                    <TextView android:id="@+id/filtroCobrados"
-                        android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="Cobrados" android:textSize="12sp" android:fontFamily="@font/outfit_bold"
-                        android:paddingStart="16dp" android:paddingEnd="16dp"
-                        android:paddingTop="8dp" android:paddingBottom="8dp"
-                        android:layout_marginEnd="8dp"
-                        android:background="@drawable/shape_filter_inactive"
-                        android:textColor="@color/text_muted"/>
-
-                    <TextView android:id="@+id/filtroEfectivo"
-                        android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="💵 Efectivo" android:textSize="12sp" android:fontFamily="@font/outfit_bold"
-                        android:paddingStart="16dp" android:paddingEnd="16dp"
-                        android:paddingTop="8dp" android:paddingBottom="8dp"
-                        android:layout_marginEnd="8dp"
-                        android:background="@drawable/shape_filter_inactive"
-                        android:textColor="@color/text_muted"/>
-
-                    <TextView android:id="@+id/filtroTarjeta"
-                        android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="💳 Tarjeta" android:textSize="12sp" android:fontFamily="@font/outfit_bold"
-                        android:paddingStart="16dp" android:paddingEnd="16dp"
-                        android:paddingTop="8dp" android:paddingBottom="8dp"
-                        android:layout_marginEnd="8dp"
-                        android:background="@drawable/shape_filter_inactive"
-                        android:textColor="@color/text_muted"/>
-
-                    <TextView android:id="@+id/filtroBizum"
-                        android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="📱 Bizum" android:textSize="12sp" android:fontFamily="@font/outfit_bold"
-                        android:paddingStart="16dp" android:paddingEnd="16dp"
-                        android:paddingTop="8dp" android:paddingBottom="8dp"
-                        android:layout_marginEnd="8dp"
-                        android:background="@drawable/shape_filter_inactive"
-                        android:textColor="@color/text_muted"/>
-
-                    <TextView android:id="@+id/filtroTransferencia"
-                        android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="🏦 Transferencia" android:textSize="12sp" android:fontFamily="@font/outfit_bold"
-                        android:paddingStart="16dp" android:paddingEnd="16dp"
-                        android:paddingTop="8dp" android:paddingBottom="8dp"
-                        android:background="@drawable/shape_filter_inactive"
-                        android:textColor="@color/text_muted"/>
-
-                </LinearLayout>
-            </HorizontalScrollView>
-
-            <!-- ── COBROS PENDIENTES ── -->
-            <LinearLayout
-                android:id="@+id/seccionPendientes"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="⚠️ Pendientes de cobro"
-                    android:textSize="13sp"
-                    android:textColor="@color/text_primary"
-                    android:fontFamily="@font/outfit_bold"
-                    android:layout_marginBottom="8dp"/>
-
-                <LinearLayout
-                    android:id="@+id/listaPendientes"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:layout_marginBottom="16dp"/>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:fontFamily="@font/outfit_bold"
+                        android:gravity="center"
+                        android:text="＋"
+                        android:textColor="@color/accent_blue"
+                        android:textSize="22sp" />
+                </FrameLayout>
 
             </LinearLayout>
+        </FrameLayout>
 
-            <!-- ── HISTORIAL ── -->
+        <!-- ══ SCROLL CONTENIDO ══ -->
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:clipToPadding="false"
+            android:paddingBottom="90dp">
+
             <LinearLayout
-                android:id="@+id/seccionHistorial"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="✅ Historial de cobros"
-                    android:textSize="13sp"
-                    android:textColor="@color/text_primary"
-                    android:fontFamily="@font/outfit_bold"
-                    android:layout_marginBottom="8dp"/>
-
-                <LinearLayout
-                    android:id="@+id/listaHistorial"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"/>
-
-            </LinearLayout>
-
-            <!-- Estado vacío -->
-            <LinearLayout
-                android:id="@+id/layoutVacio"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:gravity="center"
-                android:paddingTop="48dp"
-                android:paddingBottom="48dp"
-                android:visibility="gone">
+                android:padding="16dp">
 
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="💰" android:textSize="48sp" android:gravity="center"/>
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="Sin cobros" android:textSize="16sp"
-                    android:textColor="@color/text_primary" android:fontFamily="@font/outfit_bold"
-                    android:gravity="center" android:layout_marginTop="12dp"/>
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="Pulsa ＋ para registrar un cobro"
-                    android:textSize="12sp" android:textColor="@color/text_muted"
-                    android:fontFamily="@font/outfit_regular"
-                    android:gravity="center" android:layout_marginTop="4dp"/>
+                <!-- ── BUSCADOR ── -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp">
+
+                        <EditText
+                            android:id="@+id/etBuscarNombre"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:background="@null"
+                            android:fontFamily="@font/outfit_regular"
+                            android:hint="Buscar por nombre..."
+                            android:imeOptions="actionSearch"
+                            android:inputType="textPersonName"
+                            android:maxLines="1"
+                            android:textColor="@color/text_primary"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            android:id="@+id/btnLimpiarBusqueda"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/outfit_bold"
+                            android:padding="6dp"
+                            android:text="✕"
+                            android:textColor="@color/text_muted"
+                            android:textSize="14sp"
+                            android:visibility="gone" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- ── RESUMEN MES ── -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="14dp"
+                    app:cardBackgroundColor="@color/accent_blue"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="4dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="20dp">
+
+                        <!-- Navegación de mes -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="2dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/btnMesAnterior"
+                                android:layout_width="36dp"
+                                android:layout_height="36dp"
+                                android:background="@drawable/shape_chip_blue"
+                                android:backgroundTint="#1A3A7A"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:fontFamily="@font/outfit_bold"
+                                android:gravity="center"
+                                android:includeFontPadding="false"
+                                android:minWidth="0dp"
+                                android:minHeight="0dp"
+                                android:text="‹"
+                                android:textColor="#FFFFFF"
+                                android:textSize="22sp" />
+
+                            <TextView
+                                android:id="@+id/tvMesLabel"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/outfit_bold"
+                                android:gravity="center"
+                                android:text="Mayo 2026"
+                                android:textColor="#AACCFF"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:id="@+id/btnMesSiguiente"
+                                android:layout_width="36dp"
+                                android:layout_height="36dp"
+                                android:alpha="0.35"
+                                android:background="@drawable/shape_chip_blue"
+                                android:backgroundTint="#1A3A7A"
+                                android:clickable="false"
+                                android:focusable="false"
+                                android:fontFamily="@font/outfit_bold"
+                                android:gravity="center"
+                                android:includeFontPadding="false"
+                                android:minWidth="0dp"
+                                android:minHeight="0dp"
+                                android:text="›"
+                                android:textColor="#FFFFFF"
+                                android:textSize="22sp" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/tvTotalMes"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:layout_marginBottom="16dp"
+                            android:fontFamily="@font/outfit_bold"
+                            android:text="0,00 €"
+                            android:textColor="@color/white"
+                            android:textSize="34sp" />
+
+                        <!-- KPIs fila -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:weightSum="3">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:id="@+id/tvKpiEfectivo"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:ellipsize="none"
+                                    android:fontFamily="@font/outfit_bold"
+                                    android:maxLines="1"
+                                    android:text="0,00 €"
+                                    android:textColor="@color/white"
+                                    android:textSize="14sp" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:fontFamily="@font/outfit_regular"
+                                    android:text="💵 Efectivo"
+                                    android:textColor="#AACCFF"
+                                    android:textSize="10sp" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:id="@+id/tvKpiTarjeta"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:ellipsize="none"
+                                    android:fontFamily="@font/outfit_bold"
+                                    android:maxLines="1"
+                                    android:text="0,00 €"
+                                    android:textColor="@color/white"
+                                    android:textSize="14sp" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:fontFamily="@font/outfit_regular"
+                                    android:text="💳 Tarjeta"
+                                    android:textColor="#AACCFF"
+                                    android:textSize="10sp" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:id="@+id/tvKpiBizumTransfer"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:ellipsize="none"
+                                    android:fontFamily="@font/outfit_bold"
+                                    android:maxLines="1"
+                                    android:text="0,00 €"
+                                    android:textColor="@color/white"
+                                    android:textSize="14sp" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:fontFamily="@font/outfit_regular"
+                                    android:text="📱 Bizum/Trans."
+                                    android:textColor="#AACCFF"
+                                    android:textSize="10sp" />
+                            </LinearLayout>
+
+                        </LinearLayout>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- ── FILTROS ── -->
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="14dp"
+                    android:scrollbars="none">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/filtroTodos"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="8dp"
+                            android:background="@drawable/shape_filter_active"
+                            android:fontFamily="@font/outfit_bold"
+                            android:paddingStart="16dp"
+                            android:paddingTop="8dp"
+                            android:paddingEnd="16dp"
+                            android:paddingBottom="8dp"
+                            android:text="Todos"
+                            android:textColor="@color/white"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/filtroPendientes"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="8dp"
+                            android:background="@drawable/shape_filter_inactive"
+                            android:fontFamily="@font/outfit_bold"
+                            android:paddingStart="16dp"
+                            android:paddingTop="8dp"
+                            android:paddingEnd="16dp"
+                            android:paddingBottom="8dp"
+                            android:text="Pendientes"
+                            android:textColor="@color/text_muted"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/filtroCobrados"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="8dp"
+                            android:background="@drawable/shape_filter_inactive"
+                            android:fontFamily="@font/outfit_bold"
+                            android:paddingStart="16dp"
+                            android:paddingTop="8dp"
+                            android:paddingEnd="16dp"
+                            android:paddingBottom="8dp"
+                            android:text="Cobrados"
+                            android:textColor="@color/text_muted"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/filtroEfectivo"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="8dp"
+                            android:background="@drawable/shape_filter_inactive"
+                            android:fontFamily="@font/outfit_bold"
+                            android:paddingStart="16dp"
+                            android:paddingTop="8dp"
+                            android:paddingEnd="16dp"
+                            android:paddingBottom="8dp"
+                            android:text="💵 Efectivo"
+                            android:textColor="@color/text_muted"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/filtroTarjeta"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="8dp"
+                            android:background="@drawable/shape_filter_inactive"
+                            android:fontFamily="@font/outfit_bold"
+                            android:paddingStart="16dp"
+                            android:paddingTop="8dp"
+                            android:paddingEnd="16dp"
+                            android:paddingBottom="8dp"
+                            android:text="💳 Tarjeta"
+                            android:textColor="@color/text_muted"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/filtroBizum"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="8dp"
+                            android:background="@drawable/shape_filter_inactive"
+                            android:fontFamily="@font/outfit_bold"
+                            android:paddingStart="16dp"
+                            android:paddingTop="8dp"
+                            android:paddingEnd="16dp"
+                            android:paddingBottom="8dp"
+                            android:text="📱 Bizum"
+                            android:textColor="@color/text_muted"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/filtroTransferencia"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/shape_filter_inactive"
+                            android:fontFamily="@font/outfit_bold"
+                            android:paddingStart="16dp"
+                            android:paddingTop="8dp"
+                            android:paddingEnd="16dp"
+                            android:paddingBottom="8dp"
+                            android:text="🏦 Transferencia"
+                            android:textColor="@color/text_muted"
+                            android:textSize="12sp" />
+
+                    </LinearLayout>
+                </HorizontalScrollView>
+
+                <!-- ── COBROS PENDIENTES ── -->
+                <LinearLayout
+                    android:id="@+id/seccionPendientes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:fontFamily="@font/outfit_bold"
+                        android:text="⚠️ Pendientes de cobro"
+                        android:textColor="@color/text_primary"
+                        android:textSize="13sp" />
+
+                    <LinearLayout
+                        android:id="@+id/listaPendientes"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        android:orientation="vertical" />
+
+                </LinearLayout>
+
+                <!-- ── HISTORIAL ── -->
+                <LinearLayout
+                    android:id="@+id/seccionHistorial"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:fontFamily="@font/outfit_bold"
+                        android:text="✅ Historial de cobros"
+                        android:textColor="@color/text_primary"
+                        android:textSize="13sp" />
+
+                    <LinearLayout
+                        android:id="@+id/listaHistorial"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical" />
+
+                </LinearLayout>
+
+                <!-- Estado vacío -->
+                <LinearLayout
+                    android:id="@+id/layoutVacio"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:paddingTop="48dp"
+                    android:paddingBottom="48dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="💰"
+                        android:textSize="48sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:fontFamily="@font/outfit_bold"
+                        android:gravity="center"
+                        android:text="Sin cobros"
+                        android:textColor="@color/text_primary"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:fontFamily="@font/outfit_regular"
+                        android:gravity="center"
+                        android:text="Pulsa ＋ para registrar un cobro"
+                        android:textColor="@color/text_muted"
+                        android:textSize="12sp" />
+
+                </LinearLayout>
 
             </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
 
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
+    </LinearLayout>
 
     <!-- BOTTOM NAV FLOTANTE -->
-    <!--
-        CORRECCIÓN: CardView → FrameLayout con bg_nav_card.xml:
-          <shape>
-            <solid android:color="#FFFFFF"/>
-            <corners android:radius="30dp"/>
-          </shape>
-        elevation + outlineProvider + clipToOutline evitan el fondo blanco
-        que se filtraba fuera de los bordes redondeados.
-    -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -461,7 +596,7 @@
         android:background="@drawable/bg_nav_card"
         android:clipToOutline="true"
         android:elevation="24dp"
-        android:outlineProvider="none">
+        android:outlineProvider="background">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -611,7 +746,5 @@
 
         </LinearLayout>
     </FrameLayout>
-
-
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -4,58 +4,89 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_main">
+    android:background="@color/bg_main"
+    >
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollClientes"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingBottom="90dp"
-        android:clipToPadding="false">
+        android:paddingBottom="100dp"
+        android:clipToPadding="false"
+        android:overScrollMode="never">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:orientation="vertical">
 
-            <!-- ── TOPBAR ── -->
-            <androidx.cardview.widget.CardView
+            <!-- ══ HEADER GRADIENTE AZUL ══ -->
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="14dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="4dp"
-                app:cardBackgroundColor="@color/white">
+                android:layout_height="148dp"
+                android:background="@drawable/bg_header_spectacular"
+                android:elevation="12dp">
 
+                <!-- Círculo decorativo top-right -->
+                <View
+                    android:layout_width="160dp"
+                    android:layout_height="160dp"
+                    android:layout_gravity="top|end"
+                    android:background="@drawable/shape_actions_circle_top"
+                    android:translationX="50dp"
+                    android:translationY="-50dp"/>
+
+                <!-- Círculo decorativo bottom-left -->
+                <View
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:layout_gravity="bottom|start"
+                    android:background="@drawable/shape_actions_circle_bottom"
+                    android:translationX="-30dp"
+                    android:translationY="30dp"/>
+
+                <!-- Línea shimmer superior -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_gravity="top"
+                    android:layout_marginStart="28dp"
+                    android:layout_marginTop="1dp"
+                    android:layout_marginEnd="28dp"
+                    android:background="@drawable/shape_shimmer_line"/>
+
+                <!-- Contenido -->
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:orientation="horizontal"
-                    android:padding="16dp"
-                    android:gravity="center_vertical">
+                    android:gravity="center_vertical"
+                    android:paddingStart="20dp"
+                    android:paddingEnd="20dp"
+                    android:paddingTop="40dp"
+                    android:paddingBottom="20dp">
 
                     <!-- Botón atrás -->
-                    <androidx.cardview.widget.CardView
+                    <FrameLayout
                         android:id="@+id/btnBack"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        app:cardCornerRadius="14dp"
-                        app:cardElevation="0dp"
-                        app:cardBackgroundColor="@color/blue_pale"
-                        android:layout_marginEnd="12dp">
-
+                        android:layout_width="42dp"
+                        android:layout_height="42dp"
+                        android:layout_marginEnd="14dp"
+                        android:background="@drawable/shape_inscribir_icon_bg"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?attr/selectableItemBackgroundBorderless">
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:text="←"
                             android:textSize="20sp"
-                            android:textColor="@color/accent_blue"
+                            android:textColor="#FFFFFF"
                             android:fontFamily="@font/outfit_bold"
                             android:gravity="center"/>
+                    </FrameLayout>
 
-                    </androidx.cardview.widget.CardView>
-
+                    <!-- Títulos -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -65,236 +96,281 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:text="KAU NATURE"
+                            android:textSize="10sp"
+                            android:textColor="#93C5FD"
+                            android:fontFamily="@font/outfit_bold"
+                            android:letterSpacing="0.24"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
                             android:text="Clientes"
-                            android:textSize="17sp"
-                            android:textColor="@color/text_primary"
-                            android:fontFamily="@font/outfit_bold"/>
+                            android:textSize="30sp"
+                            android:textColor="#FFFFFF"
+                            android:fontFamily="@font/outfit_bold"
+                            android:shadowColor="#60000000"
+                            android:shadowDx="0"
+                            android:shadowDy="4"
+                            android:shadowRadius="14"
+                            android:layout_marginTop="2dp"/>
 
                         <TextView
                             android:id="@+id/tvClientesSubtitle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="0 registrados"
-                            android:textSize="11sp"
-                            android:textColor="@color/text_muted"
+                            android:textSize="12sp"
+                            android:textColor="#BFDBFF"
                             android:fontFamily="@font/outfit_regular"
-                            android:layout_marginTop="1dp"/>
-
+                            android:layout_marginTop="2dp"/>
                     </LinearLayout>
 
-                    <!-- Botón añadir -->
-                    <androidx.cardview.widget.CardView
+                    <!-- Botón añadir cliente -->
+                    <FrameLayout
                         android:id="@+id/btnAddCliente"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        app:cardCornerRadius="14dp"
-                        app:cardElevation="0dp"
-                        app:cardBackgroundColor="@color/accent_blue">
-
+                        android:layout_width="46dp"
+                        android:layout_height="46dp"
+                        android:background="@drawable/bg_header_btn"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:elevation="10dp"
+                        android:foreground="?attr/selectableItemBackgroundBorderless">
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_people"
+                            android:tint="@color/accent_blue"/>
                         <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:text="＋"
-                            android:textSize="20sp"
-                            android:textColor="@color/white"
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:layout_gravity="top|end"
+                            android:layout_margin="3dp"
+                            android:text="+"
+                            android:textSize="11sp"
+                            android:textColor="#FFFFFF"
                             android:fontFamily="@font/outfit_bold"
-                            android:gravity="center"/>
-
-                    </androidx.cardview.widget.CardView>
-
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <!-- ── BUSCADOR ── -->
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="2dp"
-                app:cardBackgroundColor="@color/white">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingStart="14dp"
-                    android:paddingEnd="14dp"
-                    android:paddingTop="4dp"
-                    android:paddingBottom="4dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="🔍"
-                        android:textSize="16sp"
-                        android:layout_marginEnd="8dp"/>
-
-                    <EditText
-                        android:id="@+id/etBuscar"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:hint="Buscar por nombre, teléfono o email…"
-                        android:textSize="12sp"
-                        android:textColor="@color/text_primary"
-                        android:textColorHint="@color/text_muted"
-                        android:fontFamily="@font/outfit_regular"
-                        android:background="@null"
-                        android:paddingTop="14dp"
-                        android:paddingBottom="14dp"
-                        android:inputType="text"
-                        android:imeOptions="actionSearch"
-                        android:maxLines="1"/>
-
-                    <TextView
-                        android:id="@+id/btnLimpiarBusqueda"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="✕"
-                        android:textSize="14sp"
-                        android:textColor="@color/text_muted"
-                        android:padding="6dp"
-                        android:visibility="gone"/>
+                            android:gravity="center"
+                            android:background="@drawable/shape_badge"/>
+                    </FrameLayout>
 
                 </LinearLayout>
-            </androidx.cardview.widget.CardView>
+            </FrameLayout>
 
-            <!-- ── FILTROS ── -->
-            <HorizontalScrollView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="14dp"
-                android:scrollbars="none">
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:id="@+id/filtroTodos"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Todos"
-                        android:textSize="12sp"
-                        android:fontFamily="@font/outfit_bold"
-                        android:paddingStart="16dp"
-                        android:paddingEnd="16dp"
-                        android:paddingTop="8dp"
-                        android:paddingBottom="8dp"
-                        android:layout_marginEnd="8dp"
-                        android:background="@drawable/shape_filter_active"
-                        android:textColor="@color/white"/>
-
-                    <TextView
-                        android:id="@+id/filtroActivos"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Activos"
-                        android:textSize="12sp"
-                        android:fontFamily="@font/outfit_bold"
-                        android:paddingStart="16dp"
-                        android:paddingEnd="16dp"
-                        android:paddingTop="8dp"
-                        android:paddingBottom="8dp"
-                        android:layout_marginEnd="8dp"
-                        android:background="@drawable/shape_filter_inactive"
-                        android:textColor="@color/text_muted"/>
-
-                    <TextView
-                        android:id="@+id/filtroDeuda"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Pendiente"
-                        android:textSize="12sp"
-                        android:fontFamily="@font/outfit_bold"
-                        android:paddingStart="16dp"
-                        android:paddingEnd="16dp"
-                        android:paddingTop="8dp"
-                        android:paddingBottom="8dp"
-                        android:layout_marginEnd="8dp"
-                        android:background="@drawable/shape_filter_inactive"
-                        android:textColor="@color/text_muted"/>
-
-                    <TextView
-                        android:id="@+id/filtroInactivos"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Inactivos"
-                        android:textSize="12sp"
-                        android:fontFamily="@font/outfit_bold"
-                        android:paddingStart="16dp"
-                        android:paddingEnd="16dp"
-                        android:paddingTop="8dp"
-                        android:paddingBottom="8dp"
-                        android:background="@drawable/shape_filter_inactive"
-                        android:textColor="@color/text_muted"/>
-
-                </LinearLayout>
-            </HorizontalScrollView>
-
-            <!-- ── LISTA DE CLIENTES ── -->
+            <!-- ══ CONTENIDO ══ -->
             <LinearLayout
-                android:id="@+id/listaClientes"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"/>
-
-            <!-- ── ESTADO VACÍO ── -->
-            <LinearLayout
-                android:id="@+id/layoutVacioClientes"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:gravity="center"
-                android:paddingTop="48dp"
-                android:paddingBottom="48dp"
-                android:visibility="gone">
+                android:padding="16dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <!-- BUSCADOR -->
+                <FrameLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="👥"
-                    android:textSize="48sp"
-                    android:gravity="center"/>
+                    android:layout_marginBottom="12dp"
+                    android:background="@drawable/bg_kpi_card"
+                    android:clipToOutline="true"
+                    android:elevation="6dp"
+                    android:outlineProvider="background">
 
-                <TextView
-                    android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="12dp">
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:src="@drawable/ic_search"
+                            android:tint="#9CA3AF"
+                            android:layout_marginEnd="8dp"/>
+
+                        <EditText
+                            android:id="@+id/etBuscar"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:hint="Buscar por nombre, teléfono o email…"
+                            android:textSize="13sp"
+                            android:textColor="@color/text_primary"
+                            android:textColorHint="#9CA3AF"
+                            android:fontFamily="@font/outfit_regular"
+                            android:background="@null"
+                            android:inputType="text"
+                            android:imeOptions="actionSearch"
+                            android:maxLines="1"/>
+
+                        <TextView
+                            android:id="@+id/btnLimpiarBusqueda"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:text="✕"
+                            android:textSize="13sp"
+                            android:textColor="@color/text_muted"
+                            android:gravity="center"
+                            android:visibility="gone"
+                            android:background="@drawable/shape_chip_blue"/>
+
+                    </LinearLayout>
+                </FrameLayout>
+
+                <!-- FILTROS — fila 1: los 4 principales del XML -->
+                <!-- Los filtros de membresía (fila 2 y 3) se inyectan desde Java -->
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Sin resultados"
-                    android:textSize="16sp"
-                    android:textColor="@color/text_primary"
-                    android:fontFamily="@font/outfit_bold"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="16dp">
+
+                    <HorizontalScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:scrollbars="none">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:paddingBottom="2dp">
+
+                            <TextView
+                                android:id="@+id/filtroTodos"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Todos"
+                                android:textSize="12sp"
+                                android:fontFamily="@font/outfit_bold"
+                                android:paddingStart="18dp"
+                                android:paddingEnd="18dp"
+                                android:paddingTop="9dp"
+                                android:paddingBottom="9dp"
+                                android:layout_marginEnd="8dp"
+                                android:background="@drawable/shape_filter_active"
+                                android:textColor="@color/white"/>
+
+                            <TextView
+                                android:id="@+id/filtroActivos"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Activos"
+                                android:textSize="12sp"
+                                android:fontFamily="@font/outfit_bold"
+                                android:paddingStart="18dp"
+                                android:paddingEnd="18dp"
+                                android:paddingTop="9dp"
+                                android:paddingBottom="9dp"
+                                android:layout_marginEnd="8dp"
+                                android:background="@drawable/shape_filter_inactive"
+                                android:textColor="@color/text_muted"/>
+
+                            <TextView
+                                android:id="@+id/filtroDeuda"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Pendiente"
+                                android:textSize="12sp"
+                                android:fontFamily="@font/outfit_bold"
+                                android:paddingStart="18dp"
+                                android:paddingEnd="18dp"
+                                android:paddingTop="9dp"
+                                android:paddingBottom="9dp"
+                                android:layout_marginEnd="8dp"
+                                android:background="@drawable/shape_filter_inactive"
+                                android:textColor="@color/text_muted"/>
+
+                            <TextView
+                                android:id="@+id/filtroInactivos"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Inactivos"
+                                android:textSize="12sp"
+                                android:fontFamily="@font/outfit_bold"
+                                android:paddingStart="18dp"
+                                android:paddingEnd="18dp"
+                                android:paddingTop="9dp"
+                                android:paddingBottom="9dp"
+                                android:background="@drawable/shape_filter_inactive"
+                                android:textColor="@color/text_muted"/>
+
+                        </LinearLayout>
+                    </HorizontalScrollView>
+                    <!-- Java inyecta aquí: separador + fila Con/Sin membresía + fila Cancelada -->
+
+                </LinearLayout>
+
+                <!-- LISTA DE CLIENTES -->
+                <LinearLayout
+                    android:id="@+id/listaClientes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"/>
+
+                <!-- ESTADO VACÍO -->
+                <LinearLayout
+                    android:id="@+id/layoutVacioClientes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
                     android:gravity="center"
-                    android:layout_marginTop="12dp"/>
+                    android:visibility="gone"
+                    android:layout_marginTop="24dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Prueba con otro filtro o búsqueda"
-                    android:textSize="12sp"
-                    android:textColor="@color/text_muted"
-                    android:fontFamily="@font/outfit_regular"
-                    android:gravity="center"
-                    android:layout_marginTop="4dp"/>
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_kpi_card"
+                        android:clipToOutline="true"
+                        android:elevation="4dp"
+                        android:outlineProvider="background">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:padding="40dp">
+
+                            <ImageView
+                                android:layout_width="56dp"
+                                android:layout_height="56dp"
+                                android:src="@drawable/ic_people"
+                                android:tint="#D1D5DB"
+                                android:layout_gravity="center_horizontal"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Sin resultados"
+                                android:textSize="18sp"
+                                android:textColor="@color/text_primary"
+                                android:fontFamily="@font/outfit_bold"
+                                android:gravity="center"
+                                android:layout_marginTop="14dp"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Prueba con otro filtro o búsqueda"
+                                android:textSize="12sp"
+                                android:textColor="@color/text_muted"
+                                android:fontFamily="@font/outfit_regular"
+                                android:gravity="center"
+                                android:layout_marginTop="6dp"/>
+
+                        </LinearLayout>
+                    </FrameLayout>
+                </LinearLayout>
 
             </LinearLayout>
-
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
     <!-- BOTTOM NAV FLOTANTE -->
-    <!--
-        CORRECCIÓN: CardView → FrameLayout con bg_nav_card.xml:
-          <shape>
-            <solid android:color="#FFFFFF"/>
-            <corners android:radius="30dp"/>
-          </shape>
-        elevation + outlineProvider + clipToOutline evitan el fondo blanco
-        que se filtraba fuera de los bordes redondeados.
-    -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -305,7 +381,7 @@
         android:background="@drawable/bg_nav_card"
         android:clipToOutline="true"
         android:elevation="24dp"
-        android:outlineProvider="none">
+        android:outlineProvider="background">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -324,14 +400,12 @@
                 android:background="@drawable/nav_item_normal"
                 android:gravity="center"
                 android:orientation="vertical">
-
                 <ImageView
                     android:layout_width="25dp"
                     android:layout_height="25dp"
                     android:elevation="2dp"
                     android:src="@drawable/ic_home"
-                    android:tint="#9CA3AF" />
-
+                    android:tint="#9CA3AF"/>
                 <TextView
                     android:id="@+id/navLabelHome"
                     android:layout_width="wrap_content"
@@ -341,7 +415,7 @@
                     android:gravity="center"
                     android:text="Inicio"
                     android:textColor="#9CA3AF"
-                    android:textSize="11sp" />
+                    android:textSize="11sp"/>
             </LinearLayout>
 
             <LinearLayout
@@ -352,13 +426,11 @@
                 android:background="@drawable/nav_item_selected"
                 android:gravity="center"
                 android:orientation="vertical">
-
                 <ImageView
                     android:layout_width="25dp"
                     android:layout_height="25dp"
                     android:src="@drawable/ic_people"
-                    android:tint="#0A66FF" />
-
+                    android:tint="#0A66FF"/>
                 <TextView
                     android:id="@+id/navLabelClientes"
                     android:layout_width="wrap_content"
@@ -368,7 +440,7 @@
                     android:gravity="center"
                     android:text="Clientes"
                     android:textColor="#0A66FF"
-                    android:textSize="11sp" />
+                    android:textSize="11sp"/>
             </LinearLayout>
 
             <LinearLayout
@@ -379,14 +451,12 @@
                 android:background="@drawable/nav_item_normal"
                 android:gravity="center"
                 android:orientation="vertical">
-
                 <ImageView
                     android:id="@+id/navIconGimnasio"
                     android:layout_width="25dp"
                     android:layout_height="25dp"
                     android:src="@drawable/ic_fitness"
-                    android:tint="#9CA3AF" />
-
+                    android:tint="#9CA3AF"/>
                 <TextView
                     android:id="@+id/navLabelGimnasio"
                     android:layout_width="wrap_content"
@@ -396,7 +466,7 @@
                     android:gravity="center"
                     android:text="Gym"
                     android:textColor="#9CA3AF"
-                    android:textSize="11sp" />
+                    android:textSize="11sp"/>
             </LinearLayout>
 
             <LinearLayout
@@ -407,13 +477,11 @@
                 android:background="@drawable/nav_item_normal"
                 android:gravity="center"
                 android:orientation="vertical">
-
                 <ImageView
                     android:layout_width="25dp"
                     android:layout_height="25dp"
                     android:src="@drawable/ic_calendar_today"
-                    android:tint="#9CA3AF" />
-
+                    android:tint="#9CA3AF"/>
                 <TextView
                     android:id="@+id/navLabelAgenda"
                     android:layout_width="wrap_content"
@@ -423,7 +491,7 @@
                     android:gravity="center"
                     android:text="Agenda"
                     android:textColor="#9CA3AF"
-                    android:textSize="11sp" />
+                    android:textSize="11sp"/>
             </LinearLayout>
 
             <LinearLayout
@@ -434,13 +502,11 @@
                 android:background="@drawable/nav_item_normal"
                 android:gravity="center"
                 android:orientation="vertical">
-
                 <ImageView
                     android:layout_width="25dp"
                     android:layout_height="25dp"
                     android:src="@drawable/ic_payments"
-                    android:tint="#9CA3AF" />
-
+                    android:tint="#9CA3AF"/>
                 <TextView
                     android:id="@+id/navLabelCobros"
                     android:layout_width="wrap_content"
@@ -450,11 +516,10 @@
                     android:gravity="center"
                     android:text="Cobros"
                     android:textColor="#9CA3AF"
-                    android:textSize="11sp" />
+                    android:textSize="11sp"/>
             </LinearLayout>
 
         </LinearLayout>
     </FrameLayout>
-
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

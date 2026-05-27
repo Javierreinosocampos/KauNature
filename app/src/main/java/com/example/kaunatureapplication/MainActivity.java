@@ -7,6 +7,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -234,33 +235,73 @@ public class MainActivity extends AppCompatActivity {
         form.addView(tvClienteSeleccionado);
 
         // ── Tipo de membresía ────────────────────────────────────
-        lbl(form, "Tipo");
-        LinearLayout rowTipo = new LinearLayout(this);
-        rowTipo.setOrientation(LinearLayout.HORIZONTAL);
-        rowTipo.setLayoutParams(new LinearLayout.LayoutParams(-1, -2));
-        form.addView(rowTipo);
+        lbl(form, "Tipo de membresía");
 
-        final String[] tipoSel = {"mensual"};
-        String[] tipos = {"mensual", "trimestral", "semestral", "anual"};
-        for (String t : tipos) {
-            TextView chip = chipTv(t, t.equals(tipoSel[0]));
-            LinearLayout.LayoutParams cp = new LinearLayout.LayoutParams(0, dp(40), 1f);
+        // Fila 1: Mensual 3h / Mensual 4h
+        LinearLayout rowTipo1 = new LinearLayout(this);
+        rowTipo1.setOrientation(LinearLayout.HORIZONTAL);
+        LinearLayout.LayoutParams rowT1P = new LinearLayout.LayoutParams(-1, -2);
+        rowT1P.bottomMargin = dp(8);
+        rowTipo1.setLayoutParams(rowT1P);
+        form.addView(rowTipo1);
+
+        // Fila 2: Mensual personalizado
+        LinearLayout rowTipo2 = new LinearLayout(this);
+        rowTipo2.setOrientation(LinearLayout.HORIZONTAL);
+        LinearLayout.LayoutParams rowT2P = new LinearLayout.LayoutParams(-1, -2);
+        rowT2P.bottomMargin = dp(16);
+        rowTipo2.setLayoutParams(rowT2P);
+        form.addView(rowTipo2);
+
+        final String[] tipoSel = {"mensual_3h"};
+        String[] tiposFila1 = {"mensual_3h", "mensual_4h"};
+        String[] tiposLabels1 = {"Mensual 3h", "Mensual 4h"};
+        String[] tiposFila2 = {"mensual_personalizado"};
+        String[] tiposLabels2 = {"Mensual personalizado"};
+
+        android.view.View[] todosChips = new android.view.View[3];
+
+        for (int i = 0; i < tiposFila1.length; i++) {
+            final String t = tiposFila1[i];
+            TextView chip = chipTv(tiposLabels1[i], t.equals(tipoSel[0]));
+            LinearLayout.LayoutParams cp = new LinearLayout.LayoutParams(0, dp(44), 1f);
             cp.setMarginEnd(dp(6));
             chip.setLayoutParams(cp);
-            chip.setOnClickListener(v -> {
-                tipoSel[0] = t;
-                for (int i = 0; i < rowTipo.getChildCount(); i++) {
-                    TextView c = (TextView) rowTipo.getChildAt(i);
-                    boolean sel = c.getText().toString().equals(t);
-                    c.setBackground(sel ? chipActiveBg() : chipInactiveBg());
-                    c.setTextColor(sel ? WHITE : TEXT_M);
-                }
-            });
-            rowTipo.addView(chip);
+            todosChips[i] = chip;
+            rowTipo1.addView(chip);
+        }
+        for (int i = 0; i < tiposFila2.length; i++) {
+            final String t = tiposFila2[i];
+            TextView chip = chipTv(tiposLabels2[i], t.equals(tipoSel[0]));
+            chip.setLayoutParams(new LinearLayout.LayoutParams(-1, dp(44)));
+            todosChips[2] = chip;
+            rowTipo2.addView(chip);
         }
 
-        // ── Precio mensual ───────────────────────────────────────
-        lbl(form, "Cuota mensual (€)");
+        // Precio inicial según tipo por defecto
+        precioSel[0] = 30;
+        final TextView[] tvPrecioRef = {null};
+
+        // Listeners de selección — actualizan chips Y precio automáticamente
+        String[] todosTipos = {"mensual_3h", "mensual_4h", "mensual_personalizado"};
+        double[] preciosPorTipo = {30, 40, 0};
+        for (int i = 0; i < todosChips.length; i++) {
+            final String t = todosTipos[i];
+            final double precioAuto = preciosPorTipo[i];
+            todosChips[i].setOnClickListener(v -> {
+                tipoSel[0] = t;
+                precioSel[0] = precioAuto;
+                for (android.view.View chip : todosChips) {
+                    boolean sel = chip == v;
+                    ((TextView) chip).setBackground(sel ? chipActiveBg() : chipInactiveBg());
+                    ((TextView) chip).setTextColor(sel ? WHITE : TEXT_M);
+                }
+                tvPrecioRef[0].setText(precioAuto == 0 ? "0€" : (int) precioAuto + "€");
+            });
+        }
+
+        // ── Precio ───────────────────────────────────────────────
+        lbl(form, "Cuota (€)");
         LinearLayout rowPrecio = new LinearLayout(this);
         rowPrecio.setOrientation(LinearLayout.HORIZONTAL);
         rowPrecio.setGravity(android.view.Gravity.CENTER_VERTICAL);
@@ -271,6 +312,7 @@ public class MainActivity extends AppCompatActivity {
 
         TextView btnMenos = spinBtn("−");
         final TextView tvPrecio = new TextView(this);
+        tvPrecioRef[0] = tvPrecio;
         tvPrecio.setText("30€");
         tvPrecio.setTextSize(32f); tvPrecio.setTextColor(BLUE);
         tvPrecio.setTypeface(Typeface.DEFAULT_BOLD);
@@ -287,13 +329,13 @@ public class MainActivity extends AppCompatActivity {
         btnMenos.setOnClickListener(v -> {
             if (precioSel[0] > 1) {
                 precioSel[0] = Math.max(1, precioSel[0] - 5);
-                tvPrecio.setText((int)precioSel[0] + "€");
+                tvPrecio.setText((int) precioSel[0] + "€");
             }
         });
         btnMas.setOnClickListener(v -> {
             if (precioSel[0] < 9999) {
                 precioSel[0] = Math.min(9999, precioSel[0] + 5);
-                tvPrecio.setText((int)precioSel[0] + "€");
+                tvPrecio.setText((int) precioSel[0] + "€");
             }
         });
         tvPrecio.setOnClickListener(v -> showPrecioPicker(precioSel, tvPrecio));
@@ -633,117 +675,215 @@ public class MainActivity extends AppCompatActivity {
     private void showNotifs() {
         BottomSheetDialog sheet = new BottomSheetDialog(this,
                 com.google.android.material.R.style.Theme_Material3_Light_BottomSheetDialog);
+        sheet.getWindow().setDimAmount(0.4f);
 
-        // ── Estructura: cabecera fija + lista scrollable ──
-        // Usamos un LinearLayout raíz con altura FIJA (70% pantalla)
-        // para que el BottomSheet no compita con el scroll interno
         LinearLayout raiz = new LinearLayout(this);
         raiz.setOrientation(LinearLayout.VERTICAL);
         raiz.setBackgroundColor(WHITE);
-        int alturaSheet = (int)(getResources().getDisplayMetrics().heightPixels * 0.72f);
+        int alturaSheet = (int)(getResources().getDisplayMetrics().heightPixels * 0.78f);
         raiz.setLayoutParams(new LinearLayout.LayoutParams(-1, alturaSheet));
 
-        // Handle
+        // ── Handle ───────────────────────────────────────────────────
         LinearLayout hw = new LinearLayout(this);
         hw.setGravity(Gravity.CENTER_HORIZONTAL);
         LinearLayout.LayoutParams hwP = new LinearLayout.LayoutParams(-1, -2);
-        hwP.topMargin = dp(10); hwP.bottomMargin = dp(6);
+        hwP.topMargin = dp(10); hwP.bottomMargin = dp(4);
         hw.setLayoutParams(hwP);
         View handle = new View(this);
         GradientDrawable hBg = new GradientDrawable();
-        hBg.setColor(BORDER); hBg.setCornerRadius(dp(3));
+        hBg.setColor(0xFFD1D5DB); hBg.setCornerRadius(dp(3));
         handle.setBackground(hBg);
         handle.setLayoutParams(new LinearLayout.LayoutParams(dp(40), dp(4)));
         hw.addView(handle);
         raiz.addView(hw);
 
-        // Cabecera FIJA (no scrollea)
-        LinearLayout cabecera = new LinearLayout(this);
-        cabecera.setOrientation(LinearLayout.HORIZONTAL);
-        cabecera.setGravity(Gravity.CENTER_VERTICAL);
-        cabecera.setPadding(dp(20), dp(12), dp(20), dp(12));
-        cabecera.setLayoutParams(new LinearLayout.LayoutParams(-1, -2));
+        // ── HEADER gradiente azul ────────────────────────────────────
+        FrameLayout headerCard = new FrameLayout(this);
+        LinearLayout.LayoutParams hcP = new LinearLayout.LayoutParams(-1, -2);
+        hcP.setMargins(dp(16), dp(8), dp(16), dp(14));
+        headerCard.setLayoutParams(hcP);
+        GradientDrawable headerBg = new GradientDrawable(
+                GradientDrawable.Orientation.TL_BR,
+                new int[]{0xFF1560E0, 0xFF0D52CC, 0xFF0840AA});
+        headerBg.setCornerRadius(dp(24));
+        headerCard.setBackground(headerBg);
+        headerCard.setElevation(dp(8));
+        headerCard.setClipToOutline(true);
+        headerCard.setOutlineProvider(android.view.ViewOutlineProvider.BACKGROUND);
 
+        // Círculo decorativo top-right
+        View circR = new View(this);
+        FrameLayout.LayoutParams crP = new FrameLayout.LayoutParams(dp(100), dp(100));
+        crP.gravity = Gravity.TOP | Gravity.END;
+        circR.setLayoutParams(crP);
+        GradientDrawable circRBg = new GradientDrawable();
+        circRBg.setShape(GradientDrawable.OVAL);
+        circRBg.setColor(0x15FFFFFF);
+        circR.setBackground(circRBg);
+        circR.setTranslationX(dp(30)); circR.setTranslationY(dp(-30));
+        headerCard.addView(circR);
+
+        // Círculo decorativo bottom-left
+        View circL = new View(this);
+        FrameLayout.LayoutParams clP = new FrameLayout.LayoutParams(dp(70), dp(70));
+        clP.gravity = Gravity.BOTTOM | Gravity.START;
+        circL.setLayoutParams(clP);
+        GradientDrawable circLBg = new GradientDrawable();
+        circLBg.setShape(GradientDrawable.OVAL);
+        circLBg.setColor(0x10FFFFFF);
+        circL.setBackground(circLBg);
+        circL.setTranslationX(dp(-20)); circL.setTranslationY(dp(20));
+        headerCard.addView(circL);
+
+        // Contenido del header
+        LinearLayout headerContent = new LinearLayout(this);
+        headerContent.setOrientation(LinearLayout.HORIZONTAL);
+        headerContent.setGravity(Gravity.CENTER_VERTICAL);
+        headerContent.setPadding(dp(18), dp(18), dp(18), dp(18));
+        headerContent.setLayoutParams(new FrameLayout.LayoutParams(-1, -2));
+
+        // Icono campana
+        FrameLayout iconFrame = new FrameLayout(this);
+        LinearLayout.LayoutParams ifP = new LinearLayout.LayoutParams(dp(44), dp(44));
+        ifP.setMarginEnd(dp(14));
+        iconFrame.setLayoutParams(ifP);
+        GradientDrawable iconBg = new GradientDrawable();
+        iconBg.setShape(GradientDrawable.OVAL);
+        iconBg.setColor(0x2AFFFFFF);
+        iconBg.setStroke(dp(1), 0x35FFFFFF);
+        iconFrame.setBackground(iconBg);
+        android.widget.ImageView ivBell = new android.widget.ImageView(this);
+        FrameLayout.LayoutParams ivP = new FrameLayout.LayoutParams(dp(22), dp(22));
+        ivP.gravity = Gravity.CENTER;
+        ivBell.setLayoutParams(ivP);
+        ivBell.setImageResource(R.drawable.ic_bell);
+        ivBell.setColorFilter(WHITE);
+        iconFrame.addView(ivBell);
+        headerContent.addView(iconFrame);
+
+        // Títulos
         LinearLayout titulos = new LinearLayout(this);
         titulos.setOrientation(LinearLayout.VERTICAL);
         titulos.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1f));
         TextView tvTitulo = new TextView(this);
         tvTitulo.setText("Notificaciones");
         tvTitulo.setTextSize(20f);
-        tvTitulo.setTextColor(TEXT_D);
+        tvTitulo.setTextColor(WHITE);
         tvTitulo.setTypeface(Typeface.DEFAULT_BOLD);
+        tvTitulo.setShadowLayer(dp(3), 0, dp(1), 0x35FFFFFF);
         titulos.addView(tvTitulo);
         final TextView tvSubLocal = new TextView(this);
         long nl0 = notificaciones.stream().filter(n -> !n.leida).count();
-        tvSubLocal.setText(nl0 > 0 ? nl0 + " sin leer" : "Todo al día ✅");
+        tvSubLocal.setText(nl0 > 0 ? nl0 + " sin leer" : "Todo al día ");
         tvSubLocal.setTextSize(12f);
-        tvSubLocal.setTextColor(TEXT_L);
+        tvSubLocal.setTextColor(0xFF93C5FD);
+        LinearLayout.LayoutParams subP = new LinearLayout.LayoutParams(-2, -2);
+        subP.topMargin = dp(2);
+        tvSubLocal.setLayoutParams(subP);
         titulos.addView(tvSubLocal);
-        cabecera.addView(titulos);
+        headerContent.addView(titulos);
 
+        // Botón papelera (eliminar todas)
+        FrameLayout btnPapelera = new FrameLayout(this);
+        LinearLayout.LayoutParams papP = new LinearLayout.LayoutParams(dp(44), dp(44));
+        papP.setMarginEnd(dp(8));
+        btnPapelera.setLayoutParams(papP);
+        GradientDrawable papBg = new GradientDrawable();
+        papBg.setShape(GradientDrawable.OVAL);
+        papBg.setColor(0x2AFFFFFF);
+        papBg.setStroke(dp(1), 0x35FFFFFF);
+        btnPapelera.setBackground(papBg);
+        btnPapelera.setClickable(true);
+        btnPapelera.setFocusable(true);
+        android.widget.ImageView ivTrash = new android.widget.ImageView(this);
+        FrameLayout.LayoutParams trashP = new FrameLayout.LayoutParams(dp(22), dp(22));
+        trashP.gravity = Gravity.CENTER;
+        ivTrash.setLayoutParams(trashP);
+        ivTrash.setImageResource(R.drawable.ic_delete);
+        ivTrash.setColorFilter(WHITE);
+        btnPapelera.addView(ivTrash);
+        headerContent.addView(btnPapelera);
+
+        // Botón marcar leídas
         TextView btnTodas = new TextView(this);
-        btnTodas.setText("Marcar leídas");
+        btnTodas.setText("✓ Leídas");
         btnTodas.setTextSize(11f);
-        btnTodas.setTextColor(BLUE);
+        btnTodas.setTextColor(WHITE);
         btnTodas.setTypeface(Typeface.DEFAULT_BOLD);
         btnTodas.setPadding(dp(12), dp(8), dp(12), dp(8));
         GradientDrawable btnBg2 = new GradientDrawable();
-        btnBg2.setColor(BLUE_XL); btnBg2.setCornerRadius(dp(10));
+        btnBg2.setColor(0x2AFFFFFF);
+        btnBg2.setStroke(dp(1), 0x35FFFFFF);
+        btnBg2.setCornerRadius(dp(12));
         btnTodas.setBackground(btnBg2);
         btnTodas.setClickable(true);
-        cabecera.addView(btnTodas);
+        btnTodas.setFocusable(true);
+        headerContent.addView(btnTodas);
 
-        // ── Botón ELIMINAR TODAS ──────────────────────────────────────
-        TextView btnElimTodas = new TextView(this);
-        btnElimTodas.setText("Eliminar todas");
-        btnElimTodas.setTextSize(11f);
-        btnElimTodas.setTextColor(0xFFEF4444);
-        btnElimTodas.setTypeface(Typeface.DEFAULT_BOLD);
-        btnElimTodas.setPadding(dp(12), dp(8), dp(12), dp(8));
-        LinearLayout.LayoutParams elimP = new LinearLayout.LayoutParams(-2, -2);
-        elimP.setMarginStart(dp(8));
-        btnElimTodas.setLayoutParams(elimP);
-        GradientDrawable btnBgElim = new GradientDrawable();
-        btnBgElim.setColor(0xFFFFEEEE); btnBgElim.setCornerRadius(dp(10));
-        btnElimTodas.setBackground(btnBgElim);
-        btnElimTodas.setClickable(true);
-        cabecera.addView(btnElimTodas);
-        raiz.addView(cabecera);
+        headerCard.addView(headerContent);
+        raiz.addView(headerCard);
 
-        View div = new View(this);
-        div.setLayoutParams(new LinearLayout.LayoutParams(-1, dp(1)));
-        div.setBackgroundColor(BORDER);
-        raiz.addView(div);
-
-        // ── Lista con NestedScrollView — peso 1f para ocupar el resto ──
+        // ── NestedScrollView ─────────────────────────────────────────
         androidx.core.widget.NestedScrollView nsv = new androidx.core.widget.NestedScrollView(this);
         nsv.setLayoutParams(new LinearLayout.LayoutParams(-1, 0, 1f));
         nsv.setFillViewport(true);
-        // Esto es CLAVE: permite que el NestedScrollView intercepte el scroll
-        // antes de que el BottomSheet lo haga
         nsv.setNestedScrollingEnabled(true);
 
         final LinearLayout listaLocal = new LinearLayout(this);
         listaLocal.setOrientation(LinearLayout.VERTICAL);
-        listaLocal.setPadding(dp(16), dp(12), dp(16), dp(40));
+        listaLocal.setPadding(dp(16), dp(4), dp(16), dp(48));
         nsv.addView(listaLocal);
         raiz.addView(nsv);
 
+        // ── Refresh ──────────────────────────────────────────────────
         Runnable[] rh = {null};
         Runnable refresh = () -> {
             listaLocal.removeAllViews();
             long nlr = notificaciones.stream().filter(n -> !n.leida).count();
-            tvSubLocal.setText(nlr > 0 ? nlr + " sin leer" : "Todo al día ✅");
+            tvSubLocal.setText(nlr > 0 ? nlr + " sin leer" : "Todo al día ");
+
             if (notificaciones.isEmpty()) {
-                TextView empty = new TextView(this);
-                empty.setText("🎉 No hay notificaciones");
-                empty.setTextSize(14f);
-                empty.setTextColor(TEXT_L);
-                empty.setGravity(Gravity.CENTER);
-                LinearLayout.LayoutParams ep = new LinearLayout.LayoutParams(-1, dp(80));
-                ep.topMargin = dp(20);
-                empty.setLayoutParams(ep);
-                listaLocal.addView(empty);
+                LinearLayout emptyWrap = new LinearLayout(this);
+                emptyWrap.setOrientation(LinearLayout.VERTICAL);
+                emptyWrap.setGravity(Gravity.CENTER);
+                LinearLayout.LayoutParams ewP = new LinearLayout.LayoutParams(-1, -2);
+                ewP.setMargins(0, dp(24), 0, dp(24));
+                emptyWrap.setLayoutParams(ewP);
+                GradientDrawable emptyBg = new GradientDrawable();
+                emptyBg.setColor(BLUE_XL);
+                emptyBg.setCornerRadius(dp(22));
+                emptyWrap.setBackground(emptyBg);
+                emptyWrap.setPadding(dp(32), dp(36), dp(32), dp(36));
+
+                TextView tvEmoji = new TextView(this);
+                tvEmoji.setText("✅");
+                tvEmoji.setTextSize(44f);
+                tvEmoji.setGravity(Gravity.CENTER);
+                tvEmoji.setLayoutParams(new LinearLayout.LayoutParams(-1, -2));
+                emptyWrap.addView(tvEmoji);
+
+                TextView tvEmptyTit = new TextView(this);
+                tvEmptyTit.setText("Todo al día");
+                tvEmptyTit.setTextSize(18f);
+                tvEmptyTit.setTextColor(TEXT_D);
+                tvEmptyTit.setTypeface(Typeface.DEFAULT_BOLD);
+                tvEmptyTit.setGravity(Gravity.CENTER);
+                LinearLayout.LayoutParams etP = new LinearLayout.LayoutParams(-1, -2);
+                etP.topMargin = dp(12);
+                tvEmptyTit.setLayoutParams(etP);
+                emptyWrap.addView(tvEmptyTit);
+
+                TextView tvEmptySub = new TextView(this);
+                tvEmptySub.setText("No hay notificaciones pendientes");
+                tvEmptySub.setTextSize(12f);
+                tvEmptySub.setTextColor(TEXT_L);
+                tvEmptySub.setGravity(Gravity.CENTER);
+                LinearLayout.LayoutParams esP = new LinearLayout.LayoutParams(-1, -2);
+                esP.topMargin = dp(4);
+                tvEmptySub.setLayoutParams(esP);
+                emptyWrap.addView(tvEmptySub);
+
+                listaLocal.addView(emptyWrap);
             } else {
                 for (Notif n : new ArrayList<>(notificaciones)) {
                     listaLocal.addView(buildNotifRow(n, tvSubLocal, rh));
@@ -758,16 +898,22 @@ public class MainActivity extends AppCompatActivity {
             refresh.run();
         });
 
-        btnElimTodas.setOnClickListener(v -> {
-            for (Notif n : new ArrayList<>(notificaciones)) { marcarEliminada(n.id); }
-            notificaciones.clear();
-            refreshBadge();
-            refresh.run();
-        });
+        btnPapelera.setOnClickListener(v ->
+                new android.app.AlertDialog.Builder(this)
+                        .setTitle("Eliminar todas")
+                        .setMessage("¿Eliminar todas las notificaciones?")
+                        .setPositiveButton("Eliminar", (d, w) -> {
+                            for (Notif n : new ArrayList<>(notificaciones)) { marcarEliminada(n.id); }
+                            notificaciones.clear();
+                            refreshBadge();
+                            refresh.run();
+                        })
+                        .setNegativeButton("Cancelar", null)
+                        .show()
+        );
 
         refresh.run();
 
-        // Expandir el sheet al máximo para que el scroll tenga espacio
         sheet.setContentView(raiz);
         sheet.setOnShowListener(d -> {
             com.google.android.material.bottomsheet.BottomSheetBehavior<?> behavior =
@@ -780,93 +926,116 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private View buildNotifRow(Notif n, TextView tvSub, Runnable[] refreshHolder) {
-        // Contenedor principal
         LinearLayout wrapper = new LinearLayout(this);
         wrapper.setOrientation(LinearLayout.VERTICAL);
         LinearLayout.LayoutParams wp = new LinearLayout.LayoutParams(-1, -2);
-        wp.bottomMargin = dp(8);
+        wp.bottomMargin = dp(10);
         wrapper.setLayoutParams(wp);
 
-        // Fila de contenido
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_VERTICAL);
-        row.setPadding(dp(14), dp(14), dp(10), dp(14));
+        row.setPadding(dp(14), dp(14), dp(12), dp(14));
         GradientDrawable rBg = new GradientDrawable();
-        rBg.setColor(n.leida ? 0xFFF9FAFB : BLUE_XL);
-        rBg.setCornerRadius(dp(16));
+        rBg.setColor(n.leida ? 0xFFF8FAFF : BLUE_XL);
+        rBg.setCornerRadius(dp(18));
+        if (!n.leida) rBg.setStroke(dp(1), 0xFFD1E3FF);
         row.setBackground(rBg);
         row.setClickable(true);
         row.setFocusable(true);
+        row.setElevation(n.leida ? 0 : dp(2));
 
         // Icono
-        LinearLayout ic = new LinearLayout(this);
-        ic.setGravity(Gravity.CENTER);
-        GradientDrawable iBg = new GradientDrawable();
-        iBg.setShape(GradientDrawable.OVAL);
-        iBg.setColor("cita".equals(n.tipo) ? 0xFFE8F0FF : 0xFFFFF8E8);
-        ic.setBackground(iBg);
-        LinearLayout.LayoutParams iP = new LinearLayout.LayoutParams(dp(40), dp(40));
-        iP.setMarginEnd(dp(12));
-        ic.setLayoutParams(iP);
-        TextView tvI = new TextView(this);
-        tvI.setText("cita".equals(n.tipo) ? "📅" : "💰");
-        tvI.setTextSize(17f);
-        tvI.setGravity(Gravity.CENTER);
-        tvI.setLayoutParams(new LinearLayout.LayoutParams(-1, -1));
-        ic.addView(tvI);
-        row.addView(ic);
+        boolean esCita = "cita".equals(n.tipo);
+        FrameLayout icFrame = new FrameLayout(this);
+        LinearLayout.LayoutParams icP = new LinearLayout.LayoutParams(dp(42), dp(42));
+        icP.setMarginEnd(dp(12));
+        icFrame.setLayoutParams(icP);
+        GradientDrawable icBg = new GradientDrawable();
+        icBg.setShape(GradientDrawable.OVAL);
+        icBg.setColor(esCita ? 0xFFE8F0FF : 0xFFFFF3DC);
+        icFrame.setBackground(icBg);
+        android.widget.ImageView ivIcon = new android.widget.ImageView(this);
+        FrameLayout.LayoutParams iconP = new FrameLayout.LayoutParams(dp(20), dp(20));
+        iconP.gravity = Gravity.CENTER;
+        ivIcon.setLayoutParams(iconP);
+        ivIcon.setImageResource(esCita ? R.drawable.ic_calendar_today : R.drawable.ic_payments);
+        ivIcon.setColorFilter(esCita ? 0xFF2563EB : 0xFFF59E0B);
+        icFrame.addView(ivIcon);
+        row.addView(icFrame);
 
-        // Texto
+        // Textos
         LinearLayout txt = new LinearLayout(this);
         txt.setOrientation(LinearLayout.VERTICAL);
         txt.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1f));
+
         TextView tvT = new TextView(this);
         tvT.setText(n.titulo);
-        tvT.setTextSize(12.5f);
+        tvT.setTextSize(13f);
         tvT.setTextColor(TEXT_D);
-        tvT.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
-        tvT.setAlpha(n.leida ? 0.45f : 1f);
+        tvT.setTypeface(Typeface.DEFAULT_BOLD);
+        tvT.setAlpha(n.leida ? 0.4f : 1f);
         tvT.setSingleLine(true);
         tvT.setEllipsize(android.text.TextUtils.TruncateAt.END);
         txt.addView(tvT);
+
         TextView tvD2 = new TextView(this);
         tvD2.setText(n.desc);
-        tvD2.setTextSize(11f);
-        tvD2.setTextColor(TEXT_L);
-        tvD2.setAlpha(n.leida ? 0.45f : 1f);
+        tvD2.setTextSize(11.5f);
+        tvD2.setTextColor(TEXT_M);
+        tvD2.setAlpha(n.leida ? 0.4f : 1f);
         tvD2.setSingleLine(true);
         tvD2.setEllipsize(android.text.TextUtils.TruncateAt.END);
         LinearLayout.LayoutParams dP2 = new LinearLayout.LayoutParams(-2, -2);
-        dP2.topMargin = dp(2);
+        dP2.topMargin = dp(3);
         tvD2.setLayoutParams(dP2);
         txt.addView(tvD2);
-        row.addView(txt);
 
-        // Hora
         TextView tvH = new TextView(this);
         tvH.setText(n.hora);
         tvH.setTextSize(10f);
         tvH.setTextColor(TEXT_L);
-        LinearLayout.LayoutParams hP = new LinearLayout.LayoutParams(-2, -2);
-        hP.setMarginStart(dp(8));
-        hP.gravity = Gravity.CENTER_VERTICAL;
-        tvH.setLayoutParams(hP);
-        row.addView(tvH);
+        LinearLayout.LayoutParams htP = new LinearLayout.LayoutParams(-2, -2);
+        htP.topMargin = dp(4);
+        tvH.setLayoutParams(htP);
+        txt.addView(tvH);
 
-        // Botón eliminar (X)
-        TextView btnDel = new TextView(this);
-        btnDel.setText("✕");
-        btnDel.setTextSize(14f);
-        btnDel.setTextColor(TEXT_L);
-        btnDel.setPadding(dp(10), dp(4), dp(4), dp(4));
-        LinearLayout.LayoutParams delP = new LinearLayout.LayoutParams(-2, -2);
+        row.addView(txt);
+
+        // Punto azul no leída
+        if (!n.leida) {
+            View dot = new View(this);
+            LinearLayout.LayoutParams dotP = new LinearLayout.LayoutParams(dp(8), dp(8));
+            dotP.gravity = Gravity.CENTER_VERTICAL;
+            dotP.setMarginEnd(dp(8));
+            dot.setLayoutParams(dotP);
+            GradientDrawable dotBg = new GradientDrawable();
+            dotBg.setShape(GradientDrawable.OVAL);
+            dotBg.setColor(BLUE);
+            dot.setBackground(dotBg);
+            row.addView(dot);
+        }
+
+        // Papelera individual
+        FrameLayout btnDel = new FrameLayout(this);
+        LinearLayout.LayoutParams delP = new LinearLayout.LayoutParams(dp(32), dp(32)); // ← TAMAÑO DEL CÍRCULO
         delP.gravity = Gravity.CENTER_VERTICAL;
         btnDel.setLayoutParams(delP);
+        GradientDrawable delBg = new GradientDrawable();
+        delBg.setShape(GradientDrawable.OVAL);
+        delBg.setColor(0xFFEEF4FF); // ← COLOR FONDO CÍRCULO (azul claro)
+        delBg.setStroke(dp(1), 0xFFD1E3FF); // ← BORDE AZUL
+        btnDel.setBackground(delBg);
         btnDel.setClickable(true);
         btnDel.setFocusable(true);
+        android.widget.ImageView ivDel = new android.widget.ImageView(this);
+        FrameLayout.LayoutParams ivDelP = new FrameLayout.LayoutParams(dp(15), dp(15)); // ← TAMAÑO DEL ICONO
+        ivDelP.gravity = Gravity.CENTER;
+        ivDel.setLayoutParams(ivDelP);
+        ivDel.setImageResource(R.drawable.ic_delete);
+        ivDel.setColorFilter(BLUE); // ← COLOR ICONO
+        btnDel.addView(ivDel);
         btnDel.setOnClickListener(vv -> {
-            // Marcar como eliminada y persistir
             marcarEliminada(n.id);
             notificaciones.remove(n);
             refreshBadge();
@@ -874,16 +1043,21 @@ public class MainActivity extends AppCompatActivity {
         });
         row.addView(btnDel);
 
-        // Click en la fila → marcar leída y persistir inmediatamente
+        // Click fila → marcar leída
         row.setOnClickListener(v -> {
-            n.leida = true;
-            marcarLeida(n.id);  // persiste en SharedPreferences
-            refreshBadge();
-            rBg.setColor(0xFFF9FAFB);
-            tvT.setAlpha(0.45f);
-            tvD2.setAlpha(0.45f);
-            long nl = notificaciones.stream().filter(x -> !x.leida).count();
-            if (tvSub != null) tvSub.setText(nl > 0 ? nl + " sin leer" : "Todo al día ✅");
+            if (!n.leida) {
+                n.leida = true;
+                marcarLeida(n.id);
+                refreshBadge();
+                rBg.setColor(0xFFF8FAFF);
+                rBg.setStroke(0, 0);
+                row.setElevation(0);
+                tvT.setAlpha(0.4f);
+                tvD2.setAlpha(0.4f);
+                long nl = notificaciones.stream().filter(x -> !x.leida).count();
+                if (tvSub != null) tvSub.setText(nl > 0 ? nl + " sin leer" : "Todo al día ✅");
+                if (refreshHolder[0] != null) refreshHolder[0].run();
+            }
         });
 
         wrapper.addView(row);
@@ -900,7 +1074,7 @@ public class MainActivity extends AppCompatActivity {
     // ════════════════════════════════════════════════════════════════
     private void setupGreeting() {
         int h = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
-        tvGreeting.setText(h < 13 ? "Buenos días ☀" : h < 20 ? "Buenas tardes " : "Buenas noches ");
+        tvGreeting.setText(h < 13 ? "Buenos días " : h < 20 ? "Buenas tardes " : "Buenas noches ");
     }
 
     private void setupFecha() {
@@ -1159,34 +1333,68 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // ── Tipo de membresía ────────────────────────────────────
-        lbl(form, "Tipo");
-        LinearLayout rowTipo = new LinearLayout(this);
-        rowTipo.setOrientation(LinearLayout.HORIZONTAL);
-        rowTipo.setLayoutParams(new LinearLayout.LayoutParams(-1, -2));
-        form.addView(rowTipo);
+        lbl(form, "Tipo de membresía");
 
-        // Los valores deben coincidir con el CHECK constraint de la BD
-        // Probamos con minúsculas que es el valor más común en Supabase
-        final String[] tipoSel = {"mensual"};
-        String[] tipos = {"mensual", "trimestral", "anual"};
-        for (String t : tipos) {
-            TextView chip = chipTv(t, t.equals(tipoSel[0]));
-            LinearLayout.LayoutParams cp = new LinearLayout.LayoutParams(0, dp(40), 1f);
+        LinearLayout rowTipo1 = new LinearLayout(this);
+        rowTipo1.setOrientation(LinearLayout.HORIZONTAL);
+        LinearLayout.LayoutParams rowT1P = new LinearLayout.LayoutParams(-1, -2);
+        rowT1P.bottomMargin = dp(8);
+        rowTipo1.setLayoutParams(rowT1P);
+        form.addView(rowTipo1);
+
+        LinearLayout rowTipo2 = new LinearLayout(this);
+        rowTipo2.setOrientation(LinearLayout.HORIZONTAL);
+        LinearLayout.LayoutParams rowT2P = new LinearLayout.LayoutParams(-1, -2);
+        rowT2P.bottomMargin = dp(16);
+        rowTipo2.setLayoutParams(rowT2P);
+        form.addView(rowTipo2);
+
+        final String[] tipoSel = {"mensual_3h"};
+        String[] tiposFila1 = {"mensual_3h", "mensual_4h"};
+        String[] tiposLabels1 = {"Mensual 3h", "Mensual 4h"};
+        String[] tiposFila2 = {"mensual_personalizado"};
+        String[] tiposLabels2 = {"Mensual personalizado"};
+
+        android.view.View[] todosChips = new android.view.View[3];
+
+        for (int i = 0; i < tiposFila1.length; i++) {
+            final String t = tiposFila1[i];
+            TextView chip = chipTv(tiposLabels1[i], t.equals(tipoSel[0]));
+            LinearLayout.LayoutParams cp = new LinearLayout.LayoutParams(0, dp(44), 1f);
             cp.setMarginEnd(dp(6));
             chip.setLayoutParams(cp);
-            chip.setOnClickListener(v -> {
-                tipoSel[0] = t;
-                for (int i = 0; i < rowTipo.getChildCount(); i++) {
-                    TextView c = (TextView) rowTipo.getChildAt(i);
-                    boolean sel = c.getText().toString().equals(t);
-                    c.setBackground(sel ? chipActiveBg() : chipInactiveBg());
-                    c.setTextColor(sel ? WHITE : TEXT_M);
-                }
-            });
-            rowTipo.addView(chip);
+            todosChips[i] = chip;
+            rowTipo1.addView(chip);
+        }
+        for (int i = 0; i < tiposFila2.length; i++) {
+            final String t = tiposFila2[i];
+            TextView chip = chipTv(tiposLabels2[i], t.equals(tipoSel[0]));
+            chip.setLayoutParams(new LinearLayout.LayoutParams(-1, dp(44)));
+            todosChips[2] = chip;
+            rowTipo2.addView(chip);
         }
 
-        // ── Precio mensual ───────────────────────────────────────
+        precioSel[0] = 30;
+
+        final TextView[] tvPrecioRef = {null};
+        String[] todosTipos = {"mensual_3h", "mensual_4h", "mensual_personalizado"};
+        double[] preciosPorTipo = {30, 40, 0};
+        for (int i = 0; i < todosChips.length; i++) {
+            final String t = todosTipos[i];
+            final double precioAuto = preciosPorTipo[i];
+            todosChips[i].setOnClickListener(v -> {
+                tipoSel[0] = t;
+                precioSel[0] = precioAuto;
+                for (android.view.View chip : todosChips) {
+                    boolean sel = chip == v;
+                    ((TextView) chip).setBackground(sel ? chipActiveBg() : chipInactiveBg());
+                    ((TextView) chip).setTextColor(sel ? WHITE : TEXT_M);
+                }
+                tvPrecioRef[0].setText(precioAuto == 0 ? "0€" : (int) precioAuto + "€");
+            });
+        }
+
+        // ── Precio ───────────────────────────────────────────────
         lbl(form, "Cuota (€)");
         LinearLayout rowPrecio = new LinearLayout(this);
         rowPrecio.setOrientation(LinearLayout.HORIZONTAL);
@@ -1197,37 +1405,33 @@ public class MainActivity extends AppCompatActivity {
         form.addView(rowPrecio);
 
         TextView btnMenos = spinBtn("−");
-
-        // Precio clickeable — abre diálogo de entrada directa
         final TextView tvPrecio = new TextView(this);
+        tvPrecioRef[0] = tvPrecio;
         tvPrecio.setText("30€");
         tvPrecio.setTextSize(32f); tvPrecio.setTextColor(BLUE);
         tvPrecio.setTypeface(Typeface.DEFAULT_BOLD);
         tvPrecio.setGravity(android.view.Gravity.CENTER);
         tvPrecio.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1f));
         tvPrecio.setClickable(true); tvPrecio.setFocusable(true);
-        // Hint visual: borde punteado para indicar que es editable
         android.graphics.drawable.GradientDrawable precioBg = new android.graphics.drawable.GradientDrawable();
         precioBg.setColor(BLUE_XL); precioBg.setCornerRadius(dp(12));
         precioBg.setStroke(dp(1), adjustAlpha(BLUE, 0.3f));
         tvPrecio.setBackground(precioBg);
         tvPrecio.setPadding(dp(12), dp(8), dp(12), dp(8));
-
         TextView btnMas = spinBtn("+");
 
         btnMenos.setOnClickListener(v -> {
             if (precioSel[0] > 1) { precioSel[0] = Math.max(1, precioSel[0] - 5);
-                tvPrecio.setText((int)precioSel[0] + "€"); }
+                tvPrecio.setText((int) precioSel[0] + "€"); }
         });
         btnMas.setOnClickListener(v -> {
             if (precioSel[0] < 9999) { precioSel[0] = Math.min(9999, precioSel[0] + 5);
-                tvPrecio.setText((int)precioSel[0] + "€"); }
+                tvPrecio.setText((int) precioSel[0] + "€"); }
         });
-
-        // CLICK en el número → teclado numérico directo
         tvPrecio.setOnClickListener(v -> showPrecioPicker(precioSel, tvPrecio));
 
         rowPrecio.addView(btnMenos); rowPrecio.addView(tvPrecio); rowPrecio.addView(btnMas);
+
 
         // ── Notas ────────────────────────────────────────────────
         lbl(form, "Notas (opcional)");
@@ -1496,7 +1700,6 @@ public class MainActivity extends AppCompatActivity {
     private static final String KEY_LAST_CHECK = "last_check_";
 
     private void comprobarRenovaciones() {
-        // Solo comprueba una vez al día
         android.content.SharedPreferences p = getSharedPreferences(PREFS_RENOV, MODE_PRIVATE);
         String hoy = new java.text.SimpleDateFormat("yyyy-MM-dd",
                 java.util.Locale.getDefault()).format(new java.util.Date());
@@ -1508,24 +1711,18 @@ public class MainActivity extends AppCompatActivity {
                             for (MembresiaModel mem : mems) {
                                 if (mem.id == null || mem.fechaInicio == null) continue;
 
-                                // Calcular fecha de vencimiento según tipo
-                                java.util.Date fechaVenc = calcularVencimiento(
-                                        mem.fechaInicio, mem.tipo);
+                                java.util.Date fechaVenc = calcularVencimiento(mem.fechaInicio, mem.tipo);
                                 if (fechaVenc == null) continue;
 
                                 java.util.Date ahora = new java.util.Date();
-                                // ¿Ha vencido o vence hoy?
-                                if (!fechaVenc.before(ahora) &&
-                                        !esHoyOMañana(fechaVenc)) continue;
+                                long diffMs = fechaVenc.getTime() - ahora.getTime();
+                                int diffDias = (int)(diffMs / (1000 * 60 * 60 * 24));
+                                if (diffDias > 1) continue;
 
-                                // ¿Ya preguntamos hoy por esta membresía?
                                 String key = KEY_LAST_CHECK + mem.id;
                                 if (hoy.equals(p.getString(key, ""))) continue;
 
-                                // Marcar como preguntada hoy
                                 p.edit().putString(key, hoy).apply();
-
-                                // Mostrar diálogo de renovación
                                 mostrarDialogoRenovacion(mem);
                             }
                         });
@@ -1543,10 +1740,13 @@ public class MainActivity extends AppCompatActivity {
 
             String t = tipo != null ? tipo.toLowerCase() : "mensual";
             switch (t) {
-                case "mensual":     cal.add(java.util.Calendar.MONTH, 1); break;
-                case "trimestral":  cal.add(java.util.Calendar.MONTH, 3); break;
-                case "anual":       cal.add(java.util.Calendar.YEAR,  1); break;
-                default:            cal.add(java.util.Calendar.MONTH, 1); break;
+                case "mensual":
+                case "mensual_3h":
+                case "mensual_4h":
+                case "mensual_personalizado": cal.add(java.util.Calendar.MONTH, 1); break;
+                case "trimestral":            cal.add(java.util.Calendar.MONTH, 3); break;
+                case "anual":                 cal.add(java.util.Calendar.YEAR,  1); break;
+                default:                      cal.add(java.util.Calendar.MONTH, 1); break;
             }
             return cal.getTime();
         } catch (Exception e) { return null; }
@@ -1562,105 +1762,151 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void mostrarDialogoRenovacion(MembresiaModel mem) {
-        // Nombre del cliente — intentar obtenerlo del id
-        String tipo    = mem.tipo != null ? mem.tipo : "mensual";
-        String precio  = String.format(java.util.Locale.US, "%.2f", mem.precio).replace(".", ",") + "€";
-        String tipoMay = tipo.substring(0, 1).toUpperCase() + tipo.substring(1);
+        String tipo = mem.tipo != null ? mem.tipo : "mensual";
+        String precio = String.format(java.util.Locale.US, "%.2f", mem.precio).replace(".", ",") + "€";
 
-        android.app.AlertDialog.Builder b = new android.app.AlertDialog.Builder(this);
-        b.setTitle("🎫 Renovación de membresía");
-        b.setMessage("La membresía " + tipoMay + " de " + precio +
-                "/mes está a punto de vencer.¿Renovar automáticamente?");
+        String tipoMay;
+        switch (tipo.toLowerCase()) {
+            case "mensual_3h":
+                tipoMay = "Mensual 3h";
+                break;
+            case "mensual_4h":
+                tipoMay = "Mensual 4h";
+                break;
+            case "mensual_personalizado":
+                tipoMay = "Mensual personalizado";
+                break;
+            default:
+                tipoMay = tipo.substring(0, 1).toUpperCase() + tipo.substring(1);
+                break;
+        }
 
-        b.setPositiveButton("✅ Sí, renovar", (d, w) -> {
-            // Renovar: actualizar fecha_inicio a hoy y crear nuevo cobro
-            String hoy = new java.text.SimpleDateFormat("yyyy-MM-dd",
-                    java.util.Locale.getDefault()).format(new java.util.Date());
-            Map<String, Object> body = new HashMap<>();
-            body.put("fecha_inicio", hoy);
-            body.put("activa",       Boolean.TRUE);
-
-            SupabaseRepository.get().getMembresias(mem.clienteId, null,
-                    new SupabaseRepository.Callback<List<MembresiaModel>>() {
-                        @Override public void onSuccess(List<MembresiaModel> all) {
-                            String nomCliente = "Cliente";
-                            for (CobroModel c : cobrosPendientes) {
-                                if (mem.clienteId != null && mem.clienteId.equals(c.clienteId)
-                                        && c.clienteNombre != null) {
-                                    nomCliente = c.clienteNombre; break;
-                                }
+        // ── 1. Buscar nombre del cliente primero, luego mostrar diálogo ──
+        SupabaseRepository.get().getClientes(null,
+                new SupabaseRepository.Callback<List<ClienteModel>>() {
+                    @Override
+                    public void onSuccess(List<ClienteModel> clientes) {
+                        String nomCliente = "Cliente";
+                        for (ClienteModel c : clientes) {
+                            if (c.id != null && c.id.equals(mem.clienteId)) {
+                                nomCliente = c.nombre
+                                        + (c.apellidos != null ? " " + c.apellidos : "");
+                                break;
                             }
-                            final String nomFinal = nomCliente;
-
-                            // 1. Actualizar fecha_inicio en Supabase
-                            SupabaseRepository.get().actualizarPrecioMembresia(
-                                    mem.id, mem.precio, // reutilizamos el método con precio igual
-                                    new SupabaseRepository.Callback<Void>() {
-                                        @Override public void onSuccess(Void v2) {
-                                            // Actualizar fecha_inicio aparte
-                                            Map<String, Object> bodyFecha = new HashMap<>();
-                                            bodyFecha.put("fecha_inicio", hoy);
-                                            SupabaseRepository.get().getMembresias(
-                                                    mem.clienteId, null,
-                                                    new SupabaseRepository.Callback<List<MembresiaModel>>() {
-                                                        @Override public void onSuccess(List<MembresiaModel> x) {}
-                                                        @Override public void onError(String e) {}
-                                                    });
-
-                                            // 2. Crear cobro pendiente
-                                            String concepto = "Renovación " + tipoMay + " - " + nomFinal;
-                                            SupabaseRepository.get().crearCobro(
-                                                    mem.clienteId, nomFinal, concepto,
-                                                    mem.precio, "Transferencia", "pendiente", "",
-                                                    new SupabaseRepository.Callback<CobroModel>() {
-                                                        @Override public void onSuccess(CobroModel c) {
-                                                            runOnUiThread(() -> {
-                                                                android.widget.Toast.makeText(
-                                                                        MainActivity.this,
-                                                                        "✅ Membresía renovada · cobro de " +
-                                                                                precio + " generado",
-                                                                        android.widget.Toast.LENGTH_LONG).show();
-                                                                cargarDatos();
-                                                            });
-                                                        }
-                                                        @Override public void onError(String e) {}
-                                                    });
-                                        }
-                                        @Override public void onError(String e) {}
-                                    });
                         }
-                        @Override public void onError(String e) {}
-                    });
-        });
+                        final String nomFinal = nomCliente;
 
-        b.setNeutralButton("⏭ Posponer 7 días", (d, w) -> {
-            // Posponer: no volver a preguntar en 7 días
-            android.content.SharedPreferences p2 = getSharedPreferences(PREFS_RENOV, MODE_PRIVATE);
-            java.util.Calendar en7 = java.util.Calendar.getInstance();
-            en7.add(java.util.Calendar.DAY_OF_MONTH, 7);
-            String fecha7 = new java.text.SimpleDateFormat("yyyy-MM-dd",
-                    java.util.Locale.getDefault()).format(en7.getTime());
-            p2.edit().putString(KEY_LAST_CHECK + mem.id, fecha7).apply();
-        });
+                        runOnUiThread(() -> {
+                            android.app.AlertDialog.Builder b =
+                                    new android.app.AlertDialog.Builder(MainActivity.this);
+                            b.setTitle("🎫 Renovación de membresía");
+                            b.setMessage("La membresía " + tipoMay + " de "
+                                    + nomFinal + " (" + precio
+                                    + "/mes) está a punto de vencer. ¿Renovar automáticamente?");
 
-        b.setNegativeButton("❌ Cancelar membresía", (d, w) -> {
-            String hoy2 = new java.text.SimpleDateFormat("yyyy-MM-dd",
-                    java.util.Locale.getDefault()).format(new java.util.Date());
-            SupabaseRepository.get().cancelarMembresia(mem.id, hoy2,
-                    new SupabaseRepository.Callback<Void>() {
-                        @Override public void onSuccess(Void v) {
-                            runOnUiThread(() -> android.widget.Toast.makeText(
-                                    MainActivity.this, "Membresía cancelada",
-                                    android.widget.Toast.LENGTH_SHORT).show());
-                        }
-                        @Override public void onError(String e) {}
-                    });
-        });
+                            // ── Sí, renovar ──────────────────────────────────────
+                            b.setPositiveButton("✅ Sí, renovar", (d, w) -> {
+                                String hoy = new java.text.SimpleDateFormat("yyyy-MM-dd",
+                                        java.util.Locale.getDefault()).format(new java.util.Date());
 
-        b.setCancelable(false); // obliga a elegir
-        b.show();
+                                // 1. Actualizar fecha_inicio + activa=true en Supabase
+                                SupabaseRepository.get().renovarMembresia(mem.id, hoy,
+                                        new SupabaseRepository.Callback<Void>() {
+                                            @Override
+                                            public void onSuccess(Void v) {
+                                                // 2. Crear cobro pendiente
+                                                String concepto = "Renovación " + tipoMay + " - " + nomFinal;
+                                                SupabaseRepository.get().crearCobro(
+                                                        mem.clienteId, nomFinal, concepto,
+                                                        mem.precio, "Efectivo", "pendiente", "",
+                                                        new SupabaseRepository.Callback<CobroModel>() {
+                                                            @Override
+                                                            public void onSuccess(CobroModel c) {
+                                                                runOnUiThread(() -> {
+                                                                    android.widget.Toast.makeText(
+                                                                            MainActivity.this,
+                                                                            "✅ " + nomFinal + " renovado · cobro de "
+                                                                                    + precio + " generado",
+                                                                            android.widget.Toast.LENGTH_LONG).show();
+                                                                    cargarDatos();
+                                                                });
+                                                            }
+
+                                                            @Override
+                                                            public void onError(String e) {
+                                                                runOnUiThread(() ->
+                                                                        android.widget.Toast.makeText(MainActivity.this,
+                                                                                "Renovado, error al generar cobro: " + e,
+                                                                                android.widget.Toast.LENGTH_LONG).show());
+                                                            }
+                                                        });
+                                            }
+
+                                            @Override
+                                            public void onError(String e) {
+                                                runOnUiThread(() ->
+                                                        android.widget.Toast.makeText(MainActivity.this,
+                                                                "Error al renovar: " + e,
+                                                                android.widget.Toast.LENGTH_SHORT).show());
+                                            }
+                                        });
+                            });
+
+                            // ── Posponer 7 días ──────────────────────────────────
+                            b.setNeutralButton("⏭ Posponer 7 días", (d, w) -> {
+                                android.content.SharedPreferences p2 =
+                                        getSharedPreferences(PREFS_RENOV, MODE_PRIVATE);
+                                java.util.Calendar en7 = java.util.Calendar.getInstance();
+                                en7.add(java.util.Calendar.DAY_OF_MONTH, 7);
+                                String fecha7 = new java.text.SimpleDateFormat("yyyy-MM-dd",
+                                        java.util.Locale.getDefault()).format(en7.getTime());
+                                p2.edit().putString(KEY_LAST_CHECK + mem.id, fecha7).apply();
+                            });
+
+                            // ── Cancelar membresía ───────────────────────────────
+                            b.setNegativeButton("❌ Cancelar membresía", (d, w) -> {
+                                String hoy2 = new java.text.SimpleDateFormat("yyyy-MM-dd",
+                                        java.util.Locale.getDefault()).format(new java.util.Date());
+                                SupabaseRepository.get().cancelarMembresia(mem.id, hoy2,
+                                        new SupabaseRepository.Callback<Void>() {
+                                            @Override
+                                            public void onSuccess(Void v) {
+                                                runOnUiThread(() -> {
+                                                    android.widget.Toast.makeText(MainActivity.this,
+                                                            "Membresía de " + nomFinal + " cancelada",
+                                                            android.widget.Toast.LENGTH_SHORT).show();
+                                                    cargarDatos();
+                                                });
+                                            }
+
+                                            @Override
+                                            public void onError(String e) {
+                                            }
+                                        });
+                            });
+
+                            b.setCancelable(false);
+                            b.show();
+                        });
+                    }
+
+                    @Override
+                    public void onError(String e) {
+                        // Si falla la carga de clientes, mostramos el diálogo sin nombre
+                        runOnUiThread(() -> {
+                            android.app.AlertDialog.Builder b =
+                                    new android.app.AlertDialog.Builder(MainActivity.this);
+                            b.setTitle("🎫 Renovación de membresía");
+                            b.setMessage("La membresía " + tipoMay + " de "
+                                    + precio + "/mes está a punto de vencer. ¿Renovar automáticamente?");
+                            b.setPositiveButton("✅ Sí, renovar", null);
+                            b.setNegativeButton("Cancelar", null);
+                            b.setCancelable(false);
+                            b.show();
+                        });
+                    }
+                });
     }
-
 
     // ════════════════════════════════════════════════════════════════
     //  PRECIO PICKER — 3 ruedas estilo iOS (centenas, decenas, unidades)

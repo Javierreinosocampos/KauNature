@@ -92,7 +92,7 @@ public class ClientesActivity extends AppCompatActivity {
     private LinearLayout listaClientes;
     private LinearLayout layoutVacio;
     private TextView     tvSubtitle;
-    private TextView     filtroTodos, filtroActivos, filtroDeuda, filtroInactivos;
+    private TextView     filtroTodos, filtroActivos, filtroAlDia, filtroDeuda, filtroInactivos;
     private TextView     filtroConMembresia, filtroSinMembresia, filtroCancelada;
     private EditText     etBuscar;
     private TextView     btnLimpiar;
@@ -148,6 +148,7 @@ public class ClientesActivity extends AppCompatActivity {
         tvSubtitle      = findViewById(R.id.tvClientesSubtitle);
         filtroTodos     = findViewById(R.id.filtroTodos);
         filtroActivos   = findViewById(R.id.filtroActivos);
+        filtroAlDia     = findViewById(R.id.filtroAlDia);
         filtroDeuda     = findViewById(R.id.filtroDeuda);
         filtroInactivos = findViewById(R.id.filtroInactivos);
         etBuscar        = findViewById(R.id.etBuscar);
@@ -449,6 +450,8 @@ public class ClientesActivity extends AppCompatActivity {
     private void setupFiltros() {
         filtroTodos.setOnClickListener(v     -> setFiltro("todos",         filtroTodos));
         filtroActivos.setOnClickListener(v   -> setFiltro("activo",        filtroActivos));
+        if (filtroAlDia != null)
+            filtroAlDia.setOnClickListener(v -> setFiltro("al_dia",        filtroAlDia));
         filtroDeuda.setOnClickListener(v     -> setFiltro("deuda",         filtroDeuda));
         filtroInactivos.setOnClickListener(v -> setFiltro("inactivo",      filtroInactivos));
         if (filtroConMembresia != null)
@@ -463,6 +466,7 @@ public class ClientesActivity extends AppCompatActivity {
         filtroActual = filtro;
         List<TextView> todos = new ArrayList<>();
         todos.add(filtroTodos); todos.add(filtroActivos);
+        if (filtroAlDia != null) todos.add(filtroAlDia);
         todos.add(filtroDeuda); todos.add(filtroInactivos);
         if (filtroConMembresia != null) todos.add(filtroConMembresia);
         if (filtroSinMembresia != null) todos.add(filtroSinMembresia);
@@ -502,6 +506,7 @@ public class ClientesActivity extends AppCompatActivity {
             boolean pasaFiltro;
             switch (filtroActual) {
                 case "activo":        pasaFiltro = "activo".equals(c.estado);   break;
+                case "al_dia":        pasaFiltro = c.tieneMembresia && !c.tieneDeuda(); break;
                 case "inactivo":      pasaFiltro = "inactivo".equals(c.estado); break;
                 case "deuda":         pasaFiltro = c.tieneDeuda();              break;
                 case "con_membresia": pasaFiltro = c.tieneMembresia;            break;
@@ -588,6 +593,9 @@ public class ClientesActivity extends AppCompatActivity {
         tvNombre.setTextSize(13f);
         tvNombre.setTextColor(Color.parseColor("#0D1B3E"));
         tvNombre.setTypeface(getResources().getFont(R.font.outfit_bold));
+        tvNombre.setSingleLine(true);
+        tvNombre.setMaxLines(1);
+        tvNombre.setEllipsize(android.text.TextUtils.TruncateAt.END);
         tvNombre.setAlpha("inactivo".equals(cliente.estado) ? 0.5f : 1f);
         textBlock.addView(tvNombre);
 
@@ -604,37 +612,36 @@ public class ClientesActivity extends AppCompatActivity {
         tvTel.setTextSize(11f);
         tvTel.setTextColor(Color.parseColor("#6B7FA3"));
         tvTel.setTypeface(getResources().getFont(R.font.outfit_regular));
+        tvTel.setSingleLine(true);
+        tvTel.setMaxLines(1);
+        tvTel.setEllipsize(android.text.TextUtils.TruncateAt.END);
         subRow.addView(tvTel);
 
-        if (cliente.tieneMembresia && cliente.membresiaActiva != null) {
-            TextView tvMemb = new TextView(this);
+        textBlock.addView(subRow);
 
-            // Obtener día de inicio
+        // Línea propia para la cuota (nunca salta de línea, siempre alineada)
+        if (cliente.tieneMembresia && cliente.membresiaActiva != null) {
             int dia = cliente.membresiaActiva.diaMesInicio();
 
-            // Obtener mes de inicio
             String fechaInicio = cliente.membresiaActiva.fechaInicio;
-            String mesTexto = "";
+            String mm = "";
             if (fechaInicio != null && fechaInicio.length() >= 7) {
-                String[] meses = {"01", "02", "03", "04", "05", "06",
-                        "07", "08", "09", "10", "11", "12"};
-                try {
-                    int mesNum = Integer.parseInt(fechaInicio.substring(5, 7));
-                    if (mesNum >= 1 && mesNum <= 12) {
-                        mesTexto = " " + meses[mesNum - 1];
-                    }
-                } catch (Exception e) {
-                    mesTexto = "";
-                }
+                mm = fechaInicio.substring(5, 7);
             }
 
-            tvMemb.setText("      Día " + dia + "/"+ mesTexto);
+            TextView tvMemb = new TextView(this);
+            tvMemb.setText(mm.isEmpty() ? ("Cuota día " + dia) : ("Cuota día " + dia + "/" + mm));
             tvMemb.setTextSize(10f);
             tvMemb.setTextColor(Color.parseColor("#059669"));
             tvMemb.setTypeface(getResources().getFont(R.font.outfit_bold));
-            subRow.addView(tvMemb);
+            tvMemb.setSingleLine(true);
+            tvMemb.setMaxLines(1);
+            tvMemb.setEllipsize(android.text.TextUtils.TruncateAt.END);
+            LinearLayout.LayoutParams mp = new LinearLayout.LayoutParams(-1, -2);
+            mp.topMargin = dpToPx(1);
+            tvMemb.setLayoutParams(mp);
+            textBlock.addView(tvMemb);
         }
-        textBlock.addView(subRow);
         row.addView(textBlock);
 
         // Badge derecho
@@ -1114,7 +1121,7 @@ public class ClientesActivity extends AppCompatActivity {
 
         // Paso 1: Cancelar en Supabase
         SupabaseRepository.get().cancelarMembresia(mem.id, fechaFin,
-               new SupabaseRepository.Callback<Void>() {
+                new SupabaseRepository.Callback<Void>() {
                     @Override public void onSuccess(Void d) {
                         // Paso 2: Actualizar objeto de membresía local
                         mem.activa = false;
@@ -1164,8 +1171,8 @@ public class ClientesActivity extends AppCompatActivity {
                                                     new SupabaseRepository.Callback<CobroModel>() {
                                                         @Override public void onSuccess(CobroModel c) {
                                                             //finalizarCancelacionConCobro(cliente, mem, dlgConfirm, sheetPadre,
-                                                                   // "✅ Membresía cancelada · cobro de " +
-                                                                          //  (int)mem.precio + "€ generado como pendiente");
+                                                            // "✅ Membresía cancelada · cobro de " +
+                                                            //  (int)mem.precio + "€ generado como pendiente");
                                                         }
                                                         @Override public void onError(String e) {
                                                             finalizarCancelacionConCobro(cliente, mem, dlgConfirm, sheetPadre,
@@ -1474,14 +1481,14 @@ public class ClientesActivity extends AppCompatActivity {
             }
             btnEliminar.setEnabled(false);
             btnEliminar.setText("Eliminando...");
-            SupabaseRepository.get().eliminarCliente(cliente.id,
+            SupabaseRepository.get().eliminarClienteEnCascada(cliente.id,
                     new SupabaseRepository.Callback<Void>() {
                         @Override public void onSuccess(Void data) {
                             runOnUiThread(() -> {
                                 todosLosClientes.remove(cliente);
                                 sheet.dismiss(); renderLista();
                                 Toast.makeText(ClientesActivity.this,
-                                         cliente.nombreCompleto() + " eliminado",
+                                        cliente.nombreCompleto() + " eliminado (con sus cobros y membresías)",
                                         Toast.LENGTH_SHORT).show();
                             });
                         }

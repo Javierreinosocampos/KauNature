@@ -637,7 +637,8 @@ public class CobrosActivity extends AppCompatActivity {
             }
             ((TextView) btnEliminar.getChildAt(0)).setText("Eliminando...");
             btnEliminar.setClickable(false);
-            SupabaseRepository.get().eliminarCobroConSync(cobro.id, cobro.citaId,
+            SupabaseRepository.get().eliminarCobroYMembresiaSiAplica(
+                    cobro.id, cobro.citaId, cobro.concepto, cobro.clienteId,
                     new SupabaseRepository.Callback<Void>() {
                         @Override public void onSuccess(Void data) {
                             runOnUiThread(() -> {
@@ -647,6 +648,9 @@ public class CobrosActivity extends AppCompatActivity {
                                 String msg = "🗑 Cobro eliminado";
                                 if (cobro.citaId != null && !cobro.citaId.isEmpty())
                                     msg += " · cita cancelada";
+                                String concepto = cobro.concepto != null ? cobro.concepto.toLowerCase() : "";
+                                if (concepto.contains("membres") || concepto.contains("renovaci"))
+                                    msg += " · membresía cancelada";
                                 Toast.makeText(CobrosActivity.this, msg, Toast.LENGTH_SHORT).show();
                             });
                         }

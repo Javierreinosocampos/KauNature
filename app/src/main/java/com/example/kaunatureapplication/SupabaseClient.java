@@ -37,7 +37,7 @@ public class SupabaseClient {
                             .header("apikey",        SupabaseConfig.API_KEY)
                             .header("Authorization", "Bearer " + token)
                             .header("Content-Type",  "application/json")
-                            .header("Prefer",        "return=representation")
+                            .header("Prefer", "return=representation,resolution=merge-duplicates")
                             .build();
 
                     okhttp3.Response response = chain.proceed(request);

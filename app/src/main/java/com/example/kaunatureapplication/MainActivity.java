@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
 // CAMBIO 1: Agregar en onCreate() después de cargarDatos()
 // CAMBIO 2: Agregar método showInscribirSheetConDatos()
 //
-     // Author - Javier Reinoso Campos
+    // Author - Javier Reinoso Campos
 // ══════════════════════════════════════════════════════════════════
 
 // DENTRO DEL MÉTODO onCreate(), después de la línea cargarDatos();
@@ -220,12 +220,17 @@ public class MainActivity extends AppCompatActivity {
         nsv.addView(form);
         raiz.addView(nsv);
 
-        // Estado compartido - Cliente YA ESTÁ SELECCIONADO
-        final String[] clienteIdSel   = {clienteIdPreseleccionado};
-        final String[] clienteNomSel  = {clienteNombrePreseleccionado};
-        final double[] precioSel      = {30.0};
+        // Estado compartido
+        final String[] clienteIdSel  = {clienteIdPreseleccionado};
+        final String[] clienteNomSel = {clienteNombrePreseleccionado};
+        final double[] precioSel     = {30.0};
 
-        // ── Campo cliente (deshabilitado, solo muestra el nombre) ────────
+        // Referencias a los EditText de fecha — accesibles desde el listener
+        final android.widget.EditText[] etDiaRef  = {null};
+        final android.widget.EditText[] etMesRef  = {null};
+        final android.widget.EditText[] etAnioRef = {null};
+
+        // ── Campo cliente ────────────────────────────────────────────
         lbl(form, "Cliente *");
         TextView tvClienteSeleccionado = new TextView(this);
         tvClienteSeleccionado.setText("✅ " + clienteNombrePreseleccionado);
@@ -239,10 +244,9 @@ public class MainActivity extends AppCompatActivity {
         tvClienteSeleccionado.setLayoutParams(tvP);
         form.addView(tvClienteSeleccionado);
 
-        // ── Tipo de membresía ────────────────────────────────────
+        // ── Tipo de membresía ────────────────────────────────────────
         lbl(form, "Tipo de membresía");
 
-        // Fila 1: Mensual 3h / Mensual 4h
         LinearLayout rowTipo1 = new LinearLayout(this);
         rowTipo1.setOrientation(LinearLayout.HORIZONTAL);
         LinearLayout.LayoutParams rowT1P = new LinearLayout.LayoutParams(-1, -2);
@@ -250,7 +254,6 @@ public class MainActivity extends AppCompatActivity {
         rowTipo1.setLayoutParams(rowT1P);
         form.addView(rowTipo1);
 
-        // Fila 2: Mensual personalizado
         LinearLayout rowTipo2 = new LinearLayout(this);
         rowTipo2.setOrientation(LinearLayout.HORIZONTAL);
         LinearLayout.LayoutParams rowT2P = new LinearLayout.LayoutParams(-1, -2);
@@ -259,9 +262,9 @@ public class MainActivity extends AppCompatActivity {
         form.addView(rowTipo2);
 
         final String[] tipoSel = {"mensual_3h"};
-        String[] tiposFila1 = {"mensual_3h", "mensual_4h"};
+        String[] tiposFila1   = {"mensual_3h", "mensual_4h"};
         String[] tiposLabels1 = {"Mensual 3h", "Mensual 4h"};
-        String[] tiposFila2 = {"mensual_personalizado"};
+        String[] tiposFila2   = {"mensual_personalizado"};
         String[] tiposLabels2 = {"Mensual personalizado"};
 
         android.view.View[] todosChips = new android.view.View[3];
@@ -283,18 +286,16 @@ public class MainActivity extends AppCompatActivity {
             rowTipo2.addView(chip);
         }
 
-        // Precio inicial según tipo por defecto
         precioSel[0] = 30;
         final TextView[] tvPrecioRef = {null};
 
-        // Listeners de selección — actualizan chips Y precio automáticamente
-        String[] todosTipos = {"mensual_3h", "mensual_4h", "mensual_personalizado"};
-        double[] preciosPorTipo = {30, 40, 0};
+        String[] todosTipos      = {"mensual_3h", "mensual_4h", "mensual_personalizado"};
+        double[] preciosPorTipo  = {30, 40, 0};
         for (int i = 0; i < todosChips.length; i++) {
-            final String t = todosTipos[i];
+            final String t          = todosTipos[i];
             final double precioAuto = preciosPorTipo[i];
             todosChips[i].setOnClickListener(v -> {
-                tipoSel[0] = t;
+                tipoSel[0]   = t;
                 precioSel[0] = precioAuto;
                 for (android.view.View chip : todosChips) {
                     boolean sel = chip == v;
@@ -305,7 +306,7 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
-        // ── Precio ───────────────────────────────────────────────
+        // ── Precio ───────────────────────────────────────────────────
         lbl(form, "Cuota (€)");
         LinearLayout rowPrecio = new LinearLayout(this);
         rowPrecio.setOrientation(LinearLayout.HORIZONTAL);
@@ -349,7 +350,83 @@ public class MainActivity extends AppCompatActivity {
         rowPrecio.addView(tvPrecio);
         rowPrecio.addView(btnMas);
 
-        // ── Notas ────────────────────────────────────────────────
+        // ── Fecha de inicio ──────────────────────────────────────────
+        lbl(form, "Fecha de inicio *");
+
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+
+        LinearLayout rowFecha = new LinearLayout(this);
+        rowFecha.setOrientation(LinearLayout.HORIZONTAL);
+        rowFecha.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        LinearLayout.LayoutParams rfP = new LinearLayout.LayoutParams(-1, -2);
+        rfP.bottomMargin = dp(16);
+        rowFecha.setLayoutParams(rfP);
+        form.addView(rowFecha);
+
+        // Día
+        android.widget.EditText etDia = new android.widget.EditText(this);
+        etDia.setText(String.valueOf(cal.get(java.util.Calendar.DAY_OF_MONTH)));
+        etDia.setHint("DD");
+        etDia.setTextSize(16f); etDia.setTextColor(TEXT_D);
+        etDia.setBackground(cardBg());
+        etDia.setPadding(dp(14), dp(14), dp(14), dp(14));
+        etDia.setGravity(android.view.Gravity.CENTER);
+        etDia.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        etDia.setMaxLines(1);
+        LinearLayout.LayoutParams diaP = new LinearLayout.LayoutParams(0, -2, 1f);
+        diaP.setMarginEnd(dp(6));
+        etDia.setLayoutParams(diaP);
+        etDiaRef[0] = etDia;
+        rowFecha.addView(etDia);
+
+        TextView tvSlash1 = new TextView(this);
+        tvSlash1.setText("/");
+        tvSlash1.setTextSize(20f); tvSlash1.setTextColor(TEXT_L);
+        tvSlash1.setGravity(android.view.Gravity.CENTER);
+        tvSlash1.setLayoutParams(new LinearLayout.LayoutParams(-2, -2));
+        rowFecha.addView(tvSlash1);
+
+        // Mes
+        android.widget.EditText etMes = new android.widget.EditText(this);
+        etMes.setText(String.format(java.util.Locale.getDefault(), "%02d",
+                cal.get(java.util.Calendar.MONTH) + 1));
+        etMes.setHint("MM");
+        etMes.setTextSize(16f); etMes.setTextColor(TEXT_D);
+        etMes.setBackground(cardBg());
+        etMes.setPadding(dp(14), dp(14), dp(14), dp(14));
+        etMes.setGravity(android.view.Gravity.CENTER);
+        etMes.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        etMes.setMaxLines(1);
+        LinearLayout.LayoutParams mesP = new LinearLayout.LayoutParams(0, -2, 1f);
+        mesP.setMarginStart(dp(6)); mesP.setMarginEnd(dp(6));
+        etMes.setLayoutParams(mesP);
+        etMesRef[0] = etMes;
+        rowFecha.addView(etMes);
+
+        TextView tvSlash2 = new TextView(this);
+        tvSlash2.setText("/");
+        tvSlash2.setTextSize(20f); tvSlash2.setTextColor(TEXT_L);
+        tvSlash2.setGravity(android.view.Gravity.CENTER);
+        tvSlash2.setLayoutParams(new LinearLayout.LayoutParams(-2, -2));
+        rowFecha.addView(tvSlash2);
+
+        // Año
+        android.widget.EditText etAnio = new android.widget.EditText(this);
+        etAnio.setText(String.valueOf(cal.get(java.util.Calendar.YEAR)));
+        etAnio.setHint("AAAA");
+        etAnio.setTextSize(16f); etAnio.setTextColor(TEXT_D);
+        etAnio.setBackground(cardBg());
+        etAnio.setPadding(dp(14), dp(14), dp(14), dp(14));
+        etAnio.setGravity(android.view.Gravity.CENTER);
+        etAnio.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        etAnio.setMaxLines(1);
+        LinearLayout.LayoutParams anioP = new LinearLayout.LayoutParams(0, -2, 1.5f);
+        anioP.setMarginStart(dp(6));
+        etAnio.setLayoutParams(anioP);
+        etAnioRef[0] = etAnio;
+        rowFecha.addView(etAnio);
+
+        // ── Notas ────────────────────────────────────────────────────
         lbl(form, "Notas (opcional)");
         android.widget.EditText etNotas = new android.widget.EditText(this);
         etNotas.setHint("Observaciones...");
@@ -364,7 +441,7 @@ public class MainActivity extends AppCompatActivity {
         etNotas.setLayoutParams(notasP);
         form.addView(etNotas);
 
-        // ── Botón guardar ────────────────────────────────────────
+        // ── Botón guardar ────────────────────────────────────────────
         android.graphics.drawable.GradientDrawable btnSaveBg = new android.graphics.drawable.GradientDrawable();
         btnSaveBg.setColor(BLUE); btnSaveBg.setCornerRadius(dp(16));
         TextView btnGuardar = new TextView(this);
@@ -378,55 +455,37 @@ public class MainActivity extends AppCompatActivity {
         btnGuardar.setClickable(true);
         form.addView(btnGuardar);
 
-        // ── Lógica de guardar ─────────────────────────────────────
+        // ── Lógica de guardar ─────────────────────────────────────────
         btnGuardar.setOnClickListener(v -> {
+            // Leer fecha introducida por el usuario
+            int dia = 1, mes = 1, anio = 2026;
+            try { dia  = Integer.parseInt(etDiaRef[0].getText().toString().trim()); }  catch (Exception ignored) {}
+            try { mes  = Integer.parseInt(etMesRef[0].getText().toString().trim()); }  catch (Exception ignored) {}
+            try { anio = Integer.parseInt(etAnioRef[0].getText().toString().trim()); } catch (Exception ignored) {}
+
+            // Validación básica de rangos
+            dia  = Math.max(1, Math.min(dia,  31));
+            mes  = Math.max(1, Math.min(mes,  12));
+            anio = Math.max(2020, Math.min(anio, 2100));
+
+            final String fechaInicio = String.format(java.util.Locale.getDefault(),
+                    "%04d-%02d-%02d", anio, mes, dia);
+
             btnGuardar.setEnabled(false);
             btnGuardar.setText("Guardando...");
 
-            String hoy = new java.text.SimpleDateFormat("yyyy-MM-dd",
-                    java.util.Locale.getDefault()).format(new java.util.Date());
             final String clienteId  = clienteIdSel[0];
             final String clienteNom = clienteNomSel[0];
             final double precio     = precioSel[0];
             final String tipo       = tipoSel[0];
             final String notas      = etNotas.getText().toString().trim();
 
-            SupabaseRepository.get().crearMembresia(clienteId, tipo, precio, hoy, notas,
-                    new SupabaseRepository.Callback<MembresiaModel>() {
-                        @Override public void onSuccess(MembresiaModel mem) {
-                            String concepto = "Membresía " + tipo + " - " + clienteNom;
-                            SupabaseRepository.get().crearCobro(
-                                    clienteId, clienteNom, concepto,
-                                    precio, "Efectivo", "pendiente", notas,
-                                    new SupabaseRepository.Callback<CobroModel>() {
-                                        @Override public void onSuccess(CobroModel cobro) {
-                                            runOnUiThread(() -> {
-                                                sheet.dismiss();
-                                                android.widget.Toast.makeText(MainActivity.this,
-                                                        "✅ " + clienteNom + " inscrito · cobro de "
-                                                                + (int)precio + "€ generado",
-                                                        android.widget.Toast.LENGTH_LONG).show();
-                                                cargarDatos();
-                                            });
-                                        }
-                                        @Override public void onError(String e) {
-                                            runOnUiThread(() -> {
-                                                sheet.dismiss();
-                                                android.widget.Toast.makeText(MainActivity.this,
-                                                        "Inscrito, pero error al generar cobro: " + e,
-                                                        android.widget.Toast.LENGTH_LONG).show();
-                                            });
-                                        }
-                                    });
-                        }
-                        @Override public void onError(String e) {
-                            runOnUiThread(() -> {
-                                btnGuardar.setEnabled(true);
-                                btnGuardar.setText("🎫 Inscribir y generar cobro");
-                                android.widget.Toast.makeText(MainActivity.this,
-                                        "Error: " + e, android.widget.Toast.LENGTH_SHORT).show();
-                            });
-                        }
+            // Comprueba en la BD si ya tiene membresía activa; si la tiene, no inscribe.
+            inscribirConChequeo(clienteId, clienteNom, tipo, precio, fechaInicio, notas,
+                    () -> sheet.dismiss(),
+                    () -> {
+                        btnGuardar.setEnabled(true);
+                        btnGuardar.setText("🎫 Inscribir y generar cobro");
                     });
         });
 
@@ -1292,7 +1351,11 @@ public class MainActivity extends AppCompatActivity {
         final String[] clienteIdSel   = {null};
         final String[] clienteNomSel  = {null};
         final double[] precioSel      = {30.0};
-        final boolean[] buscando      = {false};
+
+        // Referencias a los EditText de fecha
+        final android.widget.EditText[] etDiaRef  = {null};
+        final android.widget.EditText[] etMesRef  = {null};
+        final android.widget.EditText[] etAnioRef = {null};
 
         // ── Campo cliente con buscador ────────────────────────────
         lbl(form, "Cliente *");
@@ -1437,6 +1500,81 @@ public class MainActivity extends AppCompatActivity {
 
         rowPrecio.addView(btnMenos); rowPrecio.addView(tvPrecio); rowPrecio.addView(btnMas);
 
+        // ── Fecha de inicio ──────────────────────────────────────────
+        lbl(form, "Fecha de inicio *");
+
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+
+        LinearLayout rowFecha = new LinearLayout(this);
+        rowFecha.setOrientation(LinearLayout.HORIZONTAL);
+        rowFecha.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        LinearLayout.LayoutParams rfP = new LinearLayout.LayoutParams(-1, -2);
+        rfP.bottomMargin = dp(16);
+        rowFecha.setLayoutParams(rfP);
+        form.addView(rowFecha);
+
+        // Día
+        android.widget.EditText etDia = new android.widget.EditText(this);
+        etDia.setText(String.valueOf(cal.get(java.util.Calendar.DAY_OF_MONTH)));
+        etDia.setHint("DD");
+        etDia.setTextSize(16f); etDia.setTextColor(TEXT_D);
+        etDia.setBackground(cardBg());
+        etDia.setPadding(dp(14), dp(14), dp(14), dp(14));
+        etDia.setGravity(android.view.Gravity.CENTER);
+        etDia.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        etDia.setMaxLines(1);
+        LinearLayout.LayoutParams diaP = new LinearLayout.LayoutParams(0, -2, 1f);
+        diaP.setMarginEnd(dp(6));
+        etDia.setLayoutParams(diaP);
+        etDiaRef[0] = etDia;
+        rowFecha.addView(etDia);
+
+        TextView tvSlash1 = new TextView(this);
+        tvSlash1.setText("/");
+        tvSlash1.setTextSize(20f); tvSlash1.setTextColor(TEXT_L);
+        tvSlash1.setGravity(android.view.Gravity.CENTER);
+        tvSlash1.setLayoutParams(new LinearLayout.LayoutParams(-2, -2));
+        rowFecha.addView(tvSlash1);
+
+        // Mes
+        android.widget.EditText etMes = new android.widget.EditText(this);
+        etMes.setText(String.format(java.util.Locale.getDefault(), "%02d",
+                cal.get(java.util.Calendar.MONTH) + 1));
+        etMes.setHint("MM");
+        etMes.setTextSize(16f); etMes.setTextColor(TEXT_D);
+        etMes.setBackground(cardBg());
+        etMes.setPadding(dp(14), dp(14), dp(14), dp(14));
+        etMes.setGravity(android.view.Gravity.CENTER);
+        etMes.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        etMes.setMaxLines(1);
+        LinearLayout.LayoutParams mesP = new LinearLayout.LayoutParams(0, -2, 1f);
+        mesP.setMarginStart(dp(6)); mesP.setMarginEnd(dp(6));
+        etMes.setLayoutParams(mesP);
+        etMesRef[0] = etMes;
+        rowFecha.addView(etMes);
+
+        TextView tvSlash2 = new TextView(this);
+        tvSlash2.setText("/");
+        tvSlash2.setTextSize(20f); tvSlash2.setTextColor(TEXT_L);
+        tvSlash2.setGravity(android.view.Gravity.CENTER);
+        tvSlash2.setLayoutParams(new LinearLayout.LayoutParams(-2, -2));
+        rowFecha.addView(tvSlash2);
+
+        // Año
+        android.widget.EditText etAnio = new android.widget.EditText(this);
+        etAnio.setText(String.valueOf(cal.get(java.util.Calendar.YEAR)));
+        etAnio.setHint("AAAA");
+        etAnio.setTextSize(16f); etAnio.setTextColor(TEXT_D);
+        etAnio.setBackground(cardBg());
+        etAnio.setPadding(dp(14), dp(14), dp(14), dp(14));
+        etAnio.setGravity(android.view.Gravity.CENTER);
+        etAnio.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        etAnio.setMaxLines(1);
+        LinearLayout.LayoutParams anioP = new LinearLayout.LayoutParams(0, -2, 1.5f);
+        anioP.setMarginStart(dp(6));
+        etAnio.setLayoutParams(anioP);
+        etAnioRef[0] = etAnio;
+        rowFecha.addView(etAnio);
 
         // ── Notas ────────────────────────────────────────────────
         lbl(form, "Notas (opcional)");
@@ -1476,53 +1614,30 @@ public class MainActivity extends AppCompatActivity {
             btnGuardar.setEnabled(false);
             btnGuardar.setText("Guardando...");
 
-            String hoy = new java.text.SimpleDateFormat("yyyy-MM-dd",
-                    java.util.Locale.getDefault()).format(new java.util.Date());
+            int dia  = 1, mes = 1, anio = 2026;
+            try { dia  = Integer.parseInt(etDiaRef[0].getText().toString().trim()); }  catch (Exception ignored) {}
+            try { mes  = Integer.parseInt(etMesRef[0].getText().toString().trim()); }  catch (Exception ignored) {}
+            try { anio = Integer.parseInt(etAnioRef[0].getText().toString().trim()); } catch (Exception ignored) {}
+
+            dia  = Math.max(1, Math.min(dia,  31));
+            mes  = Math.max(1, Math.min(mes,  12));
+            anio = Math.max(2020, Math.min(anio, 2100));
+
+            final String fechaInicio = String.format(java.util.Locale.getDefault(),
+                    "%04d-%02d-%02d", anio, mes, dia);
+
             final String clienteId  = clienteIdSel[0];
             final String clienteNom = clienteNomSel[0] != null ? clienteNomSel[0] : nombre;
             final double precio     = precioSel[0];
             final String tipo       = tipoSel[0];
             final String notas      = etNotas.getText().toString().trim();
 
-            // 1️⃣ Crear membresía en Supabase
-            SupabaseRepository.get().crearMembresia(clienteId, tipo, precio, hoy, notas,
-                    new SupabaseRepository.Callback<MembresiaModel>() {
-                        @Override public void onSuccess(MembresiaModel mem) {
-                            // 2️⃣ Crear cobro pendiente automático
-                            String concepto = "Membresía " + tipo + " - " + clienteNom;
-                            SupabaseRepository.get().crearCobro(
-                                    clienteId, clienteNom, concepto,
-                                    precio, "Efectivo", "pendiente", notas,
-                                    new SupabaseRepository.Callback<CobroModel>() {
-                                        @Override public void onSuccess(CobroModel cobro) {
-                                            runOnUiThread(() -> {
-                                                sheet.dismiss();
-                                                android.widget.Toast.makeText(MainActivity.this,
-                                                        "✅ " + clienteNom + " inscrito · cobro de "
-                                                                + (int)precio + "€ generado",
-                                                        android.widget.Toast.LENGTH_LONG).show();
-                                                cargarDatos(); // refrescar dashboard
-                                            });
-                                        }
-                                        @Override public void onError(String e) {
-                                            runOnUiThread(() -> {
-                                                // Membresía creada pero cobro falló — avisar
-                                                sheet.dismiss();
-                                                android.widget.Toast.makeText(MainActivity.this,
-                                                        "Inscrito, pero error al generar cobro: " + e,
-                                                        android.widget.Toast.LENGTH_LONG).show();
-                                            });
-                                        }
-                                    });
-                        }
-                        @Override public void onError(String e) {
-                            runOnUiThread(() -> {
-                                btnGuardar.setEnabled(true);
-                                btnGuardar.setText("🎫 Inscribir y generar cobro");
-                                android.widget.Toast.makeText(MainActivity.this,
-                                        "Error: " + e, android.widget.Toast.LENGTH_SHORT).show();
-                            });
-                        }
+            // Comprueba en la BD si ya tiene membresía activa; si la tiene, no inscribe.
+            inscribirConChequeo(clienteId, clienteNom, tipo, precio, fechaInicio, notas,
+                    () -> sheet.dismiss(),
+                    () -> {
+                        btnGuardar.setEnabled(true);
+                        btnGuardar.setText("🎫 Inscribir y generar cobro");
                     });
         });
 
@@ -1704,6 +1819,96 @@ public class MainActivity extends AppCompatActivity {
     private static final String PREFS_RENOV   = "kau_renovaciones";
     private static final String KEY_LAST_CHECK = "last_check_";
 
+    /**
+     * Inscribe una membresía SÓLO si el cliente no tiene ya una activa.
+     * Hace primero una petición a la base de datos; si ya está inscrito,
+     * muestra un mensaje y no crea nada.
+     *
+     * @param onTerminado   se ejecuta tras inscribir correctamente (p. ej. cerrar el sheet)
+     * @param onNoInscrito  se ejecuta si NO se inscribe (ya activo o error) para reactivar la UI
+     */
+    private void inscribirConChequeo(final String clienteId, final String clienteNom,
+                                     final String tipo, final double precio,
+                                     final String fechaInicio, final String notas,
+                                     final Runnable onTerminado, final Runnable onNoInscrito) {
+        SupabaseRepository.get().tieneMembresiaActiva(clienteId,
+                new SupabaseRepository.Callback<Boolean>() {
+                    @Override public void onSuccess(Boolean yaActiva) {
+                        if (Boolean.TRUE.equals(yaActiva)) {
+                            runOnUiThread(() -> {
+                                android.widget.Toast.makeText(MainActivity.this,
+                                        "⚠️ " + clienteNom + " ya tiene una membresía activa. "
+                                                + "Cancélala antes de volver a inscribirlo.",
+                                        android.widget.Toast.LENGTH_LONG).show();
+                                if (onNoInscrito != null) onNoInscrito.run();
+                            });
+                            return;
+                        }
+                        // No tiene membresía activa → crear membresía + cobro
+                        SupabaseRepository.get().crearMembresia(clienteId, tipo, precio, fechaInicio, notas,
+                                new SupabaseRepository.Callback<MembresiaModel>() {
+                                    @Override public void onSuccess(MembresiaModel mem) {
+                                        // Aseguramos los datos necesarios para sincronizar
+                                        mem.clienteId   = clienteId;
+                                        mem.tipo        = tipo;
+                                        mem.precio      = precio;
+                                        mem.fechaInicio = fechaInicio;
+                                        mem.activa      = true;
+
+                                        String concepto = "Membresía " + tipo + " - " + clienteNom;
+                                        // El primer cobro va fechado en la fecha de inicio (su mes correcto)
+                                        SupabaseRepository.get().crearCobroConFecha(
+                                                clienteId, clienteNom, concepto,
+                                                precio, "Efectivo", "pendiente", notas, fechaInicio,
+                                                new SupabaseRepository.Callback<CobroModel>() {
+                                                    @Override public void onSuccess(CobroModel cobro) {
+                                                        // Pone al día los cobros de los meses ya transcurridos
+                                                        SupabaseRepository.get().sincronizarMembresia(mem, clienteNom,
+                                                                new SupabaseRepository.Callback<Boolean>() {
+                                                                    @Override public void onSuccess(Boolean x) { terminarInscripcion(clienteNom, (int) precio, onTerminado); }
+                                                                    @Override public void onError(String e)  { terminarInscripcion(clienteNom, (int) precio, onTerminado); }
+                                                                });
+                                                    }
+                                                    @Override public void onError(String e) {
+                                                        runOnUiThread(() -> {
+                                                            android.widget.Toast.makeText(MainActivity.this,
+                                                                    "Inscrito, pero error al generar cobro: " + e,
+                                                                    android.widget.Toast.LENGTH_LONG).show();
+                                                            if (onTerminado != null) onTerminado.run();
+                                                        });
+                                                    }
+                                                });
+                                    }
+                                    @Override public void onError(String e) {
+                                        runOnUiThread(() -> {
+                                            android.widget.Toast.makeText(MainActivity.this,
+                                                    "Error: " + e, android.widget.Toast.LENGTH_SHORT).show();
+                                            if (onNoInscrito != null) onNoInscrito.run();
+                                        });
+                                    }
+                                });
+                    }
+                    @Override public void onError(String e) {
+                        runOnUiThread(() -> {
+                            android.widget.Toast.makeText(MainActivity.this,
+                                    "Error al comprobar la membresía: " + e,
+                                    android.widget.Toast.LENGTH_SHORT).show();
+                            if (onNoInscrito != null) onNoInscrito.run();
+                        });
+                    }
+                });
+    }
+
+    private void terminarInscripcion(String nombre, int precio, Runnable onTerminado) {
+        runOnUiThread(() -> {
+            android.widget.Toast.makeText(MainActivity.this,
+                    "✅ " + nombre + " inscrito · cobro de " + precio + "€ generado",
+                    android.widget.Toast.LENGTH_LONG).show();
+            if (onTerminado != null) onTerminado.run();
+            cargarDatos();
+        });
+    }
+
     private void comprobarRenovaciones() {
         android.content.SharedPreferences p = getSharedPreferences(PREFS_RENOV, MODE_PRIVATE);
         String hoy = new java.text.SimpleDateFormat("yyyy-MM-dd",
@@ -1712,25 +1917,62 @@ public class MainActivity extends AppCompatActivity {
         SupabaseRepository.get().getMembresias(null, true,
                 new SupabaseRepository.Callback<List<MembresiaModel>>() {
                     @Override public void onSuccess(List<MembresiaModel> mems) {
-                        runOnUiThread(() -> {
-                            for (MembresiaModel mem : mems) {
-                                if (mem.id == null || mem.fechaInicio == null) continue;
+                        // Necesitamos los nombres de los clientes para el concepto del cobro
+                        SupabaseRepository.get().getClientes(null,
+                                new SupabaseRepository.Callback<List<ClienteModel>>() {
+                                    @Override public void onSuccess(List<ClienteModel> clientes) {
+                                        java.util.Map<String, String> nombres = new java.util.HashMap<>();
+                                        for (ClienteModel c : clientes) {
+                                            if (c.id != null) {
+                                                nombres.put(c.id, c.nombre
+                                                        + (c.apellidos != null ? " " + c.apellidos : ""));
+                                            }
+                                        }
+                                        procesarRenovaciones(mems, nombres, p, hoy);
+                                    }
+                                    @Override public void onError(String e) {
+                                        // Sin nombres también podemos renovar
+                                        procesarRenovaciones(mems, new java.util.HashMap<>(), p, hoy);
+                                    }
+                                });
+                    }
+                    @Override public void onError(String e) {}
+                });
+    }
 
-                                java.util.Date fechaVenc = calcularVencimiento(mem.fechaInicio, mem.tipo);
-                                if (fechaVenc == null) continue;
+    /**
+     * Pone al día TODAS las membresías activas (sin preguntar): genera los cobros
+     * de cada mes que falte y avanza la fecha de la cuota al periodo actual.
+     * La única forma de detenerlo es cancelar la membresía con su botón.
+     */
+    private void procesarRenovaciones(List<MembresiaModel> mems,
+                                      java.util.Map<String, String> nombres,
+                                      android.content.SharedPreferences p, String hoy) {
+        for (MembresiaModel mem : mems) {
+            if (mem.id == null || mem.fechaInicio == null) continue;
 
-                                java.util.Date ahora = new java.util.Date();
-                                long diffMs = fechaVenc.getTime() - ahora.getTime();
-                                int diffDias = (int)(diffMs / (1000 * 60 * 60 * 24));
-                                if (diffDias > 1) continue;
+            // Evitar procesar la misma membresía dos veces el mismo día
+            String key = KEY_LAST_CHECK + mem.id;
+            if (hoy.equals(p.getString(key, ""))) continue;
+            p.edit().putString(key, hoy).apply();
 
-                                String key = KEY_LAST_CHECK + mem.id;
-                                if (hoy.equals(p.getString(key, ""))) continue;
+            String nombre = nombres.containsKey(mem.clienteId) ? nombres.get(mem.clienteId) : "Cliente";
+            sincronizarMembresiaUI(mem, nombre);
+        }
+    }
 
-                                p.edit().putString(key, hoy).apply();
-                                mostrarDialogoRenovacion(mem);
-                            }
-                        });
+    private void sincronizarMembresiaUI(MembresiaModel mem, String nombre) {
+        SupabaseRepository.get().sincronizarMembresia(mem, nombre,
+                new SupabaseRepository.Callback<Boolean>() {
+                    @Override public void onSuccess(Boolean huboCambios) {
+                        if (Boolean.TRUE.equals(huboCambios)) {
+                            runOnUiThread(() -> {
+                                android.widget.Toast.makeText(MainActivity.this,
+                                        "🔄 Cobros de " + nombre + " puestos al día",
+                                        android.widget.Toast.LENGTH_SHORT).show();
+                                cargarDatos();
+                            });
+                        }
                     }
                     @Override public void onError(String e) {}
                 });
@@ -1811,11 +2053,17 @@ public class MainActivity extends AppCompatActivity {
 
                             // ── Sí, renovar ──────────────────────────────────────
                             b.setPositiveButton("✅ Sí, renovar", (d, w) -> {
-                                String hoy = new java.text.SimpleDateFormat("yyyy-MM-dd",
-                                        java.util.Locale.getDefault()).format(new java.util.Date());
+                                // La nueva fecha de inicio conserva SIEMPRE el día original
+                                // de la primera inscripción (p. ej. el día 12), sin importar
+                                // qué día se pulse renovar.
+                                String nuevaFechaInicio = mem.calcularFechaInicioRenovacion();
+                                if (nuevaFechaInicio == null || nuevaFechaInicio.isEmpty()) {
+                                    nuevaFechaInicio = new java.text.SimpleDateFormat("yyyy-MM-dd",
+                                            java.util.Locale.getDefault()).format(new java.util.Date());
+                                }
 
                                 // 1. Actualizar fecha_inicio + activa=true en Supabase
-                                SupabaseRepository.get().renovarMembresia(mem.id, hoy,
+                                SupabaseRepository.get().renovarMembresia(mem.id, nuevaFechaInicio,
                                         new SupabaseRepository.Callback<Void>() {
                                             @Override
                                             public void onSuccess(Void v) {

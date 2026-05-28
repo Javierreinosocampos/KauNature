@@ -265,6 +265,21 @@
                                 android:textColor="@color/text_muted"/>
 
                             <TextView
+                                android:id="@+id/filtroAlDia"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Al día"
+                                android:textSize="12sp"
+                                android:fontFamily="@font/outfit_bold"
+                                android:paddingStart="18dp"
+                                android:paddingEnd="18dp"
+                                android:paddingTop="9dp"
+                                android:paddingBottom="9dp"
+                                android:layout_marginEnd="8dp"
+                                android:background="@drawable/shape_filter_inactive"
+                                android:textColor="@color/text_muted"/>
+
+                            <TextView
                                 android:id="@+id/filtroDeuda"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"

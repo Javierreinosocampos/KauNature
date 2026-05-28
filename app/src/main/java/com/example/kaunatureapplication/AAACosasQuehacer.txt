@@ -1,0 +1,5 @@
+Tengo que hacer que el cliente pueda añadir el dia en el que quiere inscribir al cliente,
+se deberá escribir el dia y mes, esto lo escribirá en inscribir para las membresias,
+para ello ahi, cuando inscribimos, automaticamente se pone en el dia de inicio el dia de hoy,
+debe ponerse el dia que elija el usuario que usa la app. Que de manera predeterminada
+venga el dia de hoy, pero que pueda modificarlo

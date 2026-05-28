@@ -299,6 +299,48 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
+            <!-- Día de inicio de membresía -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="8dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="1dp"
+                app:cardBackgroundColor="@color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Día de inicio (1-31)"
+                        android:textSize="11sp"
+                        android:textColor="@color/text_muted"
+                        android:fontFamily="@font/outfit_bold"
+                        android:layout_marginBottom="4dp"/>
+
+                    <EditText
+                        android:id="@+id/etNuevoDiaInicio"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Ej: 15"
+                        android:textSize="15sp"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="#9CA3AF"
+                        android:fontFamily="@font/outfit_regular"
+                        android:background="@null"
+                        android:inputType="number"
+                        android:maxLines="1"/>
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
             <!-- Notas -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"

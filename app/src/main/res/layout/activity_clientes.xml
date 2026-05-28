@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg_main"
-    >
+    android:fitsSystemWindows="false">
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollClientes"
@@ -20,14 +20,13 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- ══ HEADER GRADIENTE AZUL ══ -->
+            <!-- ══ HEADER — 172dp cubre status bar + notch ══ -->
             <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="148dp"
+                android:layout_height="172dp"
                 android:background="@drawable/bg_header_spectacular"
                 android:elevation="12dp">
 
-                <!-- Círculo decorativo top-right -->
                 <View
                     android:layout_width="160dp"
                     android:layout_height="160dp"
@@ -36,7 +35,6 @@
                     android:translationX="50dp"
                     android:translationY="-50dp"/>
 
-                <!-- Círculo decorativo bottom-left -->
                 <View
                     android:layout_width="100dp"
                     android:layout_height="100dp"
@@ -45,7 +43,6 @@
                     android:translationX="-30dp"
                     android:translationY="30dp"/>
 
-                <!-- Línea shimmer superior -->
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
@@ -55,7 +52,7 @@
                     android:layout_marginEnd="28dp"
                     android:background="@drawable/shape_shimmer_line"/>
 
-                <!-- Contenido -->
+                <!-- paddingTop="56dp" = ~24dp statusBar + 32dp espacio visual -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -63,10 +60,9 @@
                     android:gravity="center_vertical"
                     android:paddingStart="20dp"
                     android:paddingEnd="20dp"
-                    android:paddingTop="40dp"
-                    android:paddingBottom="20dp">
+                    android:paddingTop="56dp"
+                    android:paddingBottom="18dp">
 
-                    <!-- Botón atrás -->
                     <FrameLayout
                         android:id="@+id/btnBack"
                         android:layout_width="42dp"
@@ -86,7 +82,6 @@
                             android:gravity="center"/>
                     </FrameLayout>
 
-                    <!-- Títulos -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -106,27 +101,28 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Clientes"
-                            android:textSize="30sp"
+                            android:textSize="28sp"
                             android:textColor="#FFFFFF"
                             android:fontFamily="@font/outfit_bold"
                             android:shadowColor="#60000000"
                             android:shadowDx="0"
                             android:shadowDy="4"
                             android:shadowRadius="14"
-                            android:layout_marginTop="2dp"/>
+                            android:layout_marginTop="1dp"/>
 
                         <TextView
                             android:id="@+id/tvClientesSubtitle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="0 registrados"
-                            android:textSize="12sp"
+                            android:textSize="11sp"
                             android:textColor="#BFDBFF"
                             android:fontFamily="@font/outfit_regular"
-                            android:layout_marginTop="2dp"/>
+                            android:layout_marginTop="1dp"
+                            android:maxLines="1"
+                            android:ellipsize="end"/>
                     </LinearLayout>
 
-                    <!-- Botón añadir cliente -->
                     <FrameLayout
                         android:id="@+id/btnAddCliente"
                         android:layout_width="46dp"
@@ -219,8 +215,7 @@
                     </LinearLayout>
                 </FrameLayout>
 
-                <!-- FILTROS — fila 1: los 4 principales del XML -->
-                <!-- Los filtros de membresía (fila 2 y 3) se inyectan desde Java -->
+                <!-- FILTROS -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -299,7 +294,6 @@
 
                         </LinearLayout>
                     </HorizontalScrollView>
-                    <!-- Java inyecta aquí: separador + fila Con/Sin membresía + fila Cancelada -->
 
                 </LinearLayout>
 
@@ -392,131 +386,25 @@
             android:paddingEnd="10dp"
             android:paddingBottom="10dp">
 
-            <LinearLayout
-                android:id="@+id/nav_home"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@drawable/nav_item_normal"
-                android:gravity="center"
-                android:orientation="vertical">
-                <ImageView
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
-                    android:elevation="2dp"
-                    android:src="@drawable/ic_home"
-                    android:tint="#9CA3AF"/>
-                <TextView
-                    android:id="@+id/navLabelHome"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:fontFamily="@font/outfit_bold"
-                    android:gravity="center"
-                    android:text="Inicio"
-                    android:textColor="#9CA3AF"
-                    android:textSize="11sp"/>
+            <LinearLayout android:id="@+id/nav_home" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:background="@drawable/nav_item_normal" android:gravity="center" android:orientation="vertical">
+                <ImageView android:layout_width="25dp" android:layout_height="25dp" android:elevation="2dp" android:src="@drawable/ic_home" android:tint="#9CA3AF"/>
+                <TextView android:id="@+id/navLabelHome" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:fontFamily="@font/outfit_bold" android:gravity="center" android:text="Inicio" android:textColor="#9CA3AF" android:textSize="11sp"/>
             </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/nav_clientes"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@drawable/nav_item_selected"
-                android:gravity="center"
-                android:orientation="vertical">
-                <ImageView
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
-                    android:src="@drawable/ic_people"
-                    android:tint="#0A66FF"/>
-                <TextView
-                    android:id="@+id/navLabelClientes"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:fontFamily="@font/outfit_regular"
-                    android:gravity="center"
-                    android:text="Clientes"
-                    android:textColor="#0A66FF"
-                    android:textSize="11sp"/>
+            <LinearLayout android:id="@+id/nav_clientes" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:background="@drawable/nav_item_selected" android:gravity="center" android:orientation="vertical">
+                <ImageView android:layout_width="25dp" android:layout_height="25dp" android:src="@drawable/ic_people" android:tint="#0A66FF"/>
+                <TextView android:id="@+id/navLabelClientes" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:fontFamily="@font/outfit_regular" android:gravity="center" android:text="Clientes" android:textColor="#0A66FF" android:textSize="11sp"/>
             </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/nav_gimnasio"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@drawable/nav_item_normal"
-                android:gravity="center"
-                android:orientation="vertical">
-                <ImageView
-                    android:id="@+id/navIconGimnasio"
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
-                    android:src="@drawable/ic_fitness"
-                    android:tint="#9CA3AF"/>
-                <TextView
-                    android:id="@+id/navLabelGimnasio"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:fontFamily="@font/outfit_regular"
-                    android:gravity="center"
-                    android:text="Gym"
-                    android:textColor="#9CA3AF"
-                    android:textSize="11sp"/>
+            <LinearLayout android:id="@+id/nav_gimnasio" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:background="@drawable/nav_item_normal" android:gravity="center" android:orientation="vertical">
+                <ImageView android:id="@+id/navIconGimnasio" android:layout_width="25dp" android:layout_height="25dp" android:src="@drawable/ic_fitness" android:tint="#9CA3AF"/>
+                <TextView android:id="@+id/navLabelGimnasio" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:fontFamily="@font/outfit_regular" android:gravity="center" android:text="Gym" android:textColor="#9CA3AF" android:textSize="11sp"/>
             </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/nav_agenda"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@drawable/nav_item_normal"
-                android:gravity="center"
-                android:orientation="vertical">
-                <ImageView
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
-                    android:src="@drawable/ic_calendar_today"
-                    android:tint="#9CA3AF"/>
-                <TextView
-                    android:id="@+id/navLabelAgenda"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:fontFamily="@font/outfit_regular"
-                    android:gravity="center"
-                    android:text="Agenda"
-                    android:textColor="#9CA3AF"
-                    android:textSize="11sp"/>
+            <LinearLayout android:id="@+id/nav_agenda" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:background="@drawable/nav_item_normal" android:gravity="center" android:orientation="vertical">
+                <ImageView android:layout_width="25dp" android:layout_height="25dp" android:src="@drawable/ic_calendar_today" android:tint="#9CA3AF"/>
+                <TextView android:id="@+id/navLabelAgenda" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:fontFamily="@font/outfit_regular" android:gravity="center" android:text="Agenda" android:textColor="#9CA3AF" android:textSize="11sp"/>
             </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/nav_cobros"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@drawable/nav_item_normal"
-                android:gravity="center"
-                android:orientation="vertical">
-                <ImageView
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
-                    android:src="@drawable/ic_payments"
-                    android:tint="#9CA3AF"/>
-                <TextView
-                    android:id="@+id/navLabelCobros"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:fontFamily="@font/outfit_regular"
-                    android:gravity="center"
-                    android:text="Cobros"
-                    android:textColor="#9CA3AF"
-                    android:textSize="11sp"/>
+            <LinearLayout android:id="@+id/nav_cobros" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:background="@drawable/nav_item_normal" android:gravity="center" android:orientation="vertical">
+                <ImageView android:layout_width="25dp" android:layout_height="25dp" android:src="@drawable/ic_payments" android:tint="#9CA3AF"/>
+                <TextView android:id="@+id/navLabelCobros" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:fontFamily="@font/outfit_regular" android:gravity="center" android:text="Cobros" android:textColor="#9CA3AF" android:textSize="11sp"/>
             </LinearLayout>
 
         </LinearLayout>

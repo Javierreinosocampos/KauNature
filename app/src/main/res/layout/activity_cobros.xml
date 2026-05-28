@@ -3,152 +3,81 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_main">
+    android:background="@color/bg_main"
+    android:fitsSystemWindows="false">
 
-    <LinearLayout
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:paddingBottom="100dp"
+        android:clipToPadding="false"
+        android:overScrollMode="never">
 
-        <!-- ══ HEADER GRADIENTE AZUL (igual que Agenda) ══ -->
-        <FrameLayout
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="148dp"
-            android:background="@drawable/bg_header_spectacular"
-            android:elevation="12dp">
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-            <!-- Círculo decorativo top-right -->
-            <View
-                android:layout_width="160dp"
-                android:layout_height="160dp"
-                android:layout_gravity="top|end"
-                android:background="@drawable/shape_actions_circle_top"
-                android:translationX="50dp"
-                android:translationY="-50dp" />
-
-            <!-- Círculo decorativo bottom-left -->
-            <View
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_gravity="bottom|start"
-                android:background="@drawable/shape_actions_circle_bottom"
-                android:translationX="-30dp"
-                android:translationY="30dp" />
-
-            <!-- Shimmer line -->
-            <View
+            <!-- ══ HEADER 172dp cubre notch ══ -->
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_gravity="top"
-                android:layout_marginStart="28dp"
-                android:layout_marginTop="1dp"
-                android:layout_marginEnd="28dp"
-                android:background="@drawable/shape_shimmer_line" />
+                android:layout_height="172dp"
+                android:background="@drawable/bg_header_spectacular"
+                android:elevation="12dp">
 
-            <!-- Contenido del header -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingStart="20dp"
-                android:paddingTop="40dp"
-                android:paddingEnd="20dp"
-                android:paddingBottom="20dp">
+                <View android:layout_width="160dp" android:layout_height="160dp" android:layout_gravity="top|end" android:background="@drawable/shape_actions_circle_top" android:translationX="50dp" android:translationY="-50dp"/>
+                <View android:layout_width="100dp" android:layout_height="100dp" android:layout_gravity="bottom|start" android:background="@drawable/shape_actions_circle_bottom" android:translationX="-30dp" android:translationY="30dp"/>
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_gravity="top" android:layout_marginStart="28dp" android:layout_marginTop="1dp" android:layout_marginEnd="28dp" android:background="@drawable/shape_shimmer_line"/>
 
-                <!-- Botón atrás circular -->
-                <FrameLayout
-                    android:id="@+id/btnBack"
-                    android:layout_width="42dp"
-                    android:layout_height="42dp"
-                    android:layout_marginEnd="14dp"
-                    android:background="@drawable/shape_inscribir_icon_bg"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?attr/selectableItemBackgroundBorderless">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:fontFamily="@font/outfit_bold"
-                        android:gravity="center"
-                        android:text="←"
-                        android:textColor="#FFFFFF"
-                        android:textSize="20sp" />
-                </FrameLayout>
-
-                <!-- Títulos -->
                 <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="20dp"
+                    android:paddingTop="56dp"
+                    android:paddingEnd="20dp"
+                    android:paddingBottom="18dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/outfit_bold"
-                        android:letterSpacing="0.24"
-                        android:text="KAU NATURE"
-                        android:textColor="#93C5FD"
-                        android:textSize="10sp" />
+                    <FrameLayout
+                        android:id="@+id/btnBack"
+                        android:layout_width="42dp"
+                        android:layout_height="42dp"
+                        android:layout_marginEnd="14dp"
+                        android:background="@drawable/shape_inscribir_icon_bg"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?attr/selectableItemBackgroundBorderless">
+                        <TextView android:layout_width="match_parent" android:layout_height="match_parent" android:fontFamily="@font/outfit_bold" android:gravity="center" android:text="←" android:textColor="#FFFFFF" android:textSize="20sp"/>
+                    </FrameLayout>
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:fontFamily="@font/outfit_bold"
-                        android:shadowColor="#60000000"
-                        android:shadowDx="0"
-                        android:shadowDy="4"
-                        android:shadowRadius="14"
-                        android:text="Cobros"
-                        android:textColor="#FFFFFF"
-                        android:textSize="30sp" />
+                        android:layout_weight="1"
+                        android:orientation="vertical">
 
-                    <TextView
-                        android:id="@+id/tvCobrosSubtitle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:fontFamily="@font/outfit_regular"
-                        android:text="Este mes"
-                        android:textColor="#BFDBFF"
-                        android:textSize="12sp" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:fontFamily="@font/outfit_bold" android:letterSpacing="0.24" android:text="KAU NATURE" android:textColor="#93C5FD" android:textSize="10sp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="1dp" android:fontFamily="@font/outfit_bold" android:shadowColor="#60000000" android:shadowDx="0" android:shadowDy="4" android:shadowRadius="14" android:text="Cobros" android:textColor="#FFFFFF" android:textSize="28sp"/>
+                        <TextView android:id="@+id/tvCobrosSubtitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="1dp" android:fontFamily="@font/outfit_regular" android:text="Este mes" android:textColor="#BFDBFF" android:textSize="11sp" android:maxLines="1" android:ellipsize="end"/>
+                    </LinearLayout>
+
+                    <FrameLayout
+                        android:id="@+id/btnNuevoCobro"
+                        android:layout_width="46dp"
+                        android:layout_height="46dp"
+                        android:background="@drawable/bg_header_btn"
+                        android:clickable="true"
+                        android:elevation="10dp"
+                        android:focusable="true"
+                        android:foreground="?attr/selectableItemBackgroundBorderless">
+                        <TextView android:layout_width="match_parent" android:layout_height="match_parent" android:fontFamily="@font/outfit_bold" android:gravity="center" android:text="＋" android:textColor="@color/accent_blue" android:textSize="22sp"/>
+                    </FrameLayout>
+
                 </LinearLayout>
+            </FrameLayout>
 
-                <!-- Botón nuevo cobro -->
-                <FrameLayout
-                    android:id="@+id/btnNuevoCobro"
-                    android:layout_width="46dp"
-                    android:layout_height="46dp"
-                    android:background="@drawable/bg_header_btn"
-                    android:clickable="true"
-                    android:elevation="10dp"
-                    android:focusable="true"
-                    android:foreground="?attr/selectableItemBackgroundBorderless">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:fontFamily="@font/outfit_bold"
-                        android:gravity="center"
-                        android:text="＋"
-                        android:textColor="@color/accent_blue"
-                        android:textSize="22sp" />
-                </FrameLayout>
-
-            </LinearLayout>
-        </FrameLayout>
-
-        <!-- ══ SCROLL CONTENIDO ══ -->
-        <androidx.core.widget.NestedScrollView
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:clipToPadding="false"
-            android:paddingBottom="90dp">
-
+            <!-- ══ CONTENIDO ══ -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -164,38 +93,9 @@
                     app:cardCornerRadius="16dp"
                     app:cardElevation="2dp">
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="48dp"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:paddingStart="14dp"
-                        android:paddingEnd="14dp">
-
-                        <EditText
-                            android:id="@+id/etBuscarNombre"
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:background="@null"
-                            android:fontFamily="@font/outfit_regular"
-                            android:hint="Buscar por nombre..."
-                            android:imeOptions="actionSearch"
-                            android:inputType="textPersonName"
-                            android:maxLines="1"
-                            android:textColor="@color/text_primary"
-                            android:textSize="13sp" />
-
-                        <TextView
-                            android:id="@+id/btnLimpiarBusqueda"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/outfit_bold"
-                            android:padding="6dp"
-                            android:text="✕"
-                            android:textColor="@color/text_muted"
-                            android:textSize="14sp"
-                            android:visibility="gone" />
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="48dp" android:gravity="center_vertical" android:orientation="horizontal" android:paddingStart="14dp" android:paddingEnd="14dp">
+                        <EditText android:id="@+id/etBuscarNombre" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:background="@null" android:fontFamily="@font/outfit_regular" android:hint="Buscar por nombre..." android:imeOptions="actionSearch" android:inputType="textPersonName" android:maxLines="1" android:textColor="@color/text_primary" android:textSize="13sp"/>
+                        <TextView android:id="@+id/btnLimpiarBusqueda" android:layout_width="wrap_content" android:layout_height="wrap_content" android:fontFamily="@font/outfit_bold" android:padding="6dp" android:text="✕" android:textColor="@color/text_muted" android:textSize="14sp" android:visibility="gone"/>
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
@@ -214,376 +114,117 @@
                         android:orientation="vertical"
                         android:padding="20dp">
 
-                        <!-- Navegación de mes -->
+                        <!-- Navegación mes — flechas con ImageView dentro de círculo -->
                         <LinearLayout
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
+                            android:layout_height="40dp"
                             android:layout_marginBottom="2dp"
                             android:gravity="center_vertical"
                             android:orientation="horizontal">
 
-                            <TextView
+                            <!-- Flecha izquierda — ic_chevron_left blanco en círculo oscuro -->
+                            <FrameLayout
                                 android:id="@+id/btnMesAnterior"
                                 android:layout_width="36dp"
                                 android:layout_height="36dp"
-                                android:background="@drawable/shape_chip_blue"
+                                android:background="@drawable/shape_arrow_circle"
                                 android:backgroundTint="#1A3A7A"
                                 android:clickable="true"
                                 android:focusable="true"
-                                android:fontFamily="@font/outfit_bold"
-                                android:gravity="center"
-                                android:includeFontPadding="false"
-                                android:minWidth="0dp"
-                                android:minHeight="0dp"
-                                android:text="‹"
-                                android:textColor="#FFFFFF"
-                                android:textSize="22sp" />
+                                android:foreground="?attr/selectableItemBackgroundBorderless">
+                                <ImageView
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/lc_chevron_left"
+                                    android:tint="#FFFFFF"/>
+                            </FrameLayout>
 
                             <TextView
                                 android:id="@+id/tvMesLabel"
                                 android:layout_width="0dp"
-                                android:layout_height="wrap_content"
+                                android:layout_height="match_parent"
                                 android:layout_weight="1"
                                 android:fontFamily="@font/outfit_bold"
                                 android:gravity="center"
                                 android:text="Mayo 2026"
                                 android:textColor="#AACCFF"
-                                android:textSize="12sp" />
+                                android:textSize="12sp"/>
 
-                            <TextView
+                            <!-- Flecha derecha — ic_chevron_right blanco en círculo oscuro -->
+                            <FrameLayout
                                 android:id="@+id/btnMesSiguiente"
                                 android:layout_width="36dp"
                                 android:layout_height="36dp"
-                                android:alpha="0.35"
-                                android:background="@drawable/shape_chip_blue"
+                                android:background="@drawable/shape_arrow_circle"
                                 android:backgroundTint="#1A3A7A"
-                                android:clickable="false"
-                                android:focusable="false"
-                                android:fontFamily="@font/outfit_bold"
-                                android:gravity="center"
-                                android:includeFontPadding="false"
-                                android:minWidth="0dp"
-                                android:minHeight="0dp"
-                                android:text="›"
-                                android:textColor="#FFFFFF"
-                                android:textSize="22sp" />
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:foreground="?attr/selectableItemBackgroundBorderless">
+                                <ImageView
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_chevron_right"
+                                    android:tint="#FFFFFF"/>
+                            </FrameLayout>
+
                         </LinearLayout>
 
-                        <TextView
-                            android:id="@+id/tvTotalMes"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:layout_marginBottom="16dp"
-                            android:fontFamily="@font/outfit_bold"
-                            android:text="0,00 €"
-                            android:textColor="@color/white"
-                            android:textSize="34sp" />
+                        <TextView android:id="@+id/tvTotalMes" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:layout_marginBottom="16dp" android:fontFamily="@font/outfit_bold" android:text="0,00 €" android:textColor="@color/white" android:textSize="34sp"/>
 
-                        <!-- KPIs fila -->
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:weightSum="3">
-
-                            <LinearLayout
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:orientation="vertical">
-
-                                <TextView
-                                    android:id="@+id/tvKpiEfectivo"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:ellipsize="none"
-                                    android:fontFamily="@font/outfit_bold"
-                                    android:maxLines="1"
-                                    android:text="0,00 €"
-                                    android:textColor="@color/white"
-                                    android:textSize="14sp" />
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginTop="2dp"
-                                    android:fontFamily="@font/outfit_regular"
-                                    android:text="💵 Efectivo"
-                                    android:textColor="#AACCFF"
-                                    android:textSize="10sp" />
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:weightSum="3">
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                                <TextView android:id="@+id/tvKpiEfectivo" android:layout_width="match_parent" android:layout_height="wrap_content" android:ellipsize="none" android:fontFamily="@font/outfit_bold" android:maxLines="1" android:text="0,00 €" android:textColor="@color/white" android:textSize="14sp"/>
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:fontFamily="@font/outfit_regular" android:text="💵 Efectivo" android:textColor="#AACCFF" android:textSize="10sp"/>
                             </LinearLayout>
-
-                            <LinearLayout
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:orientation="vertical">
-
-                                <TextView
-                                    android:id="@+id/tvKpiTarjeta"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:ellipsize="none"
-                                    android:fontFamily="@font/outfit_bold"
-                                    android:maxLines="1"
-                                    android:text="0,00 €"
-                                    android:textColor="@color/white"
-                                    android:textSize="14sp" />
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginTop="2dp"
-                                    android:fontFamily="@font/outfit_regular"
-                                    android:text="💳 Tarjeta"
-                                    android:textColor="#AACCFF"
-                                    android:textSize="10sp" />
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                                <TextView android:id="@+id/tvKpiTarjeta" android:layout_width="match_parent" android:layout_height="wrap_content" android:ellipsize="none" android:fontFamily="@font/outfit_bold" android:maxLines="1" android:text="0,00 €" android:textColor="@color/white" android:textSize="14sp"/>
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:fontFamily="@font/outfit_regular" android:text="💳 Tarjeta" android:textColor="#AACCFF" android:textSize="10sp"/>
                             </LinearLayout>
-
-                            <LinearLayout
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:orientation="vertical">
-
-                                <TextView
-                                    android:id="@+id/tvKpiBizumTransfer"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:ellipsize="none"
-                                    android:fontFamily="@font/outfit_bold"
-                                    android:maxLines="1"
-                                    android:text="0,00 €"
-                                    android:textColor="@color/white"
-                                    android:textSize="14sp" />
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginTop="2dp"
-                                    android:fontFamily="@font/outfit_regular"
-                                    android:text="📱 Bizum/Trans."
-                                    android:textColor="#AACCFF"
-                                    android:textSize="10sp" />
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                                <TextView android:id="@+id/tvKpiBizumTransfer" android:layout_width="match_parent" android:layout_height="wrap_content" android:ellipsize="none" android:fontFamily="@font/outfit_bold" android:maxLines="1" android:text="0,00 €" android:textColor="@color/white" android:textSize="14sp"/>
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:fontFamily="@font/outfit_regular" android:text="📱 Bizum/Trans." android:textColor="#AACCFF" android:textSize="10sp"/>
                             </LinearLayout>
-
                         </LinearLayout>
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
                 <!-- ── FILTROS ── -->
-                <HorizontalScrollView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="14dp"
-                    android:scrollbars="none">
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:id="@+id/filtroTodos"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="8dp"
-                            android:background="@drawable/shape_filter_active"
-                            android:fontFamily="@font/outfit_bold"
-                            android:paddingStart="16dp"
-                            android:paddingTop="8dp"
-                            android:paddingEnd="16dp"
-                            android:paddingBottom="8dp"
-                            android:text="Todos"
-                            android:textColor="@color/white"
-                            android:textSize="12sp" />
-
-                        <TextView
-                            android:id="@+id/filtroPendientes"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="8dp"
-                            android:background="@drawable/shape_filter_inactive"
-                            android:fontFamily="@font/outfit_bold"
-                            android:paddingStart="16dp"
-                            android:paddingTop="8dp"
-                            android:paddingEnd="16dp"
-                            android:paddingBottom="8dp"
-                            android:text="Pendientes"
-                            android:textColor="@color/text_muted"
-                            android:textSize="12sp" />
-
-                        <TextView
-                            android:id="@+id/filtroCobrados"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="8dp"
-                            android:background="@drawable/shape_filter_inactive"
-                            android:fontFamily="@font/outfit_bold"
-                            android:paddingStart="16dp"
-                            android:paddingTop="8dp"
-                            android:paddingEnd="16dp"
-                            android:paddingBottom="8dp"
-                            android:text="Cobrados"
-                            android:textColor="@color/text_muted"
-                            android:textSize="12sp" />
-
-                        <TextView
-                            android:id="@+id/filtroEfectivo"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="8dp"
-                            android:background="@drawable/shape_filter_inactive"
-                            android:fontFamily="@font/outfit_bold"
-                            android:paddingStart="16dp"
-                            android:paddingTop="8dp"
-                            android:paddingEnd="16dp"
-                            android:paddingBottom="8dp"
-                            android:text="💵 Efectivo"
-                            android:textColor="@color/text_muted"
-                            android:textSize="12sp" />
-
-                        <TextView
-                            android:id="@+id/filtroTarjeta"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="8dp"
-                            android:background="@drawable/shape_filter_inactive"
-                            android:fontFamily="@font/outfit_bold"
-                            android:paddingStart="16dp"
-                            android:paddingTop="8dp"
-                            android:paddingEnd="16dp"
-                            android:paddingBottom="8dp"
-                            android:text="💳 Tarjeta"
-                            android:textColor="@color/text_muted"
-                            android:textSize="12sp" />
-
-                        <TextView
-                            android:id="@+id/filtroBizum"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="8dp"
-                            android:background="@drawable/shape_filter_inactive"
-                            android:fontFamily="@font/outfit_bold"
-                            android:paddingStart="16dp"
-                            android:paddingTop="8dp"
-                            android:paddingEnd="16dp"
-                            android:paddingBottom="8dp"
-                            android:text="📱 Bizum"
-                            android:textColor="@color/text_muted"
-                            android:textSize="12sp" />
-
-                        <TextView
-                            android:id="@+id/filtroTransferencia"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:background="@drawable/shape_filter_inactive"
-                            android:fontFamily="@font/outfit_bold"
-                            android:paddingStart="16dp"
-                            android:paddingTop="8dp"
-                            android:paddingEnd="16dp"
-                            android:paddingBottom="8dp"
-                            android:text="🏦 Transferencia"
-                            android:textColor="@color/text_muted"
-                            android:textSize="12sp" />
-
+                <HorizontalScrollView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="14dp" android:scrollbars="none">
+                    <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal">
+                        <TextView android:id="@+id/filtroTodos" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginEnd="8dp" android:background="@drawable/shape_filter_active" android:fontFamily="@font/outfit_bold" android:paddingStart="16dp" android:paddingTop="8dp" android:paddingEnd="16dp" android:paddingBottom="8dp" android:text="Todos" android:textColor="@color/white" android:textSize="12sp"/>
+                        <TextView android:id="@+id/filtroPendientes" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginEnd="8dp" android:background="@drawable/shape_filter_inactive" android:fontFamily="@font/outfit_bold" android:paddingStart="16dp" android:paddingTop="8dp" android:paddingEnd="16dp" android:paddingBottom="8dp" android:text="Pendientes" android:textColor="@color/text_muted" android:textSize="12sp"/>
+                        <TextView android:id="@+id/filtroCobrados" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginEnd="8dp" android:background="@drawable/shape_filter_inactive" android:fontFamily="@font/outfit_bold" android:paddingStart="16dp" android:paddingTop="8dp" android:paddingEnd="16dp" android:paddingBottom="8dp" android:text="Cobrados" android:textColor="@color/text_muted" android:textSize="12sp"/>
+                        <TextView android:id="@+id/filtroEfectivo" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginEnd="8dp" android:background="@drawable/shape_filter_inactive" android:fontFamily="@font/outfit_bold" android:paddingStart="16dp" android:paddingTop="8dp" android:paddingEnd="16dp" android:paddingBottom="8dp" android:text="💵 Efectivo" android:textColor="@color/text_muted" android:textSize="12sp"/>
+                        <TextView android:id="@+id/filtroTarjeta" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginEnd="8dp" android:background="@drawable/shape_filter_inactive" android:fontFamily="@font/outfit_bold" android:paddingStart="16dp" android:paddingTop="8dp" android:paddingEnd="16dp" android:paddingBottom="8dp" android:text="💳 Tarjeta" android:textColor="@color/text_muted" android:textSize="12sp"/>
+                        <TextView android:id="@+id/filtroBizum" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginEnd="8dp" android:background="@drawable/shape_filter_inactive" android:fontFamily="@font/outfit_bold" android:paddingStart="16dp" android:paddingTop="8dp" android:paddingEnd="16dp" android:paddingBottom="8dp" android:text="📱 Bizum" android:textColor="@color/text_muted" android:textSize="12sp"/>
+                        <TextView android:id="@+id/filtroTransferencia" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/shape_filter_inactive" android:fontFamily="@font/outfit_bold" android:paddingStart="16dp" android:paddingTop="8dp" android:paddingEnd="16dp" android:paddingBottom="8dp" android:text="🏦 Transferencia" android:textColor="@color/text_muted" android:textSize="12sp"/>
                     </LinearLayout>
                 </HorizontalScrollView>
 
-                <!-- ── COBROS PENDIENTES ── -->
-                <LinearLayout
-                    android:id="@+id/seccionPendientes"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="8dp"
-                        android:fontFamily="@font/outfit_bold"
-                        android:text="⚠️ Pendientes de cobro"
-                        android:textColor="@color/text_primary"
-                        android:textSize="13sp" />
-
-                    <LinearLayout
-                        android:id="@+id/listaPendientes"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="16dp"
-                        android:orientation="vertical" />
-
+                <!-- ── PENDIENTES ── -->
+                <LinearLayout android:id="@+id/seccionPendientes" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="8dp" android:fontFamily="@font/outfit_bold" android:text="⚠️ Pendientes de cobro" android:textColor="@color/text_primary" android:textSize="13sp"/>
+                    <LinearLayout android:id="@+id/listaPendientes" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="16dp" android:orientation="vertical"/>
                 </LinearLayout>
 
                 <!-- ── HISTORIAL ── -->
-                <LinearLayout
-                    android:id="@+id/seccionHistorial"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="8dp"
-                        android:fontFamily="@font/outfit_bold"
-                        android:text="✅ Historial de cobros"
-                        android:textColor="@color/text_primary"
-                        android:textSize="13sp" />
-
-                    <LinearLayout
-                        android:id="@+id/listaHistorial"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical" />
-
+                <LinearLayout android:id="@+id/seccionHistorial" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="8dp" android:fontFamily="@font/outfit_bold" android:text="✅ Historial de cobros" android:textColor="@color/text_primary" android:textSize="13sp"/>
+                    <LinearLayout android:id="@+id/listaHistorial" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical"/>
                 </LinearLayout>
 
                 <!-- Estado vacío -->
-                <LinearLayout
-                    android:id="@+id/layoutVacio"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:paddingTop="48dp"
-                    android:paddingBottom="48dp"
-                    android:visibility="gone">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:text="💰"
-                        android:textSize="48sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:fontFamily="@font/outfit_bold"
-                        android:gravity="center"
-                        android:text="Sin cobros"
-                        android:textColor="@color/text_primary"
-                        android:textSize="16sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:fontFamily="@font/outfit_regular"
-                        android:gravity="center"
-                        android:text="Pulsa ＋ para registrar un cobro"
-                        android:textColor="@color/text_muted"
-                        android:textSize="12sp" />
-
+                <LinearLayout android:id="@+id/layoutVacio" android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:orientation="vertical" android:paddingTop="48dp" android:paddingBottom="48dp" android:visibility="gone">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="center" android:text="💰" android:textSize="48sp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:fontFamily="@font/outfit_bold" android:gravity="center" android:text="Sin cobros" android:textColor="@color/text_primary" android:textSize="16sp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:fontFamily="@font/outfit_regular" android:gravity="center" android:text="Pulsa ＋ para registrar un cobro" android:textColor="@color/text_muted" android:textSize="12sp"/>
                 </LinearLayout>
 
             </LinearLayout>
-        </androidx.core.widget.NestedScrollView>
-
-    </LinearLayout>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
     <!-- BOTTOM NAV FLOTANTE -->
     <FrameLayout
@@ -598,152 +239,27 @@
         android:elevation="24dp"
         android:outlineProvider="background">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="72dp"
-            android:orientation="horizontal"
-            android:paddingStart="10dp"
-            android:paddingTop="10dp"
-            android:paddingEnd="10dp"
-            android:paddingBottom="10dp">
-
-            <LinearLayout
-                android:id="@+id/nav_home"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@drawable/nav_item_normal"
-                android:gravity="center"
-                android:orientation="vertical">
-
-                <ImageView
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
-                    android:elevation="2dp"
-                    android:src="@drawable/ic_home"
-                    android:tint="#9CA3AF" />
-
-                <TextView
-                    android:id="@+id/navLabelHome"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:fontFamily="@font/outfit_bold"
-                    android:gravity="center"
-                    android:text="Inicio"
-                    android:textColor="#9CA3AF"
-                    android:textSize="11sp" />
+        <LinearLayout android:layout_width="match_parent" android:layout_height="72dp" android:orientation="horizontal" android:paddingStart="10dp" android:paddingTop="10dp" android:paddingEnd="10dp" android:paddingBottom="10dp">
+            <LinearLayout android:id="@+id/nav_home" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:background="@drawable/nav_item_normal" android:gravity="center" android:orientation="vertical">
+                <ImageView android:layout_width="25dp" android:layout_height="25dp" android:elevation="2dp" android:src="@drawable/ic_home" android:tint="#9CA3AF"/>
+                <TextView android:id="@+id/navLabelHome" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:fontFamily="@font/outfit_bold" android:gravity="center" android:text="Inicio" android:textColor="#9CA3AF" android:textSize="11sp"/>
             </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/nav_clientes"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@drawable/nav_item_normal"
-                android:gravity="center"
-                android:orientation="vertical">
-
-                <ImageView
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
-                    android:src="@drawable/ic_people"
-                    android:tint="#9CA3AF" />
-
-                <TextView
-                    android:id="@+id/navLabelClientes"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:fontFamily="@font/outfit_regular"
-                    android:gravity="center"
-                    android:text="Clientes"
-                    android:textColor="#9CA3AF"
-                    android:textSize="11sp" />
+            <LinearLayout android:id="@+id/nav_clientes" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:background="@drawable/nav_item_normal" android:gravity="center" android:orientation="vertical">
+                <ImageView android:layout_width="25dp" android:layout_height="25dp" android:src="@drawable/ic_people" android:tint="#9CA3AF"/>
+                <TextView android:id="@+id/navLabelClientes" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:fontFamily="@font/outfit_regular" android:gravity="center" android:text="Clientes" android:textColor="#9CA3AF" android:textSize="11sp"/>
             </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/nav_gimnasio"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@drawable/nav_item_normal"
-                android:gravity="center"
-                android:orientation="vertical">
-
-                <ImageView
-                    android:id="@+id/navIconGimnasio"
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
-                    android:src="@drawable/ic_fitness"
-                    android:tint="#9CA3AF" />
-
-                <TextView
-                    android:id="@+id/navLabelGimnasio"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:fontFamily="@font/outfit_regular"
-                    android:gravity="center"
-                    android:text="Gym"
-                    android:textColor="#9CA3AF"
-                    android:textSize="11sp" />
+            <LinearLayout android:id="@+id/nav_gimnasio" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:background="@drawable/nav_item_normal" android:gravity="center" android:orientation="vertical">
+                <ImageView android:id="@+id/navIconGimnasio" android:layout_width="25dp" android:layout_height="25dp" android:src="@drawable/ic_fitness" android:tint="#9CA3AF"/>
+                <TextView android:id="@+id/navLabelGimnasio" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:fontFamily="@font/outfit_regular" android:gravity="center" android:text="Gym" android:textColor="#9CA3AF" android:textSize="11sp"/>
             </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/nav_agenda"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@drawable/nav_item_normal"
-                android:gravity="center"
-                android:orientation="vertical">
-
-                <ImageView
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
-                    android:src="@drawable/ic_calendar_today"
-                    android:tint="#9CA3AF" />
-
-                <TextView
-                    android:id="@+id/navLabelAgenda"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:fontFamily="@font/outfit_regular"
-                    android:gravity="center"
-                    android:text="Agenda"
-                    android:textColor="#9CA3AF"
-                    android:textSize="11sp" />
+            <LinearLayout android:id="@+id/nav_agenda" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:background="@drawable/nav_item_normal" android:gravity="center" android:orientation="vertical">
+                <ImageView android:layout_width="25dp" android:layout_height="25dp" android:src="@drawable/ic_calendar_today" android:tint="#9CA3AF"/>
+                <TextView android:id="@+id/navLabelAgenda" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:fontFamily="@font/outfit_regular" android:gravity="center" android:text="Agenda" android:textColor="#9CA3AF" android:textSize="11sp"/>
             </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/nav_cobros"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@drawable/nav_item_selected"
-                android:gravity="center"
-                android:orientation="vertical">
-
-                <ImageView
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
-                    android:src="@drawable/ic_payments"
-                    android:tint="#0A66FF" />
-
-                <TextView
-                    android:id="@+id/navLabelCobros"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:fontFamily="@font/outfit_regular"
-                    android:gravity="center"
-                    android:text="Cobros"
-                    android:textColor="#0A66FF"
-                    android:textSize="11sp" />
+            <LinearLayout android:id="@+id/nav_cobros" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:background="@drawable/nav_item_selected" android:gravity="center" android:orientation="vertical">
+                <ImageView android:layout_width="25dp" android:layout_height="25dp" android:src="@drawable/ic_payments" android:tint="#0A66FF"/>
+                <TextView android:id="@+id/navLabelCobros" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:fontFamily="@font/outfit_regular" android:gravity="center" android:text="Cobros" android:textColor="#0A66FF" android:textSize="11sp"/>
             </LinearLayout>
-
         </LinearLayout>
     </FrameLayout>
 

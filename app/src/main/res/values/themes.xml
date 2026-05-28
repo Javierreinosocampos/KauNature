@@ -12,10 +12,12 @@
         <item name="colorSurfaceVariant">@color/blue_pale2</item>
         <item name="colorOnSurface">@color/text_primary</item>
         <item name="colorOnSurfaceVariant">@color/text_muted</item>
-        <!-- Barra de estado y navegación -->
+        <!-- Barra de estado y navegación — extiende bajo el notch -->
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@color/white</item>
         <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowTranslucentStatus">false</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
     </style>
 
     <!-- Estilo BottomSheet -->

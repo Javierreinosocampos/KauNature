@@ -110,14 +110,19 @@ public class MainActivity extends AppCompatActivity {
 // CAMBIO 1: Agregar en onCreate() después de cargarDatos()
 // CAMBIO 2: Agregar método showInscribirSheetConDatos()
 //
+     // Author - Javier Reinoso Campos
 // ══════════════════════════════════════════════════════════════════
 
 // DENTRO DEL MÉTODO onCreate(), después de la línea cargarDatos();
-// Agregar esto:
 
     @Override
     protected void onCreate(Bundle b) {
         super.onCreate(b);
+        getWindow().getDecorView().setSystemUiVisibility(
+                android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+                        android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+        );
+        getWindow().setStatusBarColor(android.graphics.Color.TRANSPARENT);
         setContentView(R.layout.activity_main);
         bind();
         setupGreeting();
@@ -767,7 +772,7 @@ public class MainActivity extends AppCompatActivity {
         titulos.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1f));
         TextView tvTitulo = new TextView(this);
         tvTitulo.setText("Notificaciones");
-        tvTitulo.setTextSize(20f);
+        tvTitulo.setTextSize(16f);
         tvTitulo.setTextColor(WHITE);
         tvTitulo.setTypeface(Typeface.DEFAULT_BOLD);
         tvTitulo.setShadowLayer(dp(3), 0, dp(1), 0x35FFFFFF);

@@ -72,8 +72,8 @@ public class ClientesActivity extends AppCompatActivity {
                     ? nombre + " " + apellidos : nombre;
         }
 
-        boolean tieneDeuda() { return deudaReal > 0 || saldo < 0; }
-        double  deudaTotal() { return deudaReal > 0 ? deudaReal : Math.abs(Math.min(saldo, 0)); }
+        boolean tieneDeuda() { return deudaReal > 0.001 || saldo < -0.001; }
+        double  deudaTotal() { return deudaReal > 0.001 ? deudaReal : Math.abs(Math.min(saldo, 0)); }
     }
 
     // ══════════════════════════════════════════════════════════════════
@@ -506,7 +506,7 @@ public class ClientesActivity extends AppCompatActivity {
             boolean pasaFiltro;
             switch (filtroActual) {
                 case "activo":        pasaFiltro = "activo".equals(c.estado);   break;
-                case "al_dia":        pasaFiltro = c.tieneMembresia && !c.tieneDeuda(); break;
+                case "al_dia":        pasaFiltro = "activo".equals(c.estado) && !c.tieneDeuda(); break;
                 case "inactivo":      pasaFiltro = "inactivo".equals(c.estado); break;
                 case "deuda":         pasaFiltro = c.tieneDeuda();              break;
                 case "con_membresia": pasaFiltro = c.tieneMembresia;            break;
@@ -1531,12 +1531,10 @@ public class ClientesActivity extends AppCompatActivity {
                             deudas.put(c.clienteId,
                                     deudas.getOrDefault(c.clienteId, 0.0) + c.importe);
                         }
-                        boolean cambio = false;
                         for (Cliente cl : todosLosClientes) {
-                            double d = deudas.getOrDefault(cl.id, 0.0);
-                            if (cl.deudaReal != d) { cl.deudaReal = d; cambio = true; }
+                            cl.deudaReal = deudas.getOrDefault(cl.id, 0.0);
                         }
-                        if (cambio) runOnUiThread(() -> renderLista());
+                        runOnUiThread(() -> renderLista());
                     }
                     @Override public void onError(String e) {
                         android.util.Log.e("DEUDAS", "Error: " + e);

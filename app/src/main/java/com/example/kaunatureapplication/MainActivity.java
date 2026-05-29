@@ -920,7 +920,7 @@ public class MainActivity extends AppCompatActivity {
                 emptyWrap.setPadding(dp(32), dp(36), dp(32), dp(36));
 
                 TextView tvEmoji = new TextView(this);
-                tvEmoji.setText("✅");
+                tvEmoji.setText("✓");
                 tvEmoji.setTextSize(44f);
                 tvEmoji.setGravity(Gravity.CENTER);
                 tvEmoji.setLayoutParams(new LinearLayout.LayoutParams(-1, -2));

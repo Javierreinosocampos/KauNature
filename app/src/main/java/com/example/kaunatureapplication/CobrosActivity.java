@@ -282,7 +282,7 @@ public class CobrosActivity extends AppCompatActivity {
                 .filter(c -> "pendiente".equals(c.estado) && c.fechaBD.startsWith(mesKpi)).count();
         tvSubtitle.setText(totalPend > 0
                 ? totalPend + " cobro" + (totalPend > 1 ? "s" : "") + " pendiente" + (totalPend > 1 ? "s" : "")
-                : "Todo cobrado ✅");
+                : "Todo cobrado ");
     }
 
     private void actualizarKpis() {

@@ -205,13 +205,13 @@
 
                 <!-- ── PENDIENTES ── -->
                 <LinearLayout android:id="@+id/seccionPendientes" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="8dp" android:fontFamily="@font/outfit_bold" android:text="⚠️ Pendientes de cobro" android:textColor="@color/text_primary" android:textSize="13sp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="8dp" android:fontFamily="@font/outfit_bold" android:text="Pendientes de cobro" android:textColor="@color/text_primary" android:textSize="13sp"/>
                     <LinearLayout android:id="@+id/listaPendientes" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="16dp" android:orientation="vertical"/>
                 </LinearLayout>
 
                 <!-- ── HISTORIAL ── -->
                 <LinearLayout android:id="@+id/seccionHistorial" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="8dp" android:fontFamily="@font/outfit_bold" android:text="✅ Historial de cobros" android:textColor="@color/text_primary" android:textSize="13sp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="8dp" android:fontFamily="@font/outfit_bold" android:text="Historial de cobros" android:textColor="@color/text_primary" android:textSize="13sp"/>
                     <LinearLayout android:id="@+id/listaHistorial" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical"/>
                 </LinearLayout>
 

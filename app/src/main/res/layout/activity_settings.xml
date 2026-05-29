@@ -301,13 +301,27 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Kau Nature v1.0  ·  Javier Reinoso"
+                android:text="Kau Nature v1.2.7  ·  Javier Reinoso"
                 android:textSize="11sp"
                 android:textColor="@color/text_muted"
                 android:fontFamily="@font/outfit_regular"
                 android:layout_gravity="center_horizontal"
                 android:alpha="0.5"
                 android:layout_marginTop="8dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="© 2026 Javier Reinoso · Desarrollo  |  © 2026 Kau Nature · Todos los derechos reservados
+"
+                android:textSize="8sp"
+                android:textColor="@color/text_muted"
+                android:fontFamily="@font/outfit_regular"
+                android:layout_gravity="center_horizontal"
+                android:alpha="0.5"
+                android:layout_marginTop="8dp"/>
+
+
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

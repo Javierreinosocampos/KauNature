@@ -7,6 +7,5 @@ public class KauNatureApp extends Application {
     public void onCreate() {
         super.onCreate();
         // Aplicar el tema guardado al arrancar la app
-        SettingsActivity.applyStoredTheme(this);
     }
 }

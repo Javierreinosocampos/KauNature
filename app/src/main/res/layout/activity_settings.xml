@@ -37,12 +37,12 @@
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
             android:layout_weight="1"
-            android:text="Ajustes"
-            android:textSize="20sp"
-            android:textColor="@color/text_primary"
             android:fontFamily="@font/outfit_bold"
-            android:layout_marginStart="14dp"/>
+            android:text="Derechos y Versiones"
+            android:textColor="@color/text_primary"
+            android:textSize="20sp" />
     </LinearLayout>
 
     <!-- CONTENIDO -->
@@ -57,271 +57,31 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:gravity="center_horizontal">
 
-            <!-- SECCIÓN APARIENCIA -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="APARIENCIA"
-                android:textSize="11sp"
-                android:letterSpacing="0.12"
-                android:textColor="@color/text_muted"
-                android:fontFamily="@font/outfit_bold"
-                android:layout_marginBottom="12dp"
-                android:layout_marginTop="8dp"/>
-
-            <!-- Tarjeta CLARO -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/cardThemeLight"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="2dp"
-                app:cardBackgroundColor="@color/blue_pale2"
-                android:layout_marginBottom="12dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:padding="18dp">
-
-                    <!-- Preview claro -->
-                    <androidx.cardview.widget.CardView
-                        android:layout_width="56dp"
-                        android:layout_height="56dp"
-                        app:cardCornerRadius="14dp"
-                        app:cardElevation="0dp"
-                        app:cardBackgroundColor="#FFFFFF"
-                        android:layout_marginEnd="16dp">
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:orientation="vertical"
-                            android:gravity="center"
-                            android:padding="8dp">
-                            <View android:layout_width="30dp" android:layout_height="6dp"
-                                android:background="@color/accent_blue"
-                                android:layout_marginBottom="5dp"/>
-                            <View android:layout_width="22dp" android:layout_height="4dp"
-                                android:background="@color/border"
-                                android:layout_marginBottom="4dp"/>
-                            <View android:layout_width="22dp" android:layout_height="4dp"
-                                android:background="@color/border"/>
-                        </LinearLayout>
-                    </androidx.cardview.widget.CardView>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="☀️  Modo claro"
-                            android:textSize="15sp"
-                            android:fontFamily="@font/outfit_bold"
-                            android:textColor="@color/text_primary"/>
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Fondo blanco, colores vivos"
-                            android:textSize="12sp"
-                            android:fontFamily="@font/outfit_regular"
-                            android:textColor="@color/text_muted"
-                            android:layout_marginTop="2dp"/>
-                    </LinearLayout>
-
-                    <TextView
-                        android:id="@+id/tvLightCheck"
-                        android:layout_width="28dp"
-                        android:layout_height="28dp"
-                        android:text="✓"
-                        android:textSize="15sp"
-                        android:textColor="@color/white"
-                        android:gravity="center"
-                        android:background="@drawable/shape_check_badge"
-                        android:visibility="gone"/>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <!-- Tarjeta OSCURO -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/cardThemeDark"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="2dp"
-                app:cardBackgroundColor="@color/blue_pale2"
-                android:layout_marginBottom="12dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:padding="18dp">
-
-                    <!-- Preview oscuro -->
-                    <androidx.cardview.widget.CardView
-                        android:layout_width="56dp"
-                        android:layout_height="56dp"
-                        app:cardCornerRadius="14dp"
-                        app:cardElevation="0dp"
-                        app:cardBackgroundColor="#0D1B3E"
-                        android:layout_marginEnd="16dp">
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:orientation="vertical"
-                            android:gravity="center"
-                            android:padding="8dp">
-                            <View android:layout_width="30dp" android:layout_height="6dp"
-                                android:background="#3D85FF"
-                                android:layout_marginBottom="5dp"/>
-                            <View android:layout_width="22dp" android:layout_height="4dp"
-                                android:background="#1E2A45"
-                                android:layout_marginBottom="4dp"/>
-                            <View android:layout_width="22dp" android:layout_height="4dp"
-                                android:background="#1E2A45"/>
-                        </LinearLayout>
-                    </androidx.cardview.widget.CardView>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="🌙  Modo oscuro"
-                            android:textSize="15sp"
-                            android:fontFamily="@font/outfit_bold"
-                            android:textColor="@color/text_primary"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:fontFamily="@font/outfit_regular"
-                            android:text="FASE BETA (PRUEBAS)"
-                            android:textColor="@color/text_muted"
-                            android:textSize="12sp" />
-                    </LinearLayout>
-
-                    <TextView
-                        android:id="@+id/tvDarkCheck"
-                        android:layout_width="28dp"
-                        android:layout_height="28dp"
-                        android:text="✓"
-                        android:textSize="15sp"
-                        android:textColor="@color/white"
-                        android:gravity="center"
-                        android:background="@drawable/shape_check_badge"
-                        android:visibility="gone"/>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <!-- Tarjeta SISTEMA -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/cardThemeSystem"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="2dp"
-                app:cardBackgroundColor="@color/blue_pale2"
-                android:layout_marginBottom="24dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:padding="18dp">
-
-                    <!-- Preview sistema (mitad/mitad) -->
-                    <androidx.cardview.widget.CardView
-                        android:layout_width="56dp"
-                        android:layout_height="56dp"
-                        app:cardCornerRadius="14dp"
-                        app:cardElevation="0dp"
-                        app:cardBackgroundColor="@color/bg_main"
-                        android:layout_marginEnd="16dp">
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:orientation="horizontal">
-                            <View android:layout_width="0dp" android:layout_height="match_parent"
-                                android:layout_weight="1" android:background="#FFFFFF"/>
-                            <View android:layout_width="0dp" android:layout_height="match_parent"
-                                android:layout_weight="1" android:background="#0D1B3E"/>
-                        </LinearLayout>
-                    </androidx.cardview.widget.CardView>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="⚙️  Seguir sistema"
-                            android:textSize="15sp"
-                            android:fontFamily="@font/outfit_bold"
-                            android:textColor="@color/text_primary"/>
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Usa la configuración del móvil"
-                            android:textSize="12sp"
-                            android:fontFamily="@font/outfit_regular"
-                            android:textColor="@color/text_muted"
-                            android:layout_marginTop="2dp"/>
-                    </LinearLayout>
-
-                    <TextView
-                        android:id="@+id/tvSystemCheck"
-                        android:layout_width="28dp"
-                        android:layout_height="28dp"
-                        android:text="✓"
-                        android:textSize="15sp"
-                        android:textColor="@color/white"
-                        android:gravity="center"
-                        android:background="@drawable/shape_check_badge"
-                        android:visibility="gone"/>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <!-- VERSIÓN -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="32dp"
+                android:alpha="0.5"
+                android:fontFamily="@font/outfit_regular"
                 android:text="Kau Nature v1.2.7  ·  Javier Reinoso"
-                android:textSize="11sp"
-                android:textColor="@color/text_muted"
-                android:fontFamily="@font/outfit_regular"
-                android:layout_gravity="center_horizontal"
-                android:alpha="0.5"
-                android:layout_marginTop="8dp"/>
+                android:textColor="@color/accent_blue"
+                android:textSize="11sp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="© 2026 Javier Reinoso · Desarrollo  |  © 2026 Kau Nature · Todos los derechos reservados
-"
-                android:textSize="8sp"
-                android:textColor="@color/text_muted"
-                android:fontFamily="@font/outfit_regular"
                 android:layout_gravity="center_horizontal"
+                android:layout_marginTop="8dp"
                 android:alpha="0.5"
-                android:layout_marginTop="8dp"/>
-
-
+                android:fontFamily="@font/outfit_regular"
+                android:gravity="center"
+                android:text="© 2026 Javier Reinoso · Desarrollo  |  © 2026 Kau Nature · Todos los derechos reservados"
+                android:textColor="@color/accent_blue"
+                android:textSize="8sp" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

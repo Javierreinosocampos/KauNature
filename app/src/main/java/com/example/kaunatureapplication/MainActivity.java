@@ -223,7 +223,7 @@ public class MainActivity extends AppCompatActivity {
         // Estado compartido
         final String[] clienteIdSel  = {clienteIdPreseleccionado};
         final String[] clienteNomSel = {clienteNombrePreseleccionado};
-        final double[] precioSel     = {30.0};
+        final double[] precioSel     = {35.0}; // ← precio inicial actualizado a 2h
 
         // Referencias a los EditText de fecha — accesibles desde el listener
         final android.widget.EditText[] etDiaRef  = {null};
@@ -247,6 +247,7 @@ public class MainActivity extends AppCompatActivity {
         // ── Tipo de membresía ────────────────────────────────────────
         lbl(form, "Tipo de membresía");
 
+        // Fila 1: Mensual 2h | Mensual 3h
         LinearLayout rowTipo1 = new LinearLayout(this);
         rowTipo1.setOrientation(LinearLayout.HORIZONTAL);
         LinearLayout.LayoutParams rowT1P = new LinearLayout.LayoutParams(-1, -2);
@@ -254,6 +255,7 @@ public class MainActivity extends AppCompatActivity {
         rowTipo1.setLayoutParams(rowT1P);
         form.addView(rowTipo1);
 
+        // Fila 2: Mensual 4h | Mensual personalizado
         LinearLayout rowTipo2 = new LinearLayout(this);
         rowTipo2.setOrientation(LinearLayout.HORIZONTAL);
         LinearLayout.LayoutParams rowT2P = new LinearLayout.LayoutParams(-1, -2);
@@ -261,19 +263,22 @@ public class MainActivity extends AppCompatActivity {
         rowTipo2.setLayoutParams(rowT2P);
         form.addView(rowTipo2);
 
-        final String[] tipoSel = {"mensual_3h"};
-        String[] tiposFila1   = {"mensual_3h", "mensual_4h"};
-        String[] tiposLabels1 = {"Mensual 3h", "Mensual 4h"};
-        String[] tiposFila2   = {"mensual_personalizado"};
-        String[] tiposLabels2 = {"Mensual personalizado"};
+        final String[] tipoSel = {"mensual_2h"}; // ← tipo inicial actualizado
 
-        android.view.View[] todosChips = new android.view.View[3];
+        // Fila 1: 2h y 3h
+        String[] tiposFila1   = {"mensual_2h", "mensual_3h"};
+        String[] tiposLabels1 = {"Mensual 2h", "Mensual 3h"};
+        // Fila 2: 4h y personalizado
+        String[] tiposFila2   = {"mensual_4h", "mensual_personalizado"};
+        String[] tiposLabels2 = {"Mensual 4h", "Mensual personalizado"};
+
+        android.view.View[] todosChips = new android.view.View[4];
 
         for (int i = 0; i < tiposFila1.length; i++) {
             final String t = tiposFila1[i];
             TextView chip = chipTv(tiposLabels1[i], t.equals(tipoSel[0]));
             LinearLayout.LayoutParams cp = new LinearLayout.LayoutParams(0, dp(44), 1f);
-            cp.setMarginEnd(dp(6));
+            if (i < tiposFila1.length - 1) cp.setMarginEnd(dp(6));
             chip.setLayoutParams(cp);
             todosChips[i] = chip;
             rowTipo1.addView(chip);
@@ -281,16 +286,20 @@ public class MainActivity extends AppCompatActivity {
         for (int i = 0; i < tiposFila2.length; i++) {
             final String t = tiposFila2[i];
             TextView chip = chipTv(tiposLabels2[i], t.equals(tipoSel[0]));
-            chip.setLayoutParams(new LinearLayout.LayoutParams(-1, dp(44)));
-            todosChips[2] = chip;
+            LinearLayout.LayoutParams cp = new LinearLayout.LayoutParams(0, dp(44), 1f);
+            if (i < tiposFila2.length - 1) cp.setMarginEnd(dp(6));
+            chip.setLayoutParams(cp);
+            todosChips[2 + i] = chip;
             rowTipo2.addView(chip);
         }
 
-        precioSel[0] = 30;
+        precioSel[0] = 35; // ← precio inicial 2h
         final TextView[] tvPrecioRef = {null};
 
-        String[] todosTipos      = {"mensual_3h", "mensual_4h", "mensual_personalizado"};
-        double[] preciosPorTipo  = {30, 40, 0};
+        // ← 4 tipos con precios actualizados
+        String[] todosTipos      = {"mensual_2h", "mensual_3h", "mensual_4h", "mensual_personalizado"};
+        double[] preciosPorTipo  = {35, 45, 55, 0};
+
         for (int i = 0; i < todosChips.length; i++) {
             final String t          = todosTipos[i];
             final double precioAuto = preciosPorTipo[i];
@@ -319,7 +328,7 @@ public class MainActivity extends AppCompatActivity {
         TextView btnMenos = spinBtn("−");
         final TextView tvPrecio = new TextView(this);
         tvPrecioRef[0] = tvPrecio;
-        tvPrecio.setText("30€");
+        tvPrecio.setText("35€"); // ← precio inicial actualizado
         tvPrecio.setTextSize(32f); tvPrecio.setTextColor(BLUE);
         tvPrecio.setTypeface(Typeface.DEFAULT_BOLD);
         tvPrecio.setGravity(android.view.Gravity.CENTER);
@@ -457,13 +466,11 @@ public class MainActivity extends AppCompatActivity {
 
         // ── Lógica de guardar ─────────────────────────────────────────
         btnGuardar.setOnClickListener(v -> {
-            // Leer fecha introducida por el usuario
             int dia = 1, mes = 1, anio = 2026;
             try { dia  = Integer.parseInt(etDiaRef[0].getText().toString().trim()); }  catch (Exception ignored) {}
             try { mes  = Integer.parseInt(etMesRef[0].getText().toString().trim()); }  catch (Exception ignored) {}
             try { anio = Integer.parseInt(etAnioRef[0].getText().toString().trim()); } catch (Exception ignored) {}
 
-            // Validación básica de rangos
             dia  = Math.max(1, Math.min(dia,  31));
             mes  = Math.max(1, Math.min(mes,  12));
             anio = Math.max(2020, Math.min(anio, 2100));
@@ -480,7 +487,6 @@ public class MainActivity extends AppCompatActivity {
             final String tipo       = tipoSel[0];
             final String notas      = etNotas.getText().toString().trim();
 
-            // Comprueba en la BD si ya tiene membresía activa; si la tiene, no inscribe.
             inscribirConChequeo(clienteId, clienteNom, tipo, precio, fechaInicio, notas,
                     () -> sheet.dismiss(),
                     () -> {
@@ -499,7 +505,6 @@ public class MainActivity extends AppCompatActivity {
         });
         sheet.show();
     }
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -1350,7 +1355,7 @@ public class MainActivity extends AppCompatActivity {
         // ── Estado compartido ─────────────────────────────────────
         final String[] clienteIdSel   = {null};
         final String[] clienteNomSel  = {null};
-        final double[] precioSel      = {30.0};
+        final double[] precioSel      = {35.0}; // ← precio inicial actualizado a 2h
 
         // Referencias a los EditText de fecha
         final android.widget.EditText[] etDiaRef  = {null};
@@ -1403,6 +1408,7 @@ public class MainActivity extends AppCompatActivity {
         // ── Tipo de membresía ────────────────────────────────────
         lbl(form, "Tipo de membresía");
 
+        // Fila 1: Mensual 2h | Mensual 3h
         LinearLayout rowTipo1 = new LinearLayout(this);
         rowTipo1.setOrientation(LinearLayout.HORIZONTAL);
         LinearLayout.LayoutParams rowT1P = new LinearLayout.LayoutParams(-1, -2);
@@ -1410,6 +1416,7 @@ public class MainActivity extends AppCompatActivity {
         rowTipo1.setLayoutParams(rowT1P);
         form.addView(rowTipo1);
 
+        // Fila 2: Mensual 4h | Mensual personalizado
         LinearLayout rowTipo2 = new LinearLayout(this);
         rowTipo2.setOrientation(LinearLayout.HORIZONTAL);
         LinearLayout.LayoutParams rowT2P = new LinearLayout.LayoutParams(-1, -2);
@@ -1417,19 +1424,22 @@ public class MainActivity extends AppCompatActivity {
         rowTipo2.setLayoutParams(rowT2P);
         form.addView(rowTipo2);
 
-        final String[] tipoSel = {"mensual_3h"};
-        String[] tiposFila1 = {"mensual_3h", "mensual_4h"};
-        String[] tiposLabels1 = {"Mensual 3h", "Mensual 4h"};
-        String[] tiposFila2 = {"mensual_personalizado"};
-        String[] tiposLabels2 = {"Mensual personalizado"};
+        final String[] tipoSel = {"mensual_2h"}; // ← tipo inicial actualizado
 
-        android.view.View[] todosChips = new android.view.View[3];
+        // Fila 1: 2h y 3h
+        String[] tiposFila1   = {"mensual_2h", "mensual_3h"};
+        String[] tiposLabels1 = {"Mensual 2h", "Mensual 3h"};
+        // Fila 2: 4h y personalizado
+        String[] tiposFila2   = {"mensual_4h", "mensual_personalizado"};
+        String[] tiposLabels2 = {"Mensual 4h", "Mensual personalizado"};
+
+        android.view.View[] todosChips = new android.view.View[4];
 
         for (int i = 0; i < tiposFila1.length; i++) {
             final String t = tiposFila1[i];
             TextView chip = chipTv(tiposLabels1[i], t.equals(tipoSel[0]));
             LinearLayout.LayoutParams cp = new LinearLayout.LayoutParams(0, dp(44), 1f);
-            cp.setMarginEnd(dp(6));
+            if (i < tiposFila1.length - 1) cp.setMarginEnd(dp(6));
             chip.setLayoutParams(cp);
             todosChips[i] = chip;
             rowTipo1.addView(chip);
@@ -1437,21 +1447,25 @@ public class MainActivity extends AppCompatActivity {
         for (int i = 0; i < tiposFila2.length; i++) {
             final String t = tiposFila2[i];
             TextView chip = chipTv(tiposLabels2[i], t.equals(tipoSel[0]));
-            chip.setLayoutParams(new LinearLayout.LayoutParams(-1, dp(44)));
-            todosChips[2] = chip;
+            LinearLayout.LayoutParams cp = new LinearLayout.LayoutParams(0, dp(44), 1f);
+            if (i < tiposFila2.length - 1) cp.setMarginEnd(dp(6));
+            chip.setLayoutParams(cp);
+            todosChips[2 + i] = chip;
             rowTipo2.addView(chip);
         }
 
-        precioSel[0] = 30;
+        precioSel[0] = 35; // ← precio inicial 2h
 
         final TextView[] tvPrecioRef = {null};
-        String[] todosTipos = {"mensual_3h", "mensual_4h", "mensual_personalizado"};
-        double[] preciosPorTipo = {30, 40, 0};
+        // ← 4 tipos con precios actualizados
+        String[] todosTipos     = {"mensual_2h", "mensual_3h", "mensual_4h", "mensual_personalizado"};
+        double[] preciosPorTipo = {35, 45, 55, 0};
+
         for (int i = 0; i < todosChips.length; i++) {
-            final String t = todosTipos[i];
+            final String t          = todosTipos[i];
             final double precioAuto = preciosPorTipo[i];
             todosChips[i].setOnClickListener(v -> {
-                tipoSel[0] = t;
+                tipoSel[0]   = t;
                 precioSel[0] = precioAuto;
                 for (android.view.View chip : todosChips) {
                     boolean sel = chip == v;
@@ -1475,7 +1489,7 @@ public class MainActivity extends AppCompatActivity {
         TextView btnMenos = spinBtn("−");
         final TextView tvPrecio = new TextView(this);
         tvPrecioRef[0] = tvPrecio;
-        tvPrecio.setText("30€");
+        tvPrecio.setText("35€"); // ← precio inicial actualizado
         tvPrecio.setTextSize(32f); tvPrecio.setTextColor(BLUE);
         tvPrecio.setTypeface(Typeface.DEFAULT_BOLD);
         tvPrecio.setGravity(android.view.Gravity.CENTER);
@@ -1632,7 +1646,6 @@ public class MainActivity extends AppCompatActivity {
             final String tipo       = tipoSel[0];
             final String notas      = etNotas.getText().toString().trim();
 
-            // Comprueba en la BD si ya tiene membresía activa; si la tiene, no inscribe.
             inscribirConChequeo(clienteId, clienteNom, tipo, precio, fechaInicio, notas,
                     () -> sheet.dismiss(),
                     () -> {

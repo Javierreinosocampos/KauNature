@@ -2,10 +2,7 @@ package com.example.kaunatureapplication;
 
 import java.util.Locale;
 
-/**
- * Utilidades de fecha/hora para GimnasioActivity y GimnasioUI.
- * Separadas para que puedan usarse desde cualquier hilo sin depender del contexto Android.
- */
+
 public class GimnasioDateUtils {
 
     static String hoy() {

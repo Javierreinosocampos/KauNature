@@ -19,7 +19,7 @@ import java.util.Map;
 
 public class GimnasioActivity extends AppCompatActivity {
 
-    // ── Paleta ───────────────────────────────────────────────────────
+
     static final int BG      = 0xFFF7F9FF;
     static final int WHITE   = 0xFFFFFFFF;
     static final int BLUE    = 0xFF2563EB;
@@ -34,14 +34,14 @@ public class GimnasioActivity extends AppCompatActivity {
     static final int RED     = 0xFFEF4444;
     static final int BORDER  = 0xFFE5EDFF;
 
-    // ── Constantes ────────────────────────────────────────────────────
+
     static final String[] DIAS       = {"Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"};
     static final String[] DIAS_CORTO = {"Lun","Mar","Mié","Jue","Vie","Sáb","Dom"};
     static final String[] DIAS_MIN   = {"L","M","X","J","V","S","D"};
     static final String[] MESES      = {"Enero","Febrero","Marzo","Abril","Mayo","Junio",
             "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"};
 
-    // ── Modelo local ─────────────────────────────────────────────────
+
     static class FranjaLocal {
         String       id;
         String       hora;
@@ -70,11 +70,9 @@ public class GimnasioActivity extends AppCompatActivity {
         }
     }
 
-    // ── Estado de datos ──────────────────────────────────────────────
     final Map<String, List<FranjaLocal>> franjasPorFecha = new HashMap<>();
     final List<String> clientesPool = new ArrayList<>();
 
-    // ── Estado UI ─────────────────────────────────────────────────────
     String  vista                  = "dia";
     String  selectedFecha          = "";
     String  clientePreseleccionado = null;
@@ -82,46 +80,35 @@ public class GimnasioActivity extends AppCompatActivity {
     int     mesOffset      = 0;
     int     diaIdx         = 0;
 
-    // ── Delegate de UI ────────────────────────────────────────────────
     GimnasioUI ui;
 
-    // ── Views infladas desde XML ──────────────────────────────────────
     LinearLayout llContenido;
 
-    // ════════════════════════════════════════════════════════════════
-    //  onCreate
-    // ════════════════════════════════════════════════════════════════
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Leer intent antes de inflar
         if (getIntent() != null) {
             clientePreseleccionado = getIntent().getStringExtra("CLIENTE_NOMBRE");
         }
         if (selectedFecha.isEmpty()) selectedFecha = GimnasioDateUtils.hoy();
         diaIdx = GimnasioDateUtils.diaSemanaIdx(selectedFecha);
 
-        // ── Inflar layout XML (header, tabs, KPI, nav, fab) ───────────
         setContentView(R.layout.activity_gimnasio);
 
-        // ── Status bar transparente ───────────────────────────────────
         getWindow().getDecorView().setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
                         View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
         );
         getWindow().setStatusBarColor(Color.TRANSPARENT);
 
-        // ── Enlazar contenedor dinámico ───────────────────────────────
         llContenido = findViewById(R.id.gimnasio_ll_contenido);
 
-        // ── Crear delegate UI (solo gestiona partes dinámicas) ────────
         ui = new GimnasioUI(this);
 
-        // ── Conectar listeners de los elementos XML estáticos ─────────
         bindStaticListeners();
 
-        // ── Cargar datos ──────────────────────────────────────────────
         cargarTodo();
     }
 
@@ -132,9 +119,7 @@ public class GimnasioActivity extends AppCompatActivity {
         ui.renderContenido();
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  Listeners de vistas XML estáticas
-    // ════════════════════════════════════════════════════════════════
+
     private void bindStaticListeners() {
         // Back
         findViewById(R.id.gimnasio_btn_back).setOnClickListener(v -> finish());
@@ -182,7 +167,6 @@ public class GimnasioActivity extends AppCompatActivity {
             overridePendingTransition(0, 0);
             finish();
         });
-        // gimnasio_nav_gym → ya estamos aquí, no hace nada
         findViewById(R.id.gimnasio_nav_agenda).setOnClickListener(v -> {
             startActivity(new Intent(this, AgendaActivity.class));
             overridePendingTransition(0, 0);
@@ -195,9 +179,7 @@ public class GimnasioActivity extends AppCompatActivity {
         });
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  CARGA DESDE SUPABASE
-    // ════════════════════════════════════════════════════════════════
+
 
     void cargarTodo() {
         ui.mostrarCargando();
@@ -293,7 +275,6 @@ public class GimnasioActivity extends AppCompatActivity {
         });
     }
 
-    /** Recarga franjas + asistencia para una fecha concreta */
     void recargarFecha(String fecha) {
         SupabaseRepository.get().getFranjas(new SupabaseRepository.Callback<List<FranjaModel>>() {
             @Override public void onSuccess(List<FranjaModel> franjas) {
@@ -327,7 +308,6 @@ public class GimnasioActivity extends AppCompatActivity {
         });
     }
 
-    /** Recarga la asistencia de la semana actual (semanaOffset) */
     void cargarAsistenciaSemanaAsync() {
         ui.mostrarCargando();
         SupabaseRepository.get().getFranjas(new SupabaseRepository.Callback<List<FranjaModel>>() {
@@ -338,13 +318,11 @@ public class GimnasioActivity extends AppCompatActivity {
         });
     }
 
-    // ── Acceso a franjas del día ──────────────────────────────────────
     List<FranjaLocal> getFranjasDia(String fecha) {
         if (!franjasPorFecha.containsKey(fecha)) franjasPorFecha.put(fecha, new ArrayList<>());
         return franjasPorFecha.get(fecha);
     }
 
-    // ── dp helper ─────────────────────────────────────────────────────
     int dp(int val) {
         return Math.round(val * getResources().getDisplayMetrics().density);
     }

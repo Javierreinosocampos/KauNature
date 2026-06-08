@@ -7,12 +7,7 @@ import android.graphics.Typeface;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-/**
- * NavHelper — 5 tabs: Inicio · Clientes · Gimnasio · Agenda · Cobros
- * Todos los tabs tienen el mismo estilo visual (icono + label).
- * Uso: NavHelper.setup(activity, "gimnasio");
- * Keys: "home" | "clientes" | "gimnasio" | "agenda" | "cobros"
- */
+
 public class NavHelper {
     public static final String COBRO_CAMBIADO = "com.example.kaunatureapplication.COBRO_CAMBIADO";
     public static final String CITA_CAMBIADA  = "com.example.kaunatureapplication.CITA_CAMBIADA";
@@ -30,14 +25,12 @@ public class NavHelper {
         TextView labelAgenda   = activity.findViewById(R.id.navLabelAgenda);
         TextView labelCobros   = activity.findViewById(R.id.navLabelCobros);
 
-        // Reset todos inactivos
         if (navHome     != null) setInactive(navHome,     labelHome);
         if (navClientes != null) setInactive(navClientes, labelClientes);
         if (navGimnasio != null) setInactive(navGimnasio, labelGimnasio);
         if (navAgenda   != null) setInactive(navAgenda,   labelAgenda);
         if (navCobros   != null) setInactive(navCobros,   labelCobros);
 
-        // Activar tab seleccionado
         switch (activeKey) {
             case "home":     if (navHome     != null) setActive(navHome,     labelHome);     break;
             case "clientes": if (navClientes != null) setActive(navClientes, labelClientes); break;
@@ -46,7 +39,6 @@ public class NavHelper {
             case "cobros":   if (navCobros   != null) setActive(navCobros,   labelCobros);   break;
         }
 
-        // ── Listeners ──────────────────────────────────────────────
         if (navHome != null) navHome.setOnClickListener(v -> {
             if (!activeKey.equals("home")) {
                 activity.startActivity(new Intent(activity, MainActivity.class)

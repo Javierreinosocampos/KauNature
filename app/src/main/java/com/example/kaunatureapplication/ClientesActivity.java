@@ -30,9 +30,7 @@ import java.util.Map;
 
 public class ClientesActivity extends AppCompatActivity {
 
-    // ══════════════════════════════════════════════════════════════════
-    //  MODELO LOCAL
-    // ══════════════════════════════════════════════════════════════════
+
     static class Cliente {
         String id, nombre, apellidos, telefono, email, notas, estado, fechaAlta;
         double saldo;
@@ -76,9 +74,6 @@ public class ClientesActivity extends AppCompatActivity {
         double  deudaTotal() { return deudaReal > 0.001 ? deudaReal : Math.abs(Math.min(saldo, 0)); }
     }
 
-    // ══════════════════════════════════════════════════════════════════
-    //  ESTADO
-    // ══════════════════════════════════════════════════════════════════
     private final List<Cliente> todosLosClientes  = new ArrayList<>();
     private final List<Cliente> clientesFiltrados = new ArrayList<>();
     private String filtroActual   = "todos";
@@ -86,9 +81,7 @@ public class ClientesActivity extends AppCompatActivity {
     private boolean cancelandoMembresia = false;
     private boolean sincronizandoMembresias = false;
 
-    // ══════════════════════════════════════════════════════════════════
-    //  VIEWS
-    // ══════════════════════════════════════════════════════════════════
+
     private LinearLayout listaClientes;
     private LinearLayout layoutVacio;
     private TextView     tvSubtitle;
@@ -97,9 +90,7 @@ public class ClientesActivity extends AppCompatActivity {
     private EditText     etBuscar;
     private TextView     btnLimpiar;
 
-    // ══════════════════════════════════════════════════════════════════
-    //  LIFECYCLE
-    // ══════════════════════════════════════════════════════════════════
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -139,9 +130,7 @@ public class ClientesActivity extends AppCompatActivity {
             cargarMembresiasEnBackground();
         }, 300);
     }
-    // ══════════════════════════════════════════════════════════════════
-    //  BIND VIEWS
-    // ══════════════════════════════════════════════════════════════════
+
     private void bindViews() {
         listaClientes   = findViewById(R.id.listaClientes);
         layoutVacio     = findViewById(R.id.layoutVacioClientes);
@@ -220,9 +209,7 @@ public class ClientesActivity extends AppCompatActivity {
         return tv;
     }
 
-    // ══════════════════════════════════════════════════════════════════
-    //  CARGA PRINCIPAL
-    // ══════════════════════════════════════════════════════════════════
+
     private void cargarClientes() {
         tvSubtitle.setText("Cargando...");
         SupabaseRepository.get().getClientes(null,
@@ -409,23 +396,15 @@ public class ClientesActivity extends AppCompatActivity {
         }
     }
 
-    // ══════════════════════════════════════════════════════════════════
-// CAMBIO 4: AGREGAR método de sincronización forzada
-// Para usar después de cancelar/crear membresías
-// ══════════════════════════════════════════════════════════════════
 
-    /**
-     * Fuerza una recarga completa de membresías sin perder los clientes cargados.
-     * Usar después de operaciones que modifican membresías (crear, cancelar).
-     */
+
+
     private void refrescarMembresiasCompleto() {
         android.util.Log.d("MEMBRESIAS", "Refrescando membresías completo...");
         cargarMembresiasEnBackground();
     }
 
-    // ══════════════════════════════════════════════════════════════════
-    //  BUSCADOR
-    // ══════════════════════════════════════════════════════════════════
+
     private void setupBuscador() {
         etBuscar.addTextChangedListener(new TextWatcher() {
             public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
@@ -444,9 +423,7 @@ public class ClientesActivity extends AppCompatActivity {
         });
     }
 
-    // ══════════════════════════════════════════════════════════════════
-    //  FILTROS
-    // ══════════════════════════════════════════════════════════════════
+
     private void setupFiltros() {
         filtroTodos.setOnClickListener(v     -> setFiltro("todos",         filtroTodos));
         filtroActivos.setOnClickListener(v   -> setFiltro("activo",        filtroActivos));
@@ -482,9 +459,7 @@ public class ClientesActivity extends AppCompatActivity {
         renderLista();
     }
 
-    // ══════════════════════════════════════════════════════════════════
-    //  RENDER LISTA
-    // ══════════════════════════════════════════════════════════════════
+
     private void renderLista() {
         clientesFiltrados.clear();
         int conMembresia = 0;
@@ -540,9 +515,6 @@ public class ClientesActivity extends AppCompatActivity {
         tvSubtitle.setText(todosLosClientes.size() + " registrados · " + conMembresia + " con membresía");
     }
 
-    // ══════════════════════════════════════════════════════════════════
-    //  CARD DE CLIENTE
-    // ══════════════════════════════════════════════════════════════════
     private View buildClienteCard(Cliente cliente) {
         CardView card = new CardView(this);
         LinearLayout.LayoutParams cp = new LinearLayout.LayoutParams(-1, -2);
@@ -684,9 +656,7 @@ public class ClientesActivity extends AppCompatActivity {
         return card;
     }
 
-    // ══════════════════════════════════════════════════════════════════
-    //  SHEET: DETALLE CLIENTE
-    // ══════════════════════════════════════════════════════════════════
+
     private void showDetalleCliente(Cliente cliente) {
         BottomSheetDialog sheet = new BottomSheetDialog(
                 this, com.google.android.material.R.style.Theme_Material3_Light_BottomSheetDialog);
@@ -816,9 +786,7 @@ public class ClientesActivity extends AppCompatActivity {
 
 
 
-    // ══════════════════════════════════════════════════════════════════
-    //  BLOQUE MEMBRESÍA EN DETALLE
-    // ══════════════════════════════════════════════════════════════════
+
     private void cargarYMostrarBloqueMembresiaDetalle(View sheetView, Cliente cliente,
                                                       BottomSheetDialog sheet) {
         SupabaseRepository.get().getMembresias(cliente.id, true,
@@ -1013,16 +981,7 @@ public class ClientesActivity extends AppCompatActivity {
 
 
 
-    /**
-     * Renderiza el bloque de membresía dentro del sheet de detalle.
-     * CASOS:
-     *  A) activa != null          → info + día inicio + próximo cobro + [Editar cuota] [Cancelar]
-     *  B) cancelada < 30 días     → aviso bloqueo + días restantes DINÁMICOS
-     *  C) sin membresía / >30 días → botón inscribirse
-     */
-    // ══════════════════════════════════════════════════════════════════
-    //  CONFIRMAR CANCELACIÓN DE MEMBRESÍA
-    // ══════════════════════════════════════════════════════════════════
+
     private void confirmarCancelacionMembresia(MembresiaModel mem, Cliente cliente,
                                                BottomSheetDialog sheetPadre) {
         BottomSheetDialog dlg = new BottomSheetDialog(this, com.google.android.material.R.style.Theme_Material3_Light_BottomSheetDialog);
@@ -1201,13 +1160,6 @@ public class ClientesActivity extends AppCompatActivity {
                 });
     }
 
-    /**
-     * Finaliza la cancelación actualizando TODOS los estados locales
-     */
-    // ══════════════════════════════════════════════════════════════════
-// CAMBIO 5: MODIFICAR finalizarCancelacionConCobro()
-// Agregar log y forzar refresh de membresías
-// ══════════════════════════════════════════════════════════════════
 
     private void finalizarCancelacionConCobro(Cliente cliente, MembresiaModel memCancelada,
                                               BottomSheetDialog dlgConfirm,
@@ -1241,9 +1193,7 @@ public class ClientesActivity extends AppCompatActivity {
             Toast.makeText(ClientesActivity.this, mensaje, Toast.LENGTH_LONG).show();
         });
     }
-    // ══════════════════════════════════════════════════════════════════
-    //  SHEET: EDITAR CUOTA
-    // ══════════════════════════════════════════════════════════════════
+
     private void showEditarCuotaSheet(MembresiaModel mem) {
         BottomSheetDialog s2 = new BottomSheetDialog(this,
                 com.google.android.material.R.style.Theme_Material3_Light_BottomSheetDialog);
@@ -1326,9 +1276,7 @@ public class ClientesActivity extends AppCompatActivity {
         s2.show();
     }
 
-    // ══════════════════════════════════════════════════════════════════
-    //  FORMULARIO CREAR / EDITAR CLIENTE
-    // ══════════════════════════════════════════════════════════════════
+
     private void showFormularioCliente(Cliente clienteEditar) {
         BottomSheetDialog sheet = new BottomSheetDialog(
                 this, com.google.android.material.R.style.Theme_Material3_Light_BottomSheetDialog);
@@ -1424,9 +1372,7 @@ public class ClientesActivity extends AppCompatActivity {
         sheet.show();
     }
 
-    // ══════════════════════════════════════════════════════════════════
-    //  CONFIRMAR ELIMINAR CLIENTE
-    // ══════════════════════════════════════════════════════════════════
+
     private void confirmarEliminar(Cliente cliente) {
         BottomSheetDialog sheet = new BottomSheetDialog(
                 this, com.google.android.material.R.style.Theme_Material3_Light_BottomSheetDialog);
@@ -1508,9 +1454,7 @@ public class ClientesActivity extends AppCompatActivity {
         sheet.show();
     }
 
-    // ══════════════════════════════════════════════════════════════════
-    //  BOTONES Y NAV
-    // ══════════════════════════════════════════════════════════════════
+
     private void setupBotones() {
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
         findViewById(R.id.btnAddCliente).setOnClickListener(v -> showFormularioCliente(null));
@@ -1518,9 +1462,7 @@ public class ClientesActivity extends AppCompatActivity {
 
     private void setupBottomNav() { NavHelper.setup(this, "clientes"); }
 
-    // ══════════════════════════════════════════════════════════════════
-    //  CARGA DEUDAS Y CITAS REALES
-    // ══════════════════════════════════════════════════════════════════
+
     private void cargarDeudasYCitasReales() {
         SupabaseRepository.get().getCobros("eq.pendiente",
                 new SupabaseRepository.Callback<List<CobroModel>>() {
@@ -1565,9 +1507,7 @@ public class ClientesActivity extends AppCompatActivity {
                 });
     }
 
-    // ══════════════════════════════════════════════════════════════════
-    //  HELPERS UI
-    // ══════════════════════════════════════════════════════════════════
+
     private android.view.ViewGroup encontrarContenedor(View root) {
         if (root instanceof LinearLayout) return (android.view.ViewGroup) root;
         if (root instanceof ScrollView) {

@@ -116,9 +116,6 @@ public class CobrosActivity extends AppCompatActivity {
     private TextView     btnLimpiarBusqueda;
     private android.view.View     btnMesAnterior, btnMesSiguiente;
 
-    // ════════════════════════════════════════════════════════════════
-    //  onCreate
-    // ════════════════════════════════════════════════════════════════
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -150,9 +147,7 @@ public class CobrosActivity extends AppCompatActivity {
         cargarCobros();
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  BIND
-    // ════════════════════════════════════════════════════════════════
+
     private void bindViews() {
         listaPendientes    = findViewById(R.id.listaPendientes);
         listaHistorial     = findViewById(R.id.listaHistorial);
@@ -178,9 +173,6 @@ public class CobrosActivity extends AppCompatActivity {
         btnMesSiguiente    = findViewById(R.id.btnMesSiguiente);
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  CARGA DESDE SUPABASE
-    // ════════════════════════════════════════════════════════════════
     private void cargarCobros() {
         tvSubtitle.setText("Cargando...");
 
@@ -207,9 +199,7 @@ public class CobrosActivity extends AppCompatActivity {
                 });
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  FILTROS
-    // ════════════════════════════════════════════════════════════════
+
     private void setupFiltros() {
         TextView[] btns = {filtroTodos, filtroPendientes, filtroCobrados,
                 filtroEfectivo, filtroTarjeta, filtroBizum, filtroTransferencia};
@@ -232,9 +222,6 @@ public class CobrosActivity extends AppCompatActivity {
         }
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  RENDER
-    // ════════════════════════════════════════════════════════════════
     private void renderTodo() {
         String mesActivo = getMesActivo();
 
@@ -316,9 +303,7 @@ public class CobrosActivity extends AppCompatActivity {
         tvKpiBizumTransfer.setText(String.format(java.util.Locale.US, "%.2f", bizumTransfer).replace(".", ",") + "\u00A0€");
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  CARD DE COBRO
-    // ════════════════════════════════════════════════════════════════
+
     private View buildCobroCard(Cobro cobro) {
         CardView card = new CardView(this);
         LinearLayout.LayoutParams cp = new LinearLayout.LayoutParams(
@@ -438,9 +423,7 @@ public class CobrosActivity extends AppCompatActivity {
         return card;
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  SHEET: DETALLE COBRO
-    // ════════════════════════════════════════════════════════════════
+
     private void showDetalleCobro(Cobro cobro) {
         BottomSheetDialog sheet = new BottomSheetDialog(
                 this, com.google.android.material.R.style.Theme_Material3_Light_BottomSheetDialog);
@@ -693,9 +676,7 @@ public class CobrosActivity extends AppCompatActivity {
         return btn;
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  SHEET: NUEVO / EDITAR COBRO
-    // ════════════════════════════════════════════════════════════════
+
     private void showNuevoCobroSheet(Cobro cobroEditar) {
         BottomSheetDialog sheet = new BottomSheetDialog(
                 this, com.google.android.material.R.style.Theme_Material3_Light_BottomSheetDialog);
@@ -928,9 +909,7 @@ public class CobrosActivity extends AppCompatActivity {
         sheet.show();
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  BUSCADOR DE CLIENTES
-    // ════════════════════════════════════════════════════════════════
+
     private void mostrarSugerenciasClientes(String texto, LinearLayout layoutSug,
                                             EditText etCliente, String[] clienteIdSel,
                                             boolean[] seleccionando) {
@@ -1064,9 +1043,7 @@ public class CobrosActivity extends AppCompatActivity {
                 });
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  BOTONES Y NAV
-    // ════════════════════════════════════════════════════════════════
+
     private void setupBotones() {
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
         findViewById(R.id.btnNuevoCobro).setOnClickListener(v -> showNuevoCobroSheet(null));
@@ -1076,9 +1053,6 @@ public class CobrosActivity extends AppCompatActivity {
         NavHelper.setup(this, "cobros");
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  HELPERS
-    // ════════════════════════════════════════════════════════════════
     private String getMesActivo() {
         java.util.Calendar cal = java.util.Calendar.getInstance();
         cal.add(java.util.Calendar.MONTH, mesOffset);
@@ -1109,9 +1083,7 @@ public class CobrosActivity extends AppCompatActivity {
         }
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  BUSCADOR POR NOMBRE
-    // ════════════════════════════════════════════════════════════════
+
     private void setupBusqueda() {
         if (etBuscarNombre == null) return;
         etBuscarNombre.addTextChangedListener(new android.text.TextWatcher() {
@@ -1136,9 +1108,7 @@ public class CobrosActivity extends AppCompatActivity {
         }
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  NAVEGACION ENTRE MESES
-    // ════════════════════════════════════════════════════════════════
+
     private void setupNavMes() {
         if (btnMesAnterior != null) {
             btnMesAnterior.setOnClickListener(v -> {

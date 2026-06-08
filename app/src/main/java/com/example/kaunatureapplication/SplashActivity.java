@@ -33,7 +33,6 @@ public class SplashActivity extends AppCompatActivity {
         centerBlock.setVisibility(View.INVISIBLE);
         bottomBlock.setVisibility(View.INVISIBLE);
 
-        // Fade-in centerBlock
         centerBlock.postDelayed(() -> {
             centerBlock.setVisibility(View.VISIBLE);
             AlphaAnimation fadeInCenter = new AlphaAnimation(0f, 1f);
@@ -43,7 +42,6 @@ public class SplashActivity extends AppCompatActivity {
             centerBlock.startAnimation(fadeInCenter);
         }, 200);
 
-        // Fade-in bottomBlock
         bottomBlock.postDelayed(() -> {
             bottomBlock.setVisibility(View.VISIBLE);
             AlphaAnimation fadeInBottom = new AlphaAnimation(0f, 1f);
@@ -53,29 +51,25 @@ public class SplashActivity extends AppCompatActivity {
             bottomBlock.startAnimation(fadeInBottom);
         }, 900);
 
-        // ── Navegar tras la animación ─────────────────────────────
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
 
-            // Cargar sesión guardada
             SessionManager.loadSession(this);
 
             if (SessionManager.isLoggedIn()) {
                 if (SessionManager.isTokenExpired()) {
-                    // Token expirado → intentar refresh silencioso
                     new AuthRepository().refreshToken(this, new AuthRepository.AuthCallback() {
                         @Override public void onSuccess() {
                             goToMain(); // refresh ok → entrar
                         }
                         @Override public void onError(String error) {
-                            // Refresh falló (sesión muy antigua) → login
                             goToLogin();
                         }
                     });
                 } else {
-                    goToMain(); // token vigente → entrar directamente
+                    goToMain();
                 }
             } else {
-                goToLogin(); // sin sesión → login
+                goToLogin();
             }
 
         }, SPLASH_DURATION);

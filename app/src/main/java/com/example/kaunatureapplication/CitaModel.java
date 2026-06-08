@@ -12,11 +12,9 @@ public class CitaModel {
     @SerializedName("estado")       public String estado;   // pendiente|confirmada|cancelada|cobrada
     @SerializedName("notas")        public String notas;
 
-    // ── La vista v_citas usa "cliente" y "servicio", NO "cliente_nombre"/"servicio_nombre"
     @SerializedName("cliente")      public String clienteNombre;
     @SerializedName("servicio")     public String servicioNombre;
 
-    // precio viene como String en la vista ("5.00") — lo parseamos
     @SerializedName("precio")       public String precioRaw;
 
     public double getPrecio() {

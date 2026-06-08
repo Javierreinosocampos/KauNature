@@ -32,7 +32,7 @@ public class AgendaActivity extends AppCompatActivity {
 
     interface KauCallback { void call(String value); }
 
-    // ── Modelo local Cita ────────────────────────────────────────────
+
     static class Cita {
         String id;
         String clienteId;    // UUID cliente (para vincular cobros)
@@ -45,7 +45,6 @@ public class AgendaActivity extends AppCompatActivity {
         String notas;
         String estado;
 
-        // Campos calculados para las vistas
         int diaSemana;
         int diaMes;
         int mes;
@@ -62,7 +61,6 @@ public class AgendaActivity extends AppCompatActivity {
             this.estado   = m.estado   != null ? m.estado   : "pendiente";
             this.precio   = m.precioDisplay();
 
-            // Parsear fecha para campos de UI
             if (fechaBD.length() >= 10) {
                 this.anio     = Integer.parseInt(fechaBD.substring(0, 4));
                 this.mes      = Integer.parseInt(fechaBD.substring(5, 7));
@@ -75,7 +73,6 @@ public class AgendaActivity extends AppCompatActivity {
             }
         }
 
-        // Constructor para citas nuevas (antes de guardar en BD)
         Cita(String cliente, String servicio, String fecha, String hora,
              String precio, String notas, String estado,
              int diaSemana, int diaMes, int mes, int anio) {
@@ -100,27 +97,22 @@ public class AgendaActivity extends AppCompatActivity {
         }
     }
 
-    // ── Servicios ────────────────────────────────────────────────────
+
     private final String[] SERVICIOS = {
             "Masaje"
     };
 
-    // ── Estado ───────────────────────────────────────────────────────
     private final List<Cita> todasLasCitas = new ArrayList<>();
     private String   vistaActual    = "diaria";
     private String   filtroServicio = "Todos";
     private Calendar fechaSeleccionada;
     private boolean  cargando       = false;
 
-    // ── Views ────────────────────────────────────────────────────────
     private FrameLayout contenedor;
     private TextView    tabDiaria, tabSemanal, tabMensual;
     private TextView    tvSubtitle;
 
-    // ════════════════════════════════════════════════════════════════
-    //  onCreate
-    // ════════════════════════════════════════════════════════════════
-    // ID de cita a abrir automáticamente (viene del MainActivity)
+
     private String  citaIdPendiente  = null;
     private String  clienteFiltroId  = null;  // viene de ClientesActivity
     private String  clienteFiltroNom = null;
@@ -138,7 +130,6 @@ public class AgendaActivity extends AppCompatActivity {
 
         fechaSeleccionada = Calendar.getInstance();
 
-        // Recibir extras de MainActivty (cita concreta) o ClientesActivity (cliente)
         if (getIntent() != null) {
             citaIdPendiente  = getIntent().getStringExtra("CITA_ID");
             clienteFiltroId  = getIntent().getStringExtra("CLIENTE_ID");
@@ -160,7 +151,6 @@ public class AgendaActivity extends AppCompatActivity {
         setupTabs();
         setupBotones();
         setupBottomNav();
-        // Marcar tab activo inicial
         tabDiaria.setBackground(getDrawable(R.drawable.shape_tab_active));
         tabDiaria.setTextColor(Color.WHITE);
         cargarCitas();
@@ -175,15 +165,12 @@ public class AgendaActivity extends AppCompatActivity {
             primeraVez = false;
             return;
         }
-        // Al volver (desde Cobros u otra pantalla): siempre recargar desde Supabase
-        // para reflejar cambios de estado sincronizados desde CobrosActivity
-        cargando = false; // reset flag por si quedó bloqueado
+
+        cargando = false;
         cargarCitas();
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  BIND
-    // ════════════════════════════════════════════════════════════════
+
     private void bindViews() {
         contenedor = findViewById(R.id.contenedorVista);
         tabDiaria  = findViewById(R.id.tabDiaria);
@@ -192,11 +179,8 @@ public class AgendaActivity extends AppCompatActivity {
         tvSubtitle = findViewById(R.id.tvAgendaSubtitle);
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  CARGA DESDE SUPABASE
-    // ════════════════════════════════════════════════════════════════
 
-    /** Carga todas las citas del mes visible (±1 mes para semanas que cruzan mes) */
+
     private void cargarCitas() {
         if (cargando) return;
         cargando = true;
@@ -255,9 +239,7 @@ public class AgendaActivity extends AppCompatActivity {
                 });
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  TABS
-    // ════════════════════════════════════════════════════════════════
+
     private void setupTabs() {
         tabDiaria.setOnClickListener(v  -> setVista("diaria",  tabDiaria));
         tabSemanal.setOnClickListener(v -> setVista("semanal", tabSemanal));
@@ -275,9 +257,7 @@ public class AgendaActivity extends AppCompatActivity {
         renderVista();
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  RENDER
-    // ════════════════════════════════════════════════════════════════
+
     private void renderVista() {
         // Restaurar siempre el estado visual de los tabs
         for (TextView t : new TextView[]{tabDiaria, tabSemanal, tabMensual}) {
@@ -521,9 +501,7 @@ public class AgendaActivity extends AppCompatActivity {
         contenedor.addView(scroll);
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  BUILDERS UI
-    // ════════════════════════════════════════════════════════════════
+
     private View buildNavFecha() {
         CardView nav = new CardView(this);
         LinearLayout.LayoutParams np = new LinearLayout.LayoutParams(
@@ -849,12 +827,7 @@ public class AgendaActivity extends AppCompatActivity {
         return v;
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  SHEET: DETALLE CITA
-    // ════════════════════════════════════════════════════════════════
-    // ════════════════════════════════════════════════════════════════
-    //  DETALLE CITA — botones con sincronización total de cobros
-    // ════════════════════════════════════════════════════════════════
+
     private void showDetalleCita(Cita cita) {
         BottomSheetDialog sheet = new BottomSheetDialog(
                 this, com.google.android.material.R.style.Theme_Material3_Light_BottomSheetDialog);
@@ -1158,9 +1131,6 @@ public class AgendaActivity extends AppCompatActivity {
         }
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  SHEET: NUEVA / EDITAR CITA
-    // ════════════════════════════════════════════════════════════════
     private void showNuevaCitaSheet(Cita citaEditar) {
         BottomSheetDialog sheet = new BottomSheetDialog(
                 this, com.google.android.material.R.style.Theme_Material3_Light_BottomSheetDialog);
@@ -1427,9 +1397,6 @@ public class AgendaActivity extends AppCompatActivity {
         sheet.show();
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  FILTRO SERVICIO
-    // ════════════════════════════════════════════════════════════════
     private void showFiltroServicio() {
         BottomSheetDialog sheet = new BottomSheetDialog(
                 this, com.google.android.material.R.style.Theme_Material3_Light_BottomSheetDialog);
@@ -1470,9 +1437,7 @@ public class AgendaActivity extends AppCompatActivity {
         sheet.show();
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  PICKERS (sin cambios respecto al original)
-    // ════════════════════════════════════════════════════════════════
+
     private void mostrarDatePicker() {
         String fechaActual = String.format("%02d/%02d/%04d",
                 fechaSeleccionada.get(Calendar.DAY_OF_MONTH),
@@ -1841,9 +1806,6 @@ public class AgendaActivity extends AppCompatActivity {
         });
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  SETUP BOTONES Y NAV
-    // ════════════════════════════════════════════════════════════════
     private void setupBotones() {
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
         findViewById(R.id.btnAddCita).setOnClickListener(v -> showNuevaCitaSheet(null));
@@ -1853,9 +1815,7 @@ public class AgendaActivity extends AppCompatActivity {
         NavHelper.setup(this, "agenda");
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  HELPERS
-    // ════════════════════════════════════════════════════════════════
+
 
     /** Necesitamos este método en el repo — añade el wrapper aquí */
     // SupabaseRepository necesita actualizarCita con Map → añadimos el método:
@@ -1890,12 +1850,7 @@ public class AgendaActivity extends AppCompatActivity {
         }
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  BUSCADOR DE CLIENTES — busca en Supabase y muestra sugerencias
-    // ════════════════════════════════════════════════════════════════
-    // ════════════════════════════════════════════════════════════════
-    //  BUSCADOR DE CLIENTES
-    // ════════════════════════════════════════════════════════════════
+
     private void mostrarSugerencias(String texto, LinearLayout layoutSug,
                                     EditText etCliente, String[] clienteIdSel,
                                     boolean[] seleccionando) {

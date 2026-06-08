@@ -28,7 +28,7 @@ public class AuthRepository {
         void onError(String error);
     }
 
-    // ── LOGIN ─────────────────────────────────────────────────────
+
     public void login(Context context, String email, String password, AuthCallback cb) {
         OkHttpClient client = new OkHttpClient();
         try {
@@ -75,7 +75,6 @@ public class AuthRepository {
                                 cb.onError("Parse error: " + e.getMessage());
                             }
                         } else {
-                            // Mensaje legible del error de Supabase
                             String msg = res;
                             try {
                                 JSONObject err = new JSONObject(res);
@@ -92,7 +91,6 @@ public class AuthRepository {
         }
     }
 
-    // ── REFRESH TOKEN ─────────────────────────────────────────────
     public void refreshToken(Context context, AuthCallback cb) {
         String refresh = SessionManager.getRefreshToken();
         if (refresh.isEmpty()) {
@@ -132,7 +130,6 @@ public class AuthRepository {
                                 long expiresIn = obj.optLong("expires_in", 3600);
                                 long expiresAt = System.currentTimeMillis() / 1000L + expiresIn;
 
-                                // Guardar sesión completa con el nuevo refresh_token
                                 SessionManager.saveSession(context, token, newRef,
                                         SessionManager.getUserId(), expiresAt);
 

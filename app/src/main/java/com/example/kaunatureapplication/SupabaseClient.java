@@ -16,7 +16,6 @@ public class SupabaseClient {
         return retrofit;
     }
 
-    /** Llama tras login o refresh para que el nuevo token se use de inmediato */
     public static synchronized void reset() {
         retrofit = null;
         SupabaseRepository.reset();
@@ -29,7 +28,6 @@ public class SupabaseClient {
         OkHttpClient client = new OkHttpClient.Builder()
                 .addInterceptor(logging)
                 .addInterceptor(chain -> {
-                    // Token leído EN CADA PETICIÓN — nunca cacheado en el builder
                     String token = SessionManager.getToken();
 
                     okhttp3.Request original = chain.request();
@@ -42,7 +40,6 @@ public class SupabaseClient {
 
                     okhttp3.Response response = chain.proceed(request);
 
-                    // Log del token para diagnóstico (quitar en producción)
                     android.util.Log.d("SUPABASE_AUTH",
                             "Token usado: " + (token.isEmpty() ? "VACÍO" : token.substring(0, Math.min(20, token.length())) + "...") +
                                     " | URL: " + original.url() +

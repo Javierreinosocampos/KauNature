@@ -15,7 +15,7 @@ public class ClienteModel {
     @SerializedName("citas_total")  public int    citasTotal;
     @SerializedName("created_at")   public String createdAt;
 
-    // Helper para la UI
+
     public String inicial() {
         return (nombre != null && !nombre.isEmpty())
                 ? String.valueOf(nombre.charAt(0)).toUpperCase() : "?";

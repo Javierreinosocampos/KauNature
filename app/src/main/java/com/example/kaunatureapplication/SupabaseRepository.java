@@ -26,9 +26,7 @@ public class SupabaseRepository {
         void onError(String mensaje);
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  CLIENTES
-    // ════════════════════════════════════════════════════════════════
+
 
     public void getClientes(String filtroEstado, Callback<List<ClienteModel>> cb) {
         api.getClientes("nombre.asc", filtroEstado)
@@ -87,9 +85,7 @@ public class SupabaseRepository {
         });
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  CITAS
-    // ════════════════════════════════════════════════════════════════
+
 
     public void getCitasPorFecha(String fecha, Callback<List<CitaModel>> cb) {
         api.getCitasPorFecha("eq." + fecha, "hora.asc")
@@ -173,9 +169,7 @@ public class SupabaseRepository {
         });
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  COBROS
-    // ════════════════════════════════════════════════════════════════
+
 
     public void getCobros(String filtroEstado, Callback<List<CobroModel>> cb) {
         api.getCobros("fecha.desc", filtroEstado)
@@ -242,7 +236,6 @@ public class SupabaseRepository {
         });
     }
 
-    /** Igual que crearCobro pero fijando la FECHA del cobro (yyyy-MM-dd). */
     public void crearCobroConFecha(String clienteId, String clienteNombre,
                                    String concepto, double importe,
                                    String metodo, String estado, String notas,
@@ -301,14 +294,7 @@ public class SupabaseRepository {
         });
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  SINCRONIZACIÓN BIDIRECCIONAL CITAS ↔ COBROS
-    // ════════════════════════════════════════════════════════════════
 
-    /**
-     * Marca un cobro como COBRADO y sincroniza la cita asociada (si existe)
-     * FLUJO: Usuario marca cobro como cobrado → Cita pasa a "cobrada"
-     */
     public void marcarCobroCobradoConSync(String cobroId, String citaId, Callback<Void> cb) {
         android.util.Log.d("SYNC", "marcarCobroCobrado: cobro=" + cobroId + ", cita=" + citaId);
 
@@ -355,10 +341,7 @@ public class SupabaseRepository {
                 });
     }
 
-    /**
-     * Marca un cobro como PENDIENTE y sincroniza la cita asociada (si existe)
-     * FLUJO: Usuario desmarca cobro → Cita pasa a "confirmada"
-     */
+
     public void marcarCobroPendienteConSync(String cobroId, String citaId, Callback<Void> cb) {
         android.util.Log.d("SYNC", "marcarCobroPendiente: cobro=" + cobroId + ", cita=" + citaId);
 
@@ -405,10 +388,7 @@ public class SupabaseRepository {
                 });
     }
 
-    /**
-     * ELIMINA un cobro y CANCELA la cita asociada (si existe)
-     * FLUJO: Usuario elimina cobro → Cita pasa a "cancelada"
-     */
+
     public void eliminarCobroConSync(String cobroId, String citaId, Callback<Void> cb) {
         android.util.Log.d("SYNC", "eliminarCobro: cobro=" + cobroId + ", cita=" + citaId);
 
@@ -451,9 +431,7 @@ public class SupabaseRepository {
         });
     }
 
-    /**
-     * Marca una cita como COBRADA y sincroniza el cobro asociado (si existe)
-     */
+
     public void marcarCitaCobradaConSync(String citaId, Callback<Void> cb) {
         android.util.Log.d("SYNC", "marcarCitaCobrada: cita=" + citaId);
 
@@ -513,9 +491,6 @@ public class SupabaseRepository {
                 });
     }
 
-    /**
-     * Cambia estado de cita y sincroniza cobro asociado
-     */
     public void cambiarEstadoCitaConSync(String citaId, String nuevoEstado, Callback<Void> cb) {
         android.util.Log.d("SYNC", "cambiarEstadoCita: cita=" + citaId + ", estado=" + nuevoEstado);
 
@@ -591,9 +566,7 @@ public class SupabaseRepository {
                 });
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  SERVICIOS
-    // ════════════════════════════════════════════════════════════════
+
 
     public void getServicios(Callback<List<ServicioModel>> cb) {
         api.getServicios("eq.true")
@@ -606,9 +579,7 @@ public class SupabaseRepository {
                 });
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  GIMNASIO — FRANJAS
-    // ════════════════════════════════════════════════════════════════
+
 
     public void getFranjas(Callback<List<FranjaModel>> cb) {
         api.getFranjas("eq.true", "dia_semana.asc,hora_inicio.asc")
@@ -661,9 +632,7 @@ public class SupabaseRepository {
         });
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  ASISTENCIA
-    // ════════════════════════════════════════════════════════════════
+
 
     public void getAsistencia(String fecha, String franjaId, Callback<List<AsistenciaModel>> cb) {
         api.getAsistencia("eq." + fecha, "eq." + franjaId)
@@ -705,9 +674,6 @@ public class SupabaseRepository {
                 });
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  MEMBRESÍAS
-    // ════════════════════════════════════════════════════════════════
 
     public void getMembresias(String clienteId, Boolean soloActivas,
                               Callback<List<MembresiaModel>> cb) {
@@ -791,7 +757,6 @@ public class SupabaseRepository {
         });
     }
 
-    /** Devuelve true si el cliente YA tiene al menos una membresía activa. */
     public void tieneMembresiaActiva(String clienteId, Callback<Boolean> cb) {
         if (clienteId == null) { cb.onSuccess(false); return; }
         getMembresias(clienteId, true, new Callback<List<MembresiaModel>>() {
@@ -812,19 +777,15 @@ public class SupabaseRepository {
         });
     }
 
-    // ── Borrado en cascada: elimina un cliente junto a TODOS sus cobros y membresías ──
     public void eliminarClienteEnCascada(String clienteId, Callback<Void> cb) {
         if (clienteId == null) { cb.onError("clienteId nulo"); return; }
-        // 1) Traer cobros del cliente
         getCobrosPorCliente(clienteId, new Callback<List<CobroModel>>() {
             @Override public void onSuccess(List<CobroModel> cobros) {
                 final java.util.List<String> idsCobros = new java.util.ArrayList<>();
                 if (cobros != null) {
                     for (CobroModel c : cobros) if (c.id != null) idsCobros.add(c.id);
                 }
-                // 2) Borrar cobros en cadena
                 borrarCobrosEnCadena(idsCobros, 0, () ->
-                        // 3) Traer y borrar membresías del cliente
                         getMembresias(clienteId, null, new Callback<List<MembresiaModel>>() {
                             @Override public void onSuccess(List<MembresiaModel> mems) {
                                 final java.util.List<String> idsMems = new java.util.ArrayList<>();
@@ -832,23 +793,19 @@ public class SupabaseRepository {
                                     for (MembresiaModel m : mems) if (m.id != null) idsMems.add(m.id);
                                 }
                                 borrarMembresiasEnCadena(idsMems, 0, () ->
-                                        // 4) Por último, borrar el cliente
                                         eliminarCliente(clienteId, cb));
                             }
                             @Override public void onError(String e) {
-                                // Si falla traer membresías, intentamos borrar el cliente igualmente
                                 eliminarCliente(clienteId, cb);
                             }
                         }));
             }
             @Override public void onError(String e) {
-                // Si falla traer cobros, intentamos borrar el cliente igualmente
                 eliminarCliente(clienteId, cb);
             }
         });
     }
 
-    // ── Borra un cobro y, si correspondía a una membresía ACTIVA, también la membresía ──
     public void eliminarCobroYMembresiaSiAplica(String cobroId, String citaId,
                                                 String concepto, String clienteId,
                                                 Callback<Void> cb) {
@@ -933,13 +890,7 @@ public class SupabaseRepository {
                 });
     }
 
-    /**
-     * Pone al día una membresía activa:
-     *  - Genera un cobro por CADA periodo (mes/trimestre/…) desde la fecha de inicio
-     *    hasta hoy que aún no tenga cobro, fechado en su mes correspondiente.
-     *  - Avanza la fecha_inicio de la membresía al periodo actual conservando el día.
-     * Es idempotente: si ya está al día, no hace nada.
-     */
+
     public void sincronizarMembresia(MembresiaModel mem, String nombre, Callback<Boolean> cb) {
         if (mem == null || !mem.activa || mem.clienteId == null
                 || mem.fechaInicio == null || mem.fechaInicio.isEmpty()) {
@@ -962,7 +913,6 @@ public class SupabaseRepository {
                     java.text.SimpleDateFormat sdf =
                             new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault());
 
-                    // Meses (yyyy-MM) que YA tienen un cobro de membresía
                     java.util.Set<String> mesesConCobro = new java.util.HashSet<>();
                     if (cobros != null) {
                         for (CobroModel c : cobros) {
@@ -1009,9 +959,7 @@ public class SupabaseRepository {
                     final boolean cambiaFecha = !inicioActual.equals(mem.fechaInicio);
                     final boolean huboCobros  = !aCrear.isEmpty();
 
-                    // 1) Crear los cobros que faltan, en cadena
                     crearCobrosFaltantes(mem, nombre, aCrear, 0, () -> {
-                        // 2) Avanzar fecha_inicio al periodo actual
                         if (cambiaFecha) {
                             Map<String, Object> patch = new HashMap<>();
                             patch.put("fecha_inicio", inicioActual);

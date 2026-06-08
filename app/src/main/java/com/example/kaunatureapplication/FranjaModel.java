@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName;
 
 public class FranjaModel {
     @SerializedName("id")           public String id;
-    @SerializedName("dia_semana")   public int    diaSemana;  // 1=Lun…7=Dom
+    @SerializedName("dia_semana")   public int    diaSemana;
     @SerializedName("hora_inicio")  public String horaInicio; // "HH:mm:ss"
     @SerializedName("hora_fin")     public String horaFin;
     @SerializedName("aforo_max")    public int    aforoMax;

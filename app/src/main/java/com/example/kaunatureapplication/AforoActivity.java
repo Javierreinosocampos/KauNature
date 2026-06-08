@@ -24,26 +24,24 @@ import java.util.List;
 
 public class AforoActivity extends AppCompatActivity {
 
-    // ── Días ────────────────────────────────────────────────────────
+
     private static final String[] DIAS       = {"Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"};
     private static final String[] DIAS_CORTO = {"L","M","X","J","V","S","D"};
     // dia_semana en BD: 1=Lun … 7=Dom
     private static final int[]    DIAS_BD    = {1, 2, 3, 4, 5, 6, 7};
 
-    // ── Estado ──────────────────────────────────────────────────────
+
     private int diaSelIdx = 0;
 
-    // Franjas cargadas de Supabase para el día seleccionado
-    // Cada FranjaLocal agrupa FranjaModel + lista de asistentes
+
     private final List<FranjaLocal> franjasDelDia = new ArrayList<>();
 
-    // ── Views ────────────────────────────────────────────────────────
+
     private LinearLayout layoutDias;
     private LinearLayout layoutFranjas;
     private TextView     tvDiaNombre;
     private TextView     tvTotalPersonas;
 
-    // ── Modelo local ─────────────────────────────────────────────────
     static class FranjaLocal {
         FranjaModel         modelo;
         List<AsistenciaModel> asistentes = new ArrayList<>();
@@ -62,9 +60,7 @@ public class AforoActivity extends AppCompatActivity {
         }
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  onCreate
-    // ════════════════════════════════════════════════════════════════
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -168,15 +164,7 @@ public class AforoActivity extends AppCompatActivity {
         cargarFranjasYAsistencia();
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  CARGA DESDE SUPABASE
-    // ════════════════════════════════════════════════════════════════
 
-    /**
-     * 1. Pide al repo las franjas del día de semana seleccionado.
-     * 2. Para cada franja pide la asistencia de HOY (fecha real).
-     * 3. Al terminar todas las llamadas, renderiza.
-     */
     private void cargarFranjasYAsistencia() {
         mostrarCargando();
 
@@ -263,9 +251,8 @@ public class AforoActivity extends AppCompatActivity {
         layoutFranjas.addView(tv);
     }
 
-    // ════════════════════════════════════════════════════════════════
     //  RENDER DÍAS (selector)
-    // ════════════════════════════════════════════════════════════════
+
     private void renderDias() {
         layoutDias.removeAllViews();
 
@@ -663,9 +650,7 @@ public class AforoActivity extends AppCompatActivity {
         sheet.show();
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  SHEET: AÑADIR PERSONA
-    // ════════════════════════════════════════════════════════════════
+
     private void showAnadirSheet(FranjaLocal fl, String dia) {
         BottomSheetDialog sheet = new BottomSheetDialog(
                 this, com.google.android.material.R.style.Theme_Material3_Light_BottomSheetDialog);
@@ -734,7 +719,6 @@ public class AforoActivity extends AppCompatActivity {
             btnOk.setEnabled(false);
             btnOk.setText("Guardando...");
 
-            // CORRECCIÓN: 4 parámetros (fecha, franjaId, clienteId, clienteNombre)
             SupabaseRepository.get().apuntarPersona(
                     fechaHoy(), fl.modelo.id, null, nombre,
                     new SupabaseRepository.Callback<Void>() {
@@ -776,18 +760,14 @@ public class AforoActivity extends AppCompatActivity {
         sheet.show();
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  TOTAL DEL DÍA
-    // ════════════════════════════════════════════════════════════════
+
     private void actualizarTotal() {
         int total = 0;
         for (FranjaLocal fl : franjasDelDia) total += fl.ocupacion();
         tvTotalPersonas.setText(total + " hoy");
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  BOTTOM NAV
-    // ════════════════════════════════════════════════════════════════
+
     private LinearLayout buildBottomNav() {
         LinearLayout nav = new LinearLayout(this);
         nav.setOrientation(LinearLayout.HORIZONTAL);
@@ -832,9 +812,6 @@ public class AforoActivity extends AppCompatActivity {
         return nav;
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  HELPERS
-    // ════════════════════════════════════════════════════════════════
     private String fechaHoy() {
         java.util.Calendar cal = java.util.Calendar.getInstance();
         return String.format(java.util.Locale.getDefault(), "%04d-%02d-%02d",

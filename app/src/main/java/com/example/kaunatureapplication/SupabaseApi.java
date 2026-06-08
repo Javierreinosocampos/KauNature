@@ -13,9 +13,7 @@ import retrofit2.http.Query;
 
 public interface SupabaseApi {
 
-    // ══════════════════════════════════════════════════════════════════
-    //  CLIENTES
-    // ══════════════════════════════════════════════════════════════════
+
 
     @GET("clientes")
     Call<List<ClienteModel>> getClientes(
@@ -26,14 +24,14 @@ public interface SupabaseApi {
     @POST("clientes")
     Call<List<ClienteModel>> crearCliente(@Body ClienteModel cliente);
 
-    // Toggle estado (activo/inactivo) — solo actualiza el campo estado
+
     @PATCH("clientes")
     Call<List<ClienteModel>> actualizarCliente(
             @Query("id") String idFiltro,    // "eq.UUID"
             @Body Map<String, Object> campos
     );
 
-    // Edición completa de campos (nombre, teléfono, email, notas…)
+
     @PATCH("clientes")
     Call<List<ClienteModel>> actualizarClienteMap(
             @Query("id") String idFiltro,    // "eq.UUID"
@@ -43,9 +41,6 @@ public interface SupabaseApi {
     @DELETE("clientes")
     Call<Void> eliminarCliente(@Query("id") String idFiltro);
 
-    // ══════════════════════════════════════════════════════════════════
-    //  CITAS
-    // ══════════════════════════════════════════════════════════════════
 
     @GET("v_citas")
     Call<List<CitaModel>> getCitasPorFecha(
@@ -72,9 +67,7 @@ public interface SupabaseApi {
     @DELETE("citas")
     Call<Void> eliminarCita(@Query("id") String idFiltro);
 
-    // ══════════════════════════════════════════════════════════════════
-    //  COBROS
-    // ══════════════════════════════════════════════════════════════════
+
 
     @GET("cobros")
     Call<List<CobroModel>> getCobros(
@@ -102,16 +95,12 @@ public interface SupabaseApi {
     @DELETE("cobros")
     Call<Void> eliminarCobro(@Query("id") String idFiltro);
 
-    // ══════════════════════════════════════════════════════════════════
-    //  SERVICIOS
-    // ══════════════════════════════════════════════════════════════════
+
 
     @GET("servicios")
     Call<List<ServicioModel>> getServicios(@Query("activo") String activo);
 
-    // ══════════════════════════════════════════════════════════════════
-    //  HORARIO GIMNASIO — FRANJAS SEMANALES
-    // ══════════════════════════════════════════════════════════════════
+
 
     @GET("horario_semanal")
     Call<List<FranjaModel>> getFranjas(
@@ -131,9 +120,6 @@ public interface SupabaseApi {
     @DELETE("horario_semanal")
     Call<Void> eliminarFranja(@Query("id") String idFiltro);
 
-    // ══════════════════════════════════════════════════════════════════
-    //  ASISTENCIA GIMNASIO
-    // ══════════════════════════════════════════════════════════════════
 
     @GET("asistencia_gimnasio")
     Call<List<AsistenciaModel>> getAsistencia(
@@ -151,9 +137,7 @@ public interface SupabaseApi {
             @Query("cliente_nombre")     String nombre
     );
 
-    // ══════════════════════════════════════════════════════════════════
-    //  MEMBRESÍAS
-    // ══════════════════════════════════════════════════════════════════
+
 
     @GET("membresias")
     Call<List<MembresiaModel>> getMembresias(
